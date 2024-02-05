@@ -2,6 +2,7 @@
 name = "qoala-compiler"
 version = "0.0.1"
 dependencies = [
+    "pytest >= 8.0.0"
 ]
 requires-python = ">=3.11"
 authors = [
