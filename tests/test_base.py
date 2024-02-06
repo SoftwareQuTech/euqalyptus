@@ -16,7 +16,7 @@ class _IncompleteQoalaProgram(QoalaProgram):
 class TestBase:
     def test_class_without_entry_point(self):
         with pytest.raises(TypeError) as exec_info:
-            program = _IncompleteQoalaProgram()
+            _ = _IncompleteQoalaProgram()
         assert len(exec_info.value.args) == 1
         assert isinstance(exec_info.value.args[0], str)
         assert "Can't instantiate abstract class" in exec_info.value.args[0]
