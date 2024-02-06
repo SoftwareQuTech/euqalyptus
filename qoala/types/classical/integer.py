@@ -1,18 +1,10 @@
 from abc import ABC, abstractmethod
-from typing import Self
+from typing import Self, Generic
+
+from qoala.types.classical import QoalaClassicalType, _Internal_Value_Type
 
 
-class QoalaClassicalType(ABC):
-    @abstractmethod
-    def get_value(self) -> Self:
-        ...
-
-
-class IntegerType(QoalaClassicalType, ABC):
-    @abstractmethod
-    def get_value(self) -> Self:
-        ...
-
+class IntegerType(QoalaClassicalType[_Internal_Value_Type], ABC):
     # Operations associated with all integer types
     @abstractmethod
     def add(self, other: Self) -> Self:
@@ -44,18 +36,21 @@ class IntegerType(QoalaClassicalType, ABC):
         return self.divide(other)
 
 
-class SignedIntegerType(IntegerType, ABC):
+class SignedIntegerType(IntegerType[_Internal_Value_Type], ABC):
     ...
 
 
-class UnsignedIntegerType(IntegerType, ABC):
+class UnsignedIntegerType(IntegerType[_Internal_Value_Type], ABC):
     ...
 
 
-class Int32(SignedIntegerType):
+# TODO - Change the `int` parametric type when implementing
+#        the internal representation.
+class Int32(SignedIntegerType[int]):
     """
     Class used to represent a `signed integer` of 32 bits
     """
+    interval_value: int
 
     def __init__(
             self,
@@ -66,7 +61,7 @@ class Int32(SignedIntegerType):
         # TODO - Implement the internal representation and storage of the Int32
         pass
 
-    def get_value(self) -> Self:
+    def _get_value(self) -> int:
         # TODO - Implement
         pass
 

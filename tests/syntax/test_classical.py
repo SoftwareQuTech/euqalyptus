@@ -1,6 +1,6 @@
 import pytest
 
-from qoala.classical.types import Int32
+from qoala.types.classical.integer import Int32
 
 
 class TestClassicalSyntax:
