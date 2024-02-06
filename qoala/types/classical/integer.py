@@ -80,3 +80,44 @@ class Int32(SignedIntegerType[int]):
     def divide(self, other: Self) -> Self:
         # TODO - Implement
         pass
+
+
+Int = Int32
+
+
+# TODO - Change the `int` parametric type when implementing
+#        the internal representation.
+class UInt32(UnsignedIntegerType[int]):
+    """
+    Class used to represent a `signed integer` of 32 bits
+    """
+    interval_value: int
+
+    def __init__(
+            self,
+            immediate: int = 0,
+            other_uint32: Self = 0,
+            # TODO - The next arguments are used when creating an UInt32 from other types
+    ):
+        # TODO - Implement the internal representation and storage of the UInt32
+        pass
+
+    def _get_value(self) -> int:
+        # TODO - Implement
+        pass
+
+    def add(self, other: Self) -> Self:
+        # TODO - Implement
+        pass
+
+    def subtract(self, other: Self) -> Self:
+        # TODO - Implement
+        pass
+
+    def multiply(self, other: Self) -> Self:
+        # TODO - Implement
+        pass
+
+    def divide(self, other: Self) -> Self:
+        # TODO - Implement
+        pass
