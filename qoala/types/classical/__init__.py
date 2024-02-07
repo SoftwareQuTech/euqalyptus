@@ -14,8 +14,8 @@ class QoalaClassicalType(Generic[_Internal_Value_Type], QoalaType, ABC):
         NOTE: This method is intended to be used `for testing purposes only`
         Returns
         -------
-        _Int_Val_T:
-            A value of the declared type, depending on how the type is
-            implemented internally
+        _Internal_Value_Type:
+            A value that represents the stored value. The type of the returned
+            value will depend on how the value is implemented internally.
         """
         ...

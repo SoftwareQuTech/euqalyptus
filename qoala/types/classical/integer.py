@@ -46,6 +46,8 @@ class UnsignedIntegerType(IntegerType[_Internal_Value_Type], ABC):
 
 # TODO - Change the `int` parametric type when implementing
 #        the internal representation.
+# TODO - Expose the symbol of the internal representation
+#        of this type
 class Int32(SignedIntegerType[int]):
     """
     Class used to represent a `signed integer` of 32 bits
@@ -87,6 +89,8 @@ Int = Int32
 
 # TODO - Change the `int` parametric type when implementing
 #        the internal representation.
+# TODO - Expose the symbol of the internal representation
+#        of this type
 class UInt32(UnsignedIntegerType[int]):
     """
     Class used to represent a `signed integer` of 32 bits
