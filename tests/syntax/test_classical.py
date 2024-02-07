@@ -2,6 +2,7 @@ from typing import Generic, TypeVar
 
 import pytest
 
+from qoala.types.classical.arrays import Array, IntArray
 from qoala.types.classical.floats import Float, Double, FloatingPointType
 from qoala.types.classical.integer import Int32, UInt32, Int, IntegerType
 
@@ -151,3 +152,26 @@ class TestFloatClassicalSyntax(Generic[_Base_Type_Float]):
         #assert value_h.get_value() == 12
         #assert value_i.get_value() == 3
         #assert value_j.get_value() == 0
+
+
+class TestArrayClassicalSyntax:
+    def test_declare_integer_array(self):
+        val_a = Int(10)
+        val_b = Int(20)
+        int_array_a = IntArray()
+        int_array_b = IntArray(val_a, val_b)
+
+        assert isinstance(int_array_a, Array)
+        assert isinstance(int_array_b, Array)
+        assert len(int_array_a) == 0
+        assert len(int_array_b) == 2
+
+    def test_store_in_array(self):
+        arr = IntArray()
+        arr.store(Int(10))
+
+        assert len(arr) == 1
+
+        value = arr[0]
+
+        assert value._get_value() == 10

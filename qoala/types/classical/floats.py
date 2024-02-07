@@ -40,6 +40,8 @@ class FloatingPointType(QoalaClassicalType[_Internal_Value_Type], ABC):
 #        the internal representation.
 # TODO - Expose the symbol of the internal representation
 #        of this type
+# FIXME - This type might not be needed. According to the specification
+#         QoalaHIR only supports the `f32` type (a.k.a. doubles)
 class Float(FloatingPointType[float]):
     internal_representation: float
 

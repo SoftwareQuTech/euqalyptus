@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import Self, Generic
+from typing import Self, Optional
 
 from qoala.types.classical import QoalaClassicalType, _Internal_Value_Type
 
@@ -57,15 +57,17 @@ class Int32(SignedIntegerType[int]):
     def __init__(
             self,
             immediate: int = 0,
-            other_int32: Self = 0,
+            other_int32: Optional[Self] = None,
             # TODO - The next arguments are used when creating an Int32 from other types
     ):
         # TODO - Implement the internal representation and storage of the Int32
-        pass
+        self.interval_value = immediate
+        if other_int32 is not None:
+            self.interval_value = other_int32.interval_value
 
     def _get_value(self) -> int:
         # TODO - Implement
-        pass
+        return self.interval_value
 
     def add(self, other: Self) -> Self:
         # TODO - Implement
@@ -100,7 +102,7 @@ class UInt32(UnsignedIntegerType[int]):
     def __init__(
             self,
             immediate: int = 0,
-            other_uint32: Self = 0,
+            other_uint32: Optional[Self] = 0,
             # TODO - The next arguments are used when creating an UInt32 from other types
     ):
         # TODO - Implement the internal representation and storage of the UInt32
@@ -125,3 +127,6 @@ class UInt32(UnsignedIntegerType[int]):
     def divide(self, other: Self) -> Self:
         # TODO - Implement
         pass
+
+
+# TODO - Implement the `i1` type (booleans?)
