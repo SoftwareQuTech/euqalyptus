@@ -2,7 +2,7 @@ from typing import Generic, TypeVar
 
 import pytest
 
-from qoala.types.classical.arrays import Array, IntArray
+from qoala.types.classical.arrays import Array, IntArray, FloatArray
 from qoala.types.classical.floats import Float, Double, FloatingPointType
 from qoala.types.classical.integer import Int32, UInt32, Int, IntegerType
 
@@ -166,7 +166,7 @@ class TestArrayClassicalSyntax:
         assert len(int_array_a) == 0
         assert len(int_array_b) == 2
 
-    def test_store_in_array(self):
+    def test_store_in_integer_array(self):
         arr = IntArray()
         arr.store(Int(10))
 
@@ -175,3 +175,25 @@ class TestArrayClassicalSyntax:
         value = arr[0]
 
         assert value._get_value() == 10
+
+    def test_declare_float_array(self):
+        val_a = Double(10.5)
+        val_b = Double(20.1)
+        int_array_a = FloatArray()
+        int_array_b = FloatArray(val_a, val_b)
+
+        assert isinstance(int_array_a, Array)
+        assert isinstance(int_array_b, Array)
+        assert len(int_array_a) == 0
+        assert len(int_array_b) == 2
+
+    @pytest.mark.skip(reason="Floats - `get_value` method does not return anything just yet")
+    def test_store_in_float_array(self):
+        arr = FloatArray()
+        arr.store(Double(15.5))
+
+        assert len(arr) == 1
+
+        value = arr[0]
+
+        assert value._get_value() == 15.5
