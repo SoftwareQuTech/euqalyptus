@@ -9,6 +9,15 @@ from qoala.types.classical.integer import Int32, UInt32, Int, IntegerType
 _Base_Type_Int = TypeVar("_Base_Type_Int", bound=IntegerType)
 _Base_Type_Float = TypeVar("_Base_Type_Float", bound=FloatingPointType)
 
+"""
+In these classes, we aim to test the syntax of the classical operations.
+Being this said `we cannot test the results of the operations` since
+computing the results will require executing the code.
+To correctly check the usage of the syntax, we need to assert _the internal
+state: of the objects returned by the program, so we check that the code
+was "parsed" correctly.
+"""
+
 
 @pytest.mark.parametrize("clazz", (Int32, UInt32, Int))
 class TestIntegerClassicalSyntax(Generic[_Base_Type_Int]):
@@ -45,13 +54,13 @@ class TestIntegerClassicalSyntax(Generic[_Base_Type_Int]):
     def test_int_creation(self, clazz: type):
         value_a = TestIntegerClassicalSyntax._get_int_from_immediate(clazz, 0)
         assert isinstance(value_a, clazz)
-        #assert value_a.get_value() == 0
+        # TODO - Check the internal state of the returned object
 
     def test_int_creation_from_other_int32(self, clazz: type):
         value_a = TestIntegerClassicalSyntax._get_int_from_immediate(clazz, 10)
         value_b = TestIntegerClassicalSyntax._get_int_from_same_type(clazz, value_a)
         assert isinstance(value_b, clazz)
-        #assert value_b.get_value() == 10
+        # TODO - Check the internal state of the returned object
 
     @pytest.mark.skip(reason="Integers - Overloaded operators do not return anything just yet")
     def test_int_operator_overload_correctness(self, clazz: type):
@@ -76,15 +85,7 @@ class TestIntegerClassicalSyntax(Generic[_Base_Type_Int]):
         assert isinstance(value_i, clazz)
         assert isinstance(value_j, clazz)
 
-        # Assert operation application correctness
-        #assert value_c.get_value() == 8
-        #assert value_d.get_value() == 8
-        #assert value_e.get_value() == 4
-        #assert value_f.get_value() == -4
-        #assert value_g.get_value() == 12
-        #assert value_h.get_value() == 12
-        #assert value_i.get_value() == 3
-        #assert value_j.get_value() == 0
+        # TODO - Check the internal state of the returned object
 
 
 @pytest.mark.parametrize("clazz", (Float, Double))
@@ -112,13 +113,13 @@ class TestFloatClassicalSyntax(Generic[_Base_Type_Float]):
     def test_float_creation(self, clazz: type):
         value_a = TestFloatClassicalSyntax._get_float_from_immediate(clazz, 0)
         assert isinstance(value_a, clazz)
-        #assert value_a.get_value() == 0
+        # TODO - Check the internal state of the returned object
 
     def test_float_creation_from_other_int32(self, clazz: type):
         value_a = TestFloatClassicalSyntax._get_float_from_immediate(clazz, 10)
         value_b = TestFloatClassicalSyntax._get_float_from_same_type(clazz, value_a)
         assert isinstance(value_b, clazz)
-        #assert value_b.get_value() == 10
+        # TODO - Check the internal state of the returned object
 
     @pytest.mark.skip(reason="Floats - Overloaded operators do not return anything just yet")
     def test_float_operator_overload_correctness(self, clazz: type):
@@ -143,15 +144,7 @@ class TestFloatClassicalSyntax(Generic[_Base_Type_Float]):
         assert isinstance(value_i, clazz)
         assert isinstance(value_j, clazz)
 
-        # Assert operation application correctness
-        #assert value_c.get_value() == 8
-        #assert value_d.get_value() == 8
-        #assert value_e.get_value() == 4
-        #assert value_f.get_value() == -4
-        #assert value_g.get_value() == 12
-        #assert value_h.get_value() == 12
-        #assert value_i.get_value() == 3
-        #assert value_j.get_value() == 0
+        # TODO - Check the internal state of the returned object
 
 
 class TestArrayClassicalSyntax:
@@ -166,6 +159,8 @@ class TestArrayClassicalSyntax:
         assert len(int_array_a) == 0
         assert len(int_array_b) == 2
 
+        # TODO - Check the internal state of the returned object
+
     def test_store_in_integer_array(self):
         arr = IntArray()
         arr.store(Int(10))
@@ -175,6 +170,8 @@ class TestArrayClassicalSyntax:
         value = arr[0]
 
         assert value._get_value() == 10
+
+        # TODO - Check the internal state of the returned object
 
     def test_declare_float_array(self):
         val_a = Double(10.5)
@@ -187,13 +184,15 @@ class TestArrayClassicalSyntax:
         assert len(int_array_a) == 0
         assert len(int_array_b) == 2
 
+        # TODO - Check the internal state of the returned object
+
     @pytest.mark.skip(reason="Floats - `get_value` method does not return anything just yet")
     def test_store_in_float_array(self):
         arr = FloatArray()
         arr.store(Double(15.5))
-
         assert len(arr) == 1
 
         value = arr[0]
+        assert isinstance(value, Double)
 
-        assert value._get_value() == 15.5
+        # TODO - Check the internal state of the returned object

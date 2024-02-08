@@ -2,8 +2,10 @@ from abc import ABC, abstractmethod
 from typing import Self, Optional
 
 from qoala.types.classical import QoalaClassicalType, _Internal_Value_Type
+from qoala.utils import as_int_when_value
 
 
+@as_int_when_value
 class IntegerType(QoalaClassicalType[_Internal_Value_Type], ABC):
     # Operations associated with all integer types
     @abstractmethod
@@ -129,4 +131,14 @@ class UInt32(UnsignedIntegerType[int]):
         pass
 
 
-# TODO - Implement the `i1` type (booleans?)
+class Measure(QoalaClassicalType[int]):
+    """
+    Integer value that represents the returned value form measuring a qubit.
+    This integer can `only` have the value `0` or `1`, which is the potential
+    returned values from measuring a qubit.
+    This class does not support operations like "add", since it is not how
+    these operations are defined for the result of a measurement.
+    """
+    def _get_value(self) -> _Internal_Value_Type:
+        # TODO - Implement
+        pass
