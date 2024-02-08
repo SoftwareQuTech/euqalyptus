@@ -1,7 +1,8 @@
 from abc import ABC, abstractmethod
-from typing import Optional, Self
+from typing import Optional, Self, Union
 
-from qoala.types.classical.integer import Measure
+from qoala.types.classical.floats import Float
+from qoala.types.classical.integer import Measure, IntegerType
 from qoala.types.quantum import QoalaQuantumType
 
 
@@ -31,6 +32,10 @@ class Qubit(QoalaQuantumType, ABC):
     def measure(self) -> Measure:
         """
         Measure the qubit in the standard basis and get the measurement outcome.
+
+        Returns
+        -------
+            The value of the measure, as a `Measure` object
         """
         ...
 
@@ -38,6 +43,7 @@ class Qubit(QoalaQuantumType, ABC):
     def X(self):
         """
         Applies an X gate on the qubit.
+
         Returns
         -------
         None
@@ -108,83 +114,144 @@ class Qubit(QoalaQuantumType, ABC):
 
     @abstractmethod
     def rot_X(
-        self, n: int = 0, d: int = 0, angle: Optional[float] = None
+            self,
+            n: Union[int, IntegerType] = 0,
+            d: Union[int, IntegerType] = 0,
+            angle: Union[float, Float, None] = None
     ):
-        """Do a rotation around the X-axis of the specified angle.
+        """
+        Do a rotation around the X-axis of the specified angle.
 
-        The angle is interpreted as ǹ * pi / 2 ^d` radians.
+        The angle is interpreted as `n * pi / 2 ^d` radians.
         For example, (n, d) = (1, 2) represents an angle of pi/4 radians.
         If `angle` is specified, `n` and `d` are ignored and this instruction is
         automatically converted into a sequence of (n, d) rotations such that the
         discrete (n, d) values approximate the original angle.
 
-        :param n: numerator of discrete angle specification. Can be a Template,
+        Parameters
+        ----------
+        n: int
+            numerator of discrete angle specification. Can be a Template,
             in which case the subroutine containing this command should first be
             instantiated before flushing.
-        :param d: denomerator of discrete angle specification
-        :param angle: exact floating-point angle, defaults to None
+        d: int
+            denomerator of discrete angle specification
+        angle: Optional[float]
+            exact floating-point angle, defaults to None
+
+        Returns
+        -------
+        None
         """
         ...
 
     @abstractmethod
     def rot_Y(
-        self, n: int = 0, d: int = 0, angle: Optional[float] = None
+            self,
+            n: Union[int, IntegerType] = 0,
+            d: Union[int, IntegerType] = 0,
+            angle: Union[float, Float, None] = None
     ):
-        """Do a rotation around the Y-axis of the specified angle.
+        """
+        Do a rotation around the Y-axis of the specified angle.
 
-        The angle is interpreted as ǹ * pi / 2 ^d` radians.
+        The angle is interpreted as `n * pi / 2 ^d` radians.
         For example, (n, d) = (1, 2) represents an angle of pi/4 radians.
         If `angle` is specified, `n` and `d` are ignored and this instruction is
         automatically converted into a sequence of (n, d) rotations such that the
         discrete (n, d) values approximate the original angle.
 
-        :param n: numerator of discrete angle specification. Can be a Template,
+        Parameters
+        ----------
+        n: int
+            numerator of discrete angle specification. Can be a Template,
             in which case the subroutine containing this command should first be
             instantiated before flushing.
-        :param d: denomerator of discrete angle specification
-        :param angle: exact floating-point angle, defaults to None
+        d: int
+            denomerator of discrete angle specification
+        angle: Optional[float]
+            exact floating-point angle, defaults to None
+
+        Returns
+        -------
+        None
         """
         ...
 
     @abstractmethod
     def rot_Z(
-        self, n: int = 0, d: int = 0, angle: Optional[float] = None
+            self,
+            n: Union[int, IntegerType] = 0,
+            d: Union[int, IntegerType] = 0,
+            angle: Union[float, Float, None] = None
     ):
-        """Do a rotation around the Z-axis of the specified angle.
+        """
+        Do a rotation around the Z-axis of the specified angle.
 
-        The angle is interpreted as ǹ * pi / 2 ^d` radians. For example, (n, d)
+        The angle is interpreted as `n * pi / 2 ^d` radians. For example, (n, d)
         = (1, 2) represents an angle of pi/4 radians. If `angle` is specified,
         `n` and `d` are ignored and this instruction is automatically converted
         into a sequence of (n, d) rotations such that the discrete (n, d) values
         approximate the original angle.
 
-        :param n: numerator of discrete angle specification. Can be a Template,
+        Parameters
+        ----------
+        n: int
+            numerator of discrete angle specification. Can be a Template,
             in which case the subroutine containing this command should first be
             instantiated before flushing.
-        :param d: denomerator of discrete angle specification
-        :param angle: exact floating-point angle, defaults to None
+        d: int
+            denomerator of discrete angle specification
+        angle: Optional[float]
+            exact floating-point angle, defaults to None
+
+        Returns
+        -------
+        None
         """
         ...
 
     @abstractmethod
     def cnot(self, target: Self) -> None:
-        """Apply a CNOT gate between this qubit (control) and a target qubit.
+        """
+        Apply a CNOT gate between this qubit (control) and a target qubit.
 
-        :param target: target qubit. Should have the same connection as this qubit.
+        Parameters
+        ----------
+        target: Qubit
+            target qubit. Should have the same connection as this qubit.
+
+        Returns
+        -------
+        None
         """
         ...
 
     @abstractmethod
     def cphase(self, target: Self) -> None:
-        """Apply a CPHASE (CZ) gate between this qubit (control) and a target qubit.
+        """
+        Apply a CPHASE (CZ) gate between this qubit (control) and a target qubit.
 
-        :param target: target qubit. Should have the same connection as this qubit.
+        Parameters
+        ----------
+        target: Qubit
+            target qubit. Should have the same connection as this qubit.
+
+        Returns
+        -------
+        None
         """
         ...
 
     @abstractmethod
     def reset(self) -> None:
-        r"""Reset the qubit to the state \|0>."""
+        r"""
+        Reset the qubit to the state \|0>.
+
+        Returns
+        -------
+        None
+        """
         ...
 
     @abstractmethod
@@ -193,6 +260,10 @@ class Qubit(QoalaQuantumType, ABC):
         Free the qubit and its virtual ID.
 
         After freeing, the underlying physical qubit can be used to store another state.
+
+        Returns
+        -------
+        None
         """
         ...
 
@@ -231,19 +302,28 @@ class LocalQubit(Qubit):
         pass
 
     def rot_X(
-        self, n: int = 0, d: int = 0, angle: Optional[float] = None
+            self,
+            n: Union[int, IntegerType] = 0,
+            d: Union[int, IntegerType] = 0,
+            angle: Union[float, Float, None] = None
     ):
         # TODO - Implement
         pass
 
     def rot_Y(
-        self, n: int = 0, d: int = 0, angle: Optional[float] = None
+            self,
+            n: Union[int, IntegerType] = 0,
+            d: Union[int, IntegerType] = 0,
+            angle: Union[float, Float, None] = None
     ):
         # TODO - Implement
         pass
 
     def rot_Z(
-        self, n: int = 0, d: int = 0, angle: Optional[float] = None
+            self,
+            n: Union[int, IntegerType] = 0,
+            d: Union[int, IntegerType] = 0,
+            angle: Union[float, Float, None] = None
     ):
         # TODO - Implement
         pass
