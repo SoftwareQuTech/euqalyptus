@@ -1,6 +1,6 @@
 from abc import ABC
 from enum import Enum, auto
-from typing import Generic, TypeVar, Self
+from typing import Generic, TypeVar, Self, Optional
 
 from qoala.ast import QoalaExpression
 
@@ -24,10 +24,15 @@ class QoalaValue(ABC, QoalaExpression, Generic[_T]):
 
 
 class QoalaInteger(QoalaValue[int]):
-    def __init__(self, value: _T, width: int, signedness: Signedness):
-        self.width = width
-        self.signedness = signedness
-        self.value = value
+    def __init__(self, value: _T, width: int, signedness: Signedness, other: Optional[Self] = None):
+        if other is not None:
+            self.width = other.width
+            self.signedness = other.signedness
+            self.value = other.value
+        else:
+            self.width = width
+            self.signedness = signedness
+            self.value = value
 
     # Operations associated with all integer types:
     def add(self, other: QoalaExpression) -> QoalaExpression:

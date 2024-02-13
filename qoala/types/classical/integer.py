@@ -34,10 +34,6 @@ class UnsignedIntegerType(IntegerType[_Internal_Value_Type], ABC):
     pass
 
 
-# TODO - Change the `int` parametric type when implementing
-#        the internal representation.
-# TODO - Expose the symbol of the internal representation
-#        of this type
 class Int32(SignedIntegerType[int]):
     """
     Class used to represent a `signed integer` of 32 bits
@@ -46,20 +42,26 @@ class Int32(SignedIntegerType[int]):
     def __new__(cls, *args, **kwargs):
         kwargs["width"] = 32
         kwargs["signedness"] = Signedness.SIGNED
-        if kwargs["immediate"] is not None:
+
+        if "immediate" in kwargs:
             kwargs["value"] = kwargs["immediate"]
             del kwargs["immediate"]
-        elif args[0] is not None:
+        elif len(args) >= 1:
             kwargs["value"] = args[0]
         else:
             kwargs["value"] = 0
-        int_expr = QoalaInteger(*kwargs)
-        return int_expr
+
+        if "other" in kwargs:
+            assert isinstance(kwargs["other"], QoalaInteger)
+            kwargs["value"] = kwargs["other"]
+            del kwargs["other"]
+
+        return QoalaInteger(*kwargs)
 
     def __init__(
             self,
             immediate: int = 0,
-            other_int32: Optional[Self] = None,
+            other: Optional[Self] = None,
             # TODO - The next arguments are used when creating an Int32 from other types
     ):
         # Nothing to do here
@@ -81,20 +83,27 @@ class UInt32(UnsignedIntegerType[int]):
     def __new__(cls, *args, **kwargs):
         kwargs["width"] = 32
         kwargs["signedness"] = Signedness.UNSIGNED
-        if kwargs["immediate"] is not None:
+
+        if "immediate" in kwargs:
+            assert isinstance(kwargs["immediate"], int)
             kwargs["value"] = kwargs["immediate"]
             del kwargs["immediate"]
-        elif args[0] is not None:
+        elif len(args) >= 1:
             kwargs["value"] = args[0]
         else:
             kwargs["value"] = 0
-        int_expr = QoalaInteger(*kwargs)
-        return int_expr
+
+        if "other" in kwargs:
+            assert isinstance(kwargs["other"], QoalaInteger)
+            kwargs["value"] = kwargs["other"]
+            del kwargs["other"]
+
+        return QoalaInteger(*kwargs)
 
     def __init__(
             self,
             immediate: int = 0,
-            other_uint32: Optional[Self] = 0,
+            other: Optional[Self] = 0,
             # TODO - The next arguments are used when creating an UInt32 from other types
     ):
         # Nothing to do here

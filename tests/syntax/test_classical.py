@@ -44,11 +44,11 @@ class TestIntegerClassicalSyntax(Generic[_Base_Type_Int]):
     def _get_int_from_same_type(clazz: type, other_int: _Base_Type_Int) -> _Base_Type_Int:
         match clazz.__name__:
             case "Int32":
-                return Int32(other_int32=other_int)
+                return Int32(other=other_int)
             case "UInt32":
-                return UInt32(other_uint32=other_int)
+                return UInt32(other=other_int)
             case "Int":
-                return Int(other_int32=other_int)
+                return Int(other=other_int)
             case _:
                 raise NotImplementedError()
 
@@ -57,7 +57,7 @@ class TestIntegerClassicalSyntax(Generic[_Base_Type_Int]):
         assert isinstance(value_a, QoalaInteger)
         # TODO - Check the internal state of the returned object
 
-    def test_int_creation_from_other_int32(self, clazz: type):
+    def test_int_creation_from_other_integer(self, clazz: type):
         value_a = TestIntegerClassicalSyntax._get_int_from_immediate(clazz, 10)
         value_b = TestIntegerClassicalSyntax._get_int_from_same_type(clazz, value_a)
         assert isinstance(value_b, QoalaInteger)
