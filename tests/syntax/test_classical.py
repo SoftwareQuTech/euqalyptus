@@ -2,6 +2,7 @@ from typing import Generic, TypeVar
 
 import pytest
 
+from qoala.ast.value import QoalaInteger, QoalaExpression
 from qoala.types.classical.arrays import Array, IntArray, FloatArray
 from qoala.types.classical.floats import Float, Double, FloatingPointType
 from qoala.types.classical.integer import Int32, UInt32, Int, IntegerType
@@ -53,13 +54,13 @@ class TestIntegerClassicalSyntax(Generic[_Base_Type_Int]):
 
     def test_int_creation(self, clazz: type):
         value_a = TestIntegerClassicalSyntax._get_int_from_immediate(clazz, 0)
-        assert isinstance(value_a, clazz)
+        assert isinstance(value_a, QoalaInteger)
         # TODO - Check the internal state of the returned object
 
     def test_int_creation_from_other_int32(self, clazz: type):
         value_a = TestIntegerClassicalSyntax._get_int_from_immediate(clazz, 10)
         value_b = TestIntegerClassicalSyntax._get_int_from_same_type(clazz, value_a)
-        assert isinstance(value_b, clazz)
+        assert isinstance(value_b, QoalaInteger)
         # TODO - Check the internal state of the returned object
 
     @pytest.mark.skip(reason="Integers - Overloaded operators do not return anything just yet")
@@ -76,14 +77,14 @@ class TestIntegerClassicalSyntax(Generic[_Base_Type_Int]):
         value_j = value_a / value_b
 
         # Assert closure correctness
-        assert isinstance(value_c, clazz)
-        assert isinstance(value_d, clazz)
-        assert isinstance(value_e, clazz)
-        assert isinstance(value_f, clazz)
-        assert isinstance(value_g, clazz)
-        assert isinstance(value_h, clazz)
-        assert isinstance(value_i, clazz)
-        assert isinstance(value_j, clazz)
+        assert isinstance(value_c, QoalaExpression)
+        assert isinstance(value_d, QoalaExpression)
+        assert isinstance(value_e, QoalaExpression)
+        assert isinstance(value_f, QoalaExpression)
+        assert isinstance(value_g, QoalaExpression)
+        assert isinstance(value_h, QoalaExpression)
+        assert isinstance(value_i, QoalaExpression)
+        assert isinstance(value_j, QoalaExpression)
 
         # TODO - Check the internal state of the returned object
 

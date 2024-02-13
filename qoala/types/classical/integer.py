@@ -1,7 +1,6 @@
 from abc import ABC
 from typing import Self, Optional
 
-from qoala.ast import QoalaExpression
 from qoala.ast.value import QoalaInteger, Signedness
 from qoala.types.classical import QoalaClassicalType, _Internal_Value_Type
 from qoala.utils import as_int_when_value
@@ -9,7 +8,22 @@ from qoala.utils import as_int_when_value
 
 @as_int_when_value
 class IntegerType(QoalaClassicalType[_Internal_Value_Type], ABC):
-    pass
+
+    # We overload the operators, so IDEs do not get confused because of the
+    # dynamic type of Int32, so instances of this class "can use" the overloaded
+    # operator. This is because the constructor of this class (method __new__)
+    # returns a QoalaExpression type, rather than an Int32 instance
+    def __add__(self, other):
+        pass
+
+    def __sub__(self, other):
+        pass
+
+    def __mul__(self, other):
+        pass
+
+    def __truediv__(self, other):
+        pass
 
 
 class SignedIntegerType(IntegerType[_Internal_Value_Type], ABC):
@@ -32,7 +46,13 @@ class Int32(SignedIntegerType[int]):
     def __new__(cls, *args, **kwargs):
         kwargs["width"] = 32
         kwargs["signedness"] = Signedness.SIGNED
-        kwargs["value"] = args[0]
+        if kwargs["immediate"] is not None:
+            kwargs["value"] = kwargs["immediate"]
+            del kwargs["immediate"]
+        elif args[0] is not None:
+            kwargs["value"] = args[0]
+        else:
+            kwargs["value"] = 0
         int_expr = QoalaInteger(*kwargs)
         return int_expr
 
@@ -43,22 +63,6 @@ class Int32(SignedIntegerType[int]):
             # TODO - The next arguments are used when creating an Int32 from other types
     ):
         # Nothing to do here
-        pass
-
-    # We overload the operators, so IDEs do not get confused because of the
-    # dynamic type of Int32, so instances of this class "can use" the overloaded
-    # operator. This is because the constructor of this class (method __new__)
-    # returns a QoalaExpression type, rather than an Int32 instance
-    def __add__(self, other):
-        pass
-
-    def __sub__(self, other):
-        pass
-
-    def __mul__(self, other):
-        pass
-
-    def __truediv__(self, other):
         pass
 
 
@@ -73,7 +77,19 @@ class UInt32(UnsignedIntegerType[int]):
     """
     Class used to represent a `signed integer` of 32 bits
     """
-    interval_value: int
+
+    def __new__(cls, *args, **kwargs):
+        kwargs["width"] = 32
+        kwargs["signedness"] = Signedness.UNSIGNED
+        if kwargs["immediate"] is not None:
+            kwargs["value"] = kwargs["immediate"]
+            del kwargs["immediate"]
+        elif args[0] is not None:
+            kwargs["value"] = args[0]
+        else:
+            kwargs["value"] = 0
+        int_expr = QoalaInteger(*kwargs)
+        return int_expr
 
     def __init__(
             self,
@@ -81,28 +97,7 @@ class UInt32(UnsignedIntegerType[int]):
             other_uint32: Optional[Self] = 0,
             # TODO - The next arguments are used when creating an UInt32 from other types
     ):
-        self.interval_value = immediate
-        if other_uint32 is not None:
-            self.interval_value = other_uint32.interval_value
-
-    def _get_value(self) -> int:
-        # TODO - Implement
-        pass
-
-    def add(self, other: QoalaExpression) -> QoalaExpression:
-        # TODO - Implement
-        pass
-
-    def subtract(self, other: QoalaExpression) -> QoalaExpression:
-        # TODO - Implement
-        pass
-
-    def multiply(self, other: QoalaExpression) -> QoalaExpression:
-        # TODO - Implement
-        pass
-
-    def divide(self, other: QoalaExpression) -> QoalaExpression:
-        # TODO - Implement
+        # Nothing to do here
         pass
 
 
