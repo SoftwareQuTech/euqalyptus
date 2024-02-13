@@ -1,49 +1,23 @@
-from abc import ABC, abstractmethod
+from abc import ABC
 from typing import Self, Optional
 
+from qoala.ast import QoalaExpression
+from qoala.ast.value import QoalaInteger, Signedness
 from qoala.types.classical import QoalaClassicalType, _Internal_Value_Type
 from qoala.utils import as_int_when_value
 
 
 @as_int_when_value
 class IntegerType(QoalaClassicalType[_Internal_Value_Type], ABC):
-    # Operations associated with all integer types
-    @abstractmethod
-    def add(self, other: Self) -> Self:
-        ...
-
-    @abstractmethod
-    def subtract(self, other: Self) -> Self:
-        ...
-
-    @abstractmethod
-    def multiply(self, other: Self) -> Self:
-        ...
-
-    @abstractmethod
-    def divide(self, other: Self) -> Self:
-        ...
-
-    # Method used for operator overload
-    def __add__(self, other: Self) -> Self:
-        return self.add(other)
-
-    def __sub__(self, other: Self) -> Self:
-        return self.subtract(other)
-
-    def __mul__(self, other: Self) -> Self:
-        return self.multiply(other)
-
-    def __truediv__(self, other: Self) -> Self:
-        return self.divide(other)
+    pass
 
 
 class SignedIntegerType(IntegerType[_Internal_Value_Type], ABC):
-    ...
+    pass
 
 
 class UnsignedIntegerType(IntegerType[_Internal_Value_Type], ABC):
-    ...
+    pass
 
 
 # TODO - Change the `int` parametric type when implementing
@@ -54,7 +28,13 @@ class Int32(SignedIntegerType[int]):
     """
     Class used to represent a `signed integer` of 32 bits
     """
-    interval_value: int
+
+    def __new__(cls, *args, **kwargs):
+        kwargs["width"] = 32
+        kwargs["signedness"] = Signedness.SIGNED
+        kwargs["value"] = args[0]
+        int_expr = QoalaInteger(*kwargs)
+        return int_expr
 
     def __init__(
             self,
@@ -62,29 +42,23 @@ class Int32(SignedIntegerType[int]):
             other_int32: Optional[Self] = None,
             # TODO - The next arguments are used when creating an Int32 from other types
     ):
-        # TODO - Implement the internal representation and storage of the Int32
-        self.interval_value = immediate
-        if other_int32 is not None:
-            self.interval_value = other_int32.interval_value
-
-    def _get_value(self) -> int:
-        # TODO - Implement
-        return self.interval_value
-
-    def add(self, other: Self) -> Self:
-        # TODO - Implement
+        # Nothing to do here
         pass
 
-    def subtract(self, other: Self) -> Self:
-        # TODO - Implement
+    # We overload the operators, so IDEs do not get confused because of the
+    # dynamic type of Int32, so instances of this class "can use" the overloaded
+    # operator. This is because the constructor of this class (method __new__)
+    # returns a QoalaExpression type, rather than an Int32 instance
+    def __add__(self, other):
         pass
 
-    def multiply(self, other: Self) -> Self:
-        # TODO - Implement
+    def __sub__(self, other):
         pass
 
-    def divide(self, other: Self) -> Self:
-        # TODO - Implement
+    def __mul__(self, other):
+        pass
+
+    def __truediv__(self, other):
         pass
 
 
@@ -107,26 +81,27 @@ class UInt32(UnsignedIntegerType[int]):
             other_uint32: Optional[Self] = 0,
             # TODO - The next arguments are used when creating an UInt32 from other types
     ):
-        # TODO - Implement the internal representation and storage of the UInt32
-        pass
+        self.interval_value = immediate
+        if other_uint32 is not None:
+            self.interval_value = other_uint32.interval_value
 
     def _get_value(self) -> int:
         # TODO - Implement
         pass
 
-    def add(self, other: Self) -> Self:
+    def add(self, other: QoalaExpression) -> QoalaExpression:
         # TODO - Implement
         pass
 
-    def subtract(self, other: Self) -> Self:
+    def subtract(self, other: QoalaExpression) -> QoalaExpression:
         # TODO - Implement
         pass
 
-    def multiply(self, other: Self) -> Self:
+    def multiply(self, other: QoalaExpression) -> QoalaExpression:
         # TODO - Implement
         pass
 
-    def divide(self, other: Self) -> Self:
+    def divide(self, other: QoalaExpression) -> QoalaExpression:
         # TODO - Implement
         pass
 

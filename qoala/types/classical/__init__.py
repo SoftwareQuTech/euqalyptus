@@ -1,4 +1,4 @@
-from abc import ABC, abstractmethod
+from abc import ABC
 from typing import TypeVar, Generic
 
 from qoala.types import QoalaType
@@ -16,15 +16,4 @@ class QoalaClassicalType(Generic[_Internal_Value_Type], QoalaType, ABC):
     any operation applied on 1 or more instances (values) of this class
     (type) `will yield a new instance` (value) of the same type.
     """
-    @abstractmethod
-    def _get_value(self) -> _Internal_Value_Type:
-        """
-        Returns the internal representation of this classical type.
-        NOTE: This method is intended to be used `for testing purposes only`
-        Returns
-        -------
-        _Internal_Value_Type:
-            A value that represents the stored value. The type of the returned
-            value will depend on how the value is implemented internally.
-        """
-        ...
+    pass
