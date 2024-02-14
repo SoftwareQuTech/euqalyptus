@@ -2,8 +2,8 @@ from typing import Generic, TypeVar
 
 import pytest
 
-from qoala.ast.value import QoalaInteger, QoalaFloat, QoalaExpression
-from qoala.types.classical.arrays import Array, IntArray, FloatArray
+from qoala.ast.value import QoalaExpression, QoalaInteger, QoalaFloat, QoalaArray
+from qoala.types.classical.arrays import IntArray, FloatArray
 from qoala.types.classical.floats import Float, Double, FloatingPointType
 from qoala.types.classical.integer import Int32, UInt32, Int, IntegerType
 
@@ -153,8 +153,8 @@ class TestArrayClassicalSyntax:
         int_array_a = IntArray()
         int_array_b = IntArray(val_a, val_b)
 
-        assert isinstance(int_array_a, Array)
-        assert isinstance(int_array_b, Array)
+        assert isinstance(int_array_a, QoalaArray)
+        assert isinstance(int_array_b, QoalaArray)
         assert len(int_array_a) == 0
         assert len(int_array_b) == 2
 
@@ -164,6 +164,7 @@ class TestArrayClassicalSyntax:
         arr = IntArray()
         arr.store(Int(10))
 
+        assert isinstance(arr, QoalaArray)
         assert len(arr) == 1
 
         value = arr[0]
@@ -178,8 +179,8 @@ class TestArrayClassicalSyntax:
         int_array_a = FloatArray()
         int_array_b = FloatArray(val_a, val_b)
 
-        assert isinstance(int_array_a, Array)
-        assert isinstance(int_array_b, Array)
+        assert isinstance(int_array_a, QoalaArray)
+        assert isinstance(int_array_b, QoalaArray)
         assert len(int_array_a) == 0
         assert len(int_array_b) == 2
 
@@ -188,6 +189,7 @@ class TestArrayClassicalSyntax:
     def test_store_in_float_array(self):
         arr = FloatArray()
         arr.store(Double(15.5))
+        assert isinstance(arr, QoalaArray)
         assert len(arr) == 1
 
         value = arr[0]
