@@ -1,5 +1,6 @@
-from typing import Generic, TypeVar, Self, Optional, Sized
+from typing import Generic, TypeVar, Optional, Sized
 
+from qoala.ast.value import QoalaArray, QoalaExpression
 from qoala.types.classical import QoalaClassicalType
 from qoala.types.classical.floats import Double
 from qoala.types.classical.integer import Int
@@ -7,39 +8,65 @@ from qoala.types.classical.integer import Int
 _Array_Type = TypeVar("_Array_Type", bound=QoalaClassicalType)
 
 
-class Array(Generic[_Array_Type], Sized):
-    internal_representation: list[_Array_Type]
+class _Array(Generic[_Array_Type], Sized):
+    def __new__(cls, *elements, **kwargs):
+        return QoalaArray(*elements, **kwargs)
 
-    def __init__(self, *elements: _Array_Type, other_array: Optional[Self] = None):
-        self.internal_representation = []
+    @staticmethod
+    def _assert_elements(*elements: QoalaExpression):
         for element in elements:
-            self.internal_representation.append(element)
+            # Here we can assert that the elements are expressions
+            # whether they can evaluate to a Double or not, is a semantic check
+            assert isinstance(element, float) or isinstance(element, QoalaExpression)
 
     def store(self, new_element) -> None:
-        self.internal_representation.append(new_element)
+        # TODO- Implement
+        pass
 
     def __repr__(self) -> str:
-        return repr(self.internal_representation)
+        pass
 
     def __len__(self) -> int:
-        """
-        Returns the size of this array.
-        NOTE: This method returns a `python integer`, which is `not useful
-        in a qoala program`. This is due to a technical limitation in the
-        python language
-        Returns
-        -------
-        int:
-            The size of the stored array
-        """
-        return len(self.internal_representation)
+        pass
 
     def __getitem__(self, item) -> _Array_Type:
-        return self.internal_representation[item]
+        pass
 
     # Arrays are fixed-length by default (unless you use `store`)
     # so there is no __setitem__ overload
 
 
-IntArray = Array[Int]
-FloatArray = Array[Double]
+class IntArray(_Array[Int]):
+    def __new__(cls, *elements, **kwargs):
+        kwargs["base_type"] = int
+        kwargs["base_size"] = 32
+        if "length" not in kwargs:
+            kwargs["length"] = 0
+        _Array._assert_elements(*elements)
+        return super().__new__(cls, *elements, **kwargs)
+
+    def __init__(
+            self,
+            *elements: _Array_Type,
+            other_array: Optional[QoalaArray] = None
+    ):
+        # Nothing to do here
+        pass
+
+
+class FloatArray(_Array[Double]):
+    def __new__(cls, *elements, **kwargs):
+        kwargs["base_type"] = float
+        kwargs["base_size"] = 32
+        if "length" not in kwargs:
+            kwargs["length"] = 0
+        _Array._assert_elements(*elements)
+        return super().__new__(cls, *elements, **kwargs)
+
+    def __init__(
+            self,
+            *elements: _Array_Type,
+            other_array: Optional[QoalaArray] = None
+    ):
+        # Nothing to do here
+        pass

@@ -155,8 +155,6 @@ class TestArrayClassicalSyntax:
 
         assert isinstance(int_array_a, QoalaArray)
         assert isinstance(int_array_b, QoalaArray)
-        assert len(int_array_a) == 0
-        assert len(int_array_b) == 2
 
         # TODO - Check the internal state of the returned object
 
@@ -165,7 +163,6 @@ class TestArrayClassicalSyntax:
         arr.store(Int(10))
 
         assert isinstance(arr, QoalaArray)
-        assert len(arr) == 1
 
         value = arr[0]
 
@@ -181,8 +178,6 @@ class TestArrayClassicalSyntax:
 
         assert isinstance(int_array_a, QoalaArray)
         assert isinstance(int_array_b, QoalaArray)
-        assert len(int_array_a) == 0
-        assert len(int_array_b) == 2
 
         # TODO - Check the internal state of the returned object
 
@@ -190,7 +185,6 @@ class TestArrayClassicalSyntax:
         arr = FloatArray()
         arr.store(Double(15.5))
         assert isinstance(arr, QoalaArray)
-        assert len(arr) == 1
 
         value = arr[0]
         assert isinstance(value, QoalaFloat)

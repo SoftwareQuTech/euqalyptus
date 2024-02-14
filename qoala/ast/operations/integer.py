@@ -6,9 +6,10 @@ class Add(QoalaOperation):
     operand_a: QoalaExpression
     operand_b: QoalaExpression
 
-    def __init__(self, operand_a: QoalaExpression, operand_b: QoalaExpression):
-        self.operand_a = operand_a
-        self.operand_b = operand_b
+    def __init__(self, *operands: QoalaExpression):
+        assert len(operands) == 2
+        self.operand_a = operands[0]
+        self.operand_b = operands[1]
 
     def get_value(self) -> QoalaInteger:
         pass
@@ -18,9 +19,10 @@ class Subtract(QoalaOperation):
     operand_a: QoalaExpression
     operand_b: QoalaExpression
 
-    def __init__(self, operand_a: QoalaExpression, operand_b: QoalaExpression):
-        self.operand_a = operand_a
-        self.operand_b = operand_b
+    def __init__(self, *operands: QoalaExpression):
+        assert len(operands) == 2
+        self.operand_a = operands[0]
+        self.operand_b = operands[1]
 
     def get_value(self) -> QoalaInteger:
         pass

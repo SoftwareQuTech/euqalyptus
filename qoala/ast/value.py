@@ -21,8 +21,8 @@ class QoalaValue(ABC, QoalaExpression, Generic[_T]):
     """
 
     @staticmethod
-    def _create_expression_for_op(op_class: Type[_cls], operand_a: QoalaExpression, operand_b: QoalaExpression):
-        return op_class(operand_a, operand_b)
+    def _create_expression_for_op(op_class: Type[_cls], *operands: QoalaExpression):
+        return op_class(*operands)
 
 
 class QoalaNumericValue(QoalaValue[_T], ABC):
@@ -119,7 +119,18 @@ class QoalaFloat(QoalaNumericValue[float]):
 #         values. We might want to reconsider this decision in
 #         the future.
 class QoalaArray(QoalaValue[_T]):
-    def __init__(self, type, size):
+    base_type: Type
+    base_size: int
+    length: int
+    def __init__(self, *elements, base_type: Type, base_size: int, length: int):
+        self.base_type = base_type
+        self.base_size = base_size
+        self.length = length
+
+    def __len__(self) -> int:
+        return QoalaValue._create_expression_for_op()
+
+    def __getitem__(self, item) -> _T:
         pass
 
 
