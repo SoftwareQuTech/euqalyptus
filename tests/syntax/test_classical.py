@@ -2,7 +2,7 @@ from typing import Generic, TypeVar
 
 import pytest
 
-from qoala.ast.value import QoalaInteger, QoalaExpression
+from qoala.ast.value import QoalaInteger, QoalaFloat, QoalaExpression
 from qoala.types.classical.arrays import Array, IntArray, FloatArray
 from qoala.types.classical.floats import Float, Double, FloatingPointType
 from qoala.types.classical.integer import Int32, UInt32, Int, IntegerType
@@ -105,21 +105,21 @@ class TestFloatClassicalSyntax(Generic[_Base_Type_Float]):
     def _get_float_from_same_type(clazz: type, other_int: _Base_Type_Float) -> _Base_Type_Float:
         match clazz.__name__:
             case "Float":
-                return Float(other_float=other_int)
+                return Float(other=other_int)
             case "Double":
-                return Double(other_double=other_int)
+                return Double(other=other_int)
             case _:
                 raise NotImplementedError()
 
     def test_float_creation(self, clazz: type):
         value_a = TestFloatClassicalSyntax._get_float_from_immediate(clazz, 0)
-        assert isinstance(value_a, clazz)
+        assert isinstance(value_a, QoalaFloat)
         # TODO - Check the internal state of the returned object
 
     def test_float_creation_from_other_int32(self, clazz: type):
         value_a = TestFloatClassicalSyntax._get_float_from_immediate(clazz, 10)
         value_b = TestFloatClassicalSyntax._get_float_from_same_type(clazz, value_a)
-        assert isinstance(value_b, clazz)
+        assert isinstance(value_b, QoalaFloat)
         # TODO - Check the internal state of the returned object
 
     @pytest.mark.skip(reason="Floats - Overloaded operators do not return anything just yet")
@@ -136,14 +136,14 @@ class TestFloatClassicalSyntax(Generic[_Base_Type_Float]):
         value_j = value_a / value_b
 
         # Assert closure correctness
-        assert isinstance(value_c, clazz)
-        assert isinstance(value_d, clazz)
-        assert isinstance(value_e, clazz)
-        assert isinstance(value_f, clazz)
-        assert isinstance(value_g, clazz)
-        assert isinstance(value_h, clazz)
-        assert isinstance(value_i, clazz)
-        assert isinstance(value_j, clazz)
+        assert isinstance(value_c, QoalaExpression)
+        assert isinstance(value_d, QoalaExpression)
+        assert isinstance(value_e, QoalaExpression)
+        assert isinstance(value_f, QoalaExpression)
+        assert isinstance(value_g, QoalaExpression)
+        assert isinstance(value_h, QoalaExpression)
+        assert isinstance(value_i, QoalaExpression)
+        assert isinstance(value_j, QoalaExpression)
 
         # TODO - Check the internal state of the returned object
 

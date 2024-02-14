@@ -8,11 +8,10 @@ from qoala.utils import as_int_when_value
 
 @as_int_when_value
 class IntegerType(QoalaClassicalType[_Internal_Value_Type], ABC):
-
     # We overload the operators, so IDEs do not get confused because of the
-    # dynamic type of Int32, so instances of this class "can use" the overloaded
+    # dynamic type of integers, so instances of this class "can use" the overloaded
     # operator. This is because the constructor of this class (method __new__)
-    # returns a QoalaExpression type, rather than an Int32 instance
+    # returns a QoalaExpression type, rather than an Int/Int32/UInt32 instance
     def __add__(self, other):
         pass
 
@@ -71,10 +70,6 @@ class Int32(SignedIntegerType[int]):
 Int = Int32
 
 
-# TODO - Change the `int` parametric type when implementing
-#        the internal representation.
-# TODO - Expose the symbol of the internal representation
-#        of this type
 class UInt32(UnsignedIntegerType[int]):
     """
     Class used to represent a `signed integer` of 32 bits

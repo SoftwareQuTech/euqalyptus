@@ -1,39 +1,26 @@
-from abc import ABC, abstractmethod
+from abc import ABC
 from typing import Self
 
+from qoala.ast.value import QoalaFloat, Signedness
 from qoala.types.classical import QoalaClassicalType, _Internal_Value_Type
 
 
 class FloatingPointType(QoalaClassicalType[_Internal_Value_Type], ABC):
-    # Operations associated with all float types
-    @abstractmethod
-    def add(self, other: Self) -> Self:
-        ...
+    # We overload the operators, so IDEs do not get confused because of the
+    # dynamic type of floats, so instances of this class "can use" the overloaded
+    # operator. This is because the constructor of this class (method __new__)
+    # returns a QoalaExpression type, rather than a Float/Double instance
+    def __add__(self, other):
+        pass
 
-    @abstractmethod
-    def subtract(self, other: Self) -> Self:
-        ...
+    def __sub__(self, other):
+        pass
 
-    @abstractmethod
-    def multiply(self, other: Self) -> Self:
-        ...
+    def __mul__(self, other):
+        pass
 
-    @abstractmethod
-    def divide(self, other: Self) -> Self:
-        ...
-
-    # Method used for operator overload
-    def __add__(self, other: Self) -> Self:
-        return self.add(other)
-
-    def __sub__(self, other: Self) -> Self:
-        return self.subtract(other)
-
-    def __mul__(self, other: Self) -> Self:
-        return self.multiply(other)
-
-    def __truediv__(self, other: Self) -> Self:
-        return self.divide(other)
+    def __truediv__(self, other):
+        pass
 
 
 # TODO - Change the `float` parametric type when implementing
@@ -43,35 +30,33 @@ class FloatingPointType(QoalaClassicalType[_Internal_Value_Type], ABC):
 # FIXME - This type might not be needed. According to the specification
 #         QoalaHIR only supports the `f32` type (a.k.a. doubles)
 class Float(FloatingPointType[float]):
-    internal_value: float
+    def __new__(cls, *args, **kwargs):
+        kwargs["width"] = 32
+        kwargs["signedness"] = Signedness.UNKNOWN
+
+        if "immediate" in kwargs:
+            assert isinstance(kwargs["immediate"], int)
+            kwargs["value"] = kwargs["immediate"]
+            del kwargs["immediate"]
+        elif len(args) >= 1:
+            kwargs["value"] = args[0]
+        else:
+            kwargs["value"] = 0
+
+        if "other" in kwargs:
+            assert isinstance(kwargs["other"], QoalaFloat)
+            kwargs["value"] = kwargs["other"]
+            del kwargs["other"]
+
+        return QoalaFloat(*kwargs)
 
     def __init__(
             self,
             immediate: float = 0,
-            other_float: Self = 0,
+            other: Self = 0,
             # TODO - The next arguments are used when creating a Float from other types
     ):
-        # TODO - Implement the internal representation and storage of the Float
-        pass
-
-    def _get_value(self) -> _Internal_Value_Type:
-        # TODO - Implement
-        pass
-
-    def add(self, other: Self) -> Self:
-        # TODO - Implement
-        pass
-
-    def subtract(self, other: Self) -> Self:
-        # TODO - Implement
-        pass
-
-    def multiply(self, other: Self) -> Self:
-        # TODO - Implement
-        pass
-
-    def divide(self, other: Self) -> Self:
-        # TODO - Implement
+        # Nothing to do here
         pass
 
 
@@ -80,33 +65,31 @@ class Float(FloatingPointType[float]):
 # TODO - Expose the symbol of the internal representation
 #        of this type
 class Double(FloatingPointType[float]):
-    internal_representation: float
+    def __new__(cls, *args, **kwargs):
+        kwargs["width"] = 64
+        kwargs["signedness"] = Signedness.UNKNOWN
+
+        if "immediate" in kwargs:
+            assert isinstance(kwargs["immediate"], int)
+            kwargs["value"] = kwargs["immediate"]
+            del kwargs["immediate"]
+        elif len(args) >= 1:
+            kwargs["value"] = args[0]
+        else:
+            kwargs["value"] = 0
+
+        if "other" in kwargs:
+            assert isinstance(kwargs["other"], QoalaFloat)
+            kwargs["value"] = kwargs["other"]
+            del kwargs["other"]
+
+        return QoalaFloat(*kwargs)
 
     def __init__(
             self,
             immediate: float = 0,
-            other_double: Self = 0,
+            other: Self = 0,
             # TODO - The next arguments are used when creating a Double from other types
     ):
-        # TODO - Implement the internal representation and storage of the Double
-        pass
-
-    def _get_value(self) -> _Internal_Value_Type:
-        # TODO - Implement
-        pass
-
-    def add(self, other: Self) -> Self:
-        # TODO - Implement
-        pass
-
-    def subtract(self, other: Self) -> Self:
-        # TODO - Implement
-        pass
-
-    def multiply(self, other: Self) -> Self:
-        # TODO - Implement
-        pass
-
-    def divide(self, other: Self) -> Self:
-        # TODO - Implement
+        # Nothing to do here
         pass
