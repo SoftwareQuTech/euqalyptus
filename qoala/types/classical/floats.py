@@ -1,7 +1,7 @@
 from abc import ABC
 from typing import Self
 
-from qoala.ast.value import QoalaFloat, Signedness
+from qoala.ast.value import QoalaFloat
 from qoala.types.classical import QoalaClassicalType, _Internal_Value_Type
 
 
@@ -32,7 +32,6 @@ class FloatingPointType(QoalaClassicalType[_Internal_Value_Type], ABC):
 class Float(FloatingPointType[float]):
     def __new__(cls, *args, **kwargs):
         kwargs["width"] = 32
-        kwargs["signedness"] = Signedness.UNKNOWN
 
         if "immediate" in kwargs:
             assert isinstance(kwargs["immediate"], int)
@@ -67,7 +66,6 @@ class Float(FloatingPointType[float]):
 class Double(FloatingPointType[float]):
     def __new__(cls, *args, **kwargs):
         kwargs["width"] = 64
-        kwargs["signedness"] = Signedness.UNKNOWN
 
         if "immediate" in kwargs:
             assert isinstance(kwargs["immediate"], int)

@@ -19,16 +19,19 @@ class QoalaValue(ABC, QoalaExpression, Generic[_T]):
     Class used to represent a value in the AST. Nodes of this type (i.e.
     subclasses) are usually the leaves of the AST.
     """
-    width: int
+
+    @staticmethod
+    def _create_expression_for_op(op_class: Type[_cls], operand_a: QoalaExpression, operand_b: QoalaExpression):
+        return op_class(operand_a, operand_b)
+
+
+class QoalaNumericValue(QoalaValue[_T], ABC):
     signedness: Signedness
+    width: int
     value: _T
 
-    @classmethod
-    def _create_expression(cls, clazz: Type[_cls], operand_a: QoalaExpression, operand_b: QoalaExpression):
-        return clazz(operand_a, operand_b)
 
-
-class QoalaInteger(QoalaValue[int]):
+class QoalaInteger(QoalaNumericValue[int]):
     def __init__(self, value: _T, width: int, signedness: Signedness, other: Optional[Self] = None):
         if other is not None:
             self.width = other.width
@@ -42,19 +45,19 @@ class QoalaInteger(QoalaValue[int]):
     # Operations associated with all integer types:
     def add(self, other: QoalaExpression) -> QoalaExpression:
         from qoala.ast.operations.integer import Add
-        return super()._create_expression(Add, self, other)
+        return QoalaValue._create_expression_for_op(Add, self, other)
 
     def subtract(self, other: QoalaExpression) -> QoalaExpression:
         from qoala.ast.operations.integer import Subtract
-        return super()._create_expression(Subtract, self, other)
+        return QoalaValue._create_expression_for_op(Subtract, self, other)
 
     def multiply(self, other: QoalaExpression) -> QoalaExpression:
         from qoala.ast.operations.integer import Multiply
-        return super()._create_expression(Multiply, self, other)
+        return QoalaValue._create_expression_for_op(Multiply, self, other)
 
     def divide(self, other: QoalaExpression) -> QoalaExpression:
         from qoala.ast.operations.integer import Divide
-        return super()._create_expression(Divide, self, other)
+        return QoalaValue._create_expression_for_op(Divide, self, other)
 
     # Method used for operator overload
     def __add__(self, other: Self) -> Self:
@@ -70,33 +73,33 @@ class QoalaInteger(QoalaValue[int]):
         return self.divide(other)
 
 
-class QoalaFloat(QoalaValue[float]):
-    def __init__(self, value: _T, width: int, signedness: Signedness, other: Optional[Self] = None):
+class QoalaFloat(QoalaNumericValue[float]):
+    def __init__(self, value: _T, width: int, other: Optional[Self] = None):
         if other is not None:
             self.width = other.width
-            self.signedness = other.signedness
+            self.signedness = Signedness.UNKNOWN
             self.value = other.value
         else:
             self.width = width
-            self.signedness = signedness
+            self.signedness = Signedness.UNKNOWN
             self.value = value
 
     # Operations associated with all float types:
     def add(self, other: QoalaExpression) -> QoalaExpression:
         from qoala.ast.operations.integer import Add
-        return super()._create_expression(Add, self, other)
+        return QoalaValue._create_expression_for_op(Add, self, other)
 
     def subtract(self, other: QoalaExpression) -> QoalaExpression:
         from qoala.ast.operations.integer import Subtract
-        return super()._create_expression(Subtract, self, other)
+        return QoalaValue._create_expression_for_op(Subtract, self, other)
 
     def multiply(self, other: QoalaExpression) -> QoalaExpression:
         from qoala.ast.operations.integer import Multiply
-        return super()._create_expression(Multiply, self, other)
+        return QoalaValue._create_expression_for_op(Multiply, self, other)
 
     def divide(self, other: QoalaExpression) -> QoalaExpression:
         from qoala.ast.operations.integer import Divide
-        return super()._create_expression(Divide, self, other)
+        return QoalaValue._create_expression_for_op(Divide, self, other)
 
     # Method used for operator overload
     def __add__(self, other: Self) -> Self:
@@ -110,6 +113,14 @@ class QoalaFloat(QoalaValue[float]):
 
     def __truediv__(self, other: Self) -> Self:
         return self.divide(other)
+
+
+# FIXME - In the meantime, we will model arrays as if they were
+#         values. We might want to reconsider this decision in
+#         the future.
+class QoalaArray(QoalaValue[_T]):
+    def __init__(self, type, size):
+        pass
 
 
 class QoalaMeasure(QoalaValue[int]):
