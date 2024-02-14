@@ -19,8 +19,8 @@ class _Array(Generic[_Array_Type], Sized):
             # whether they can evaluate to a Double or not, is a semantic check
             assert isinstance(element, float) or isinstance(element, QoalaExpression)
 
-    def store(self, new_element) -> None:
-        # TODO- Implement
+    def store(self, new_element: _Array_Type) -> None:
+        # Nothing to do here
         pass
 
     def __repr__(self) -> str:

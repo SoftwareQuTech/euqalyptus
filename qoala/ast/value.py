@@ -2,7 +2,7 @@ from abc import ABC
 from enum import Enum, auto
 from typing import Generic, TypeVar, Self, Optional, Type
 
-from qoala.ast import QoalaExpression
+from qoala.ast import QoalaExpression, QoalaStatement
 
 _T = TypeVar("_T")
 _cls = TypeVar("_cls", bound=QoalaExpression)
@@ -44,19 +44,19 @@ class QoalaInteger(QoalaNumericValue[int]):
 
     # Operations associated with all integer types:
     def add(self, other: QoalaExpression) -> QoalaExpression:
-        from qoala.ast.operations.integer import Add
+        from qoala.ast.operations.numeric import Add
         return QoalaValue._create_expression_for_op(Add, self, other)
 
     def subtract(self, other: QoalaExpression) -> QoalaExpression:
-        from qoala.ast.operations.integer import Subtract
+        from qoala.ast.operations.numeric import Subtract
         return QoalaValue._create_expression_for_op(Subtract, self, other)
 
     def multiply(self, other: QoalaExpression) -> QoalaExpression:
-        from qoala.ast.operations.integer import Multiply
+        from qoala.ast.operations.numeric import Multiply
         return QoalaValue._create_expression_for_op(Multiply, self, other)
 
     def divide(self, other: QoalaExpression) -> QoalaExpression:
-        from qoala.ast.operations.integer import Divide
+        from qoala.ast.operations.numeric import Divide
         return QoalaValue._create_expression_for_op(Divide, self, other)
 
     # Method used for operator overload
@@ -86,19 +86,19 @@ class QoalaFloat(QoalaNumericValue[float]):
 
     # Operations associated with all float types:
     def add(self, other: QoalaExpression) -> QoalaExpression:
-        from qoala.ast.operations.integer import Add
+        from qoala.ast.operations.numeric import Add
         return QoalaValue._create_expression_for_op(Add, self, other)
 
     def subtract(self, other: QoalaExpression) -> QoalaExpression:
-        from qoala.ast.operations.integer import Subtract
+        from qoala.ast.operations.numeric import Subtract
         return QoalaValue._create_expression_for_op(Subtract, self, other)
 
     def multiply(self, other: QoalaExpression) -> QoalaExpression:
-        from qoala.ast.operations.integer import Multiply
+        from qoala.ast.operations.numeric import Multiply
         return QoalaValue._create_expression_for_op(Multiply, self, other)
 
     def divide(self, other: QoalaExpression) -> QoalaExpression:
-        from qoala.ast.operations.integer import Divide
+        from qoala.ast.operations.numeric import Divide
         return QoalaValue._create_expression_for_op(Divide, self, other)
 
     # Method used for operator overload
@@ -118,7 +118,7 @@ class QoalaFloat(QoalaNumericValue[float]):
 # FIXME - In the meantime, we will model arrays as if they were
 #         values. We might want to reconsider this decision in
 #         the future.
-class QoalaArray(QoalaValue[_T]):
+class QoalaArray(QoalaValue[QoalaExpression]):
     base_type: Type
     base_size: int
     length: int
@@ -127,11 +127,19 @@ class QoalaArray(QoalaValue[_T]):
         self.base_size = base_size
         self.length = length
 
-    def __len__(self) -> int:
-        return QoalaValue._create_expression_for_op()
-
-    def __getitem__(self, item) -> _T:
+    def store(self, new_element: QoalaExpression) -> QoalaStatement:
+        # Invoking a "store" method on the array is clearly a statement.
+        # How do we store statements in the AST?
+        # TODO - Implement
         pass
+
+    def __len__(self) -> int:
+        # TODO - Does this operation make sense?
+        raise NotImplementedError("'len' operation for arrays not implemented")
+
+    def __getitem__(self, item) -> QoalaExpression:
+        from qoala.ast.operations.arrays import GetItem
+        return QoalaValue._create_expression_for_op(GetItem, self, item)
 
 
 class QoalaMeasure(QoalaValue[int]):

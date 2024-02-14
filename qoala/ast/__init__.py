@@ -4,6 +4,10 @@ from typing import TypeVar
 _T = TypeVar("_T")
 
 
+class QoalaStatement:
+    pass
+
+
 class QoalaExpression:
     pass
 

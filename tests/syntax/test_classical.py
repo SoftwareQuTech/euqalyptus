@@ -166,7 +166,7 @@ class TestArrayClassicalSyntax:
 
         value = arr[0]
 
-        assert isinstance(value, QoalaInteger)
+        assert isinstance(value, QoalaExpression)
 
         # TODO - Check the internal state of the returned object
 
@@ -187,6 +187,6 @@ class TestArrayClassicalSyntax:
         assert isinstance(arr, QoalaArray)
 
         value = arr[0]
-        assert isinstance(value, QoalaFloat)
+        assert isinstance(value, QoalaExpression)
 
         # TODO - Check the internal state of the returned object
