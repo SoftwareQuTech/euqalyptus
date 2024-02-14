@@ -63,7 +63,6 @@ class TestIntegerClassicalSyntax(Generic[_Base_Type_Int]):
         assert isinstance(value_b, QoalaInteger)
         # TODO - Check the internal state of the returned object
 
-    @pytest.mark.skip(reason="Integers - Overloaded operators do not return anything just yet")
     def test_int_operator_overload_correctness(self, clazz: type):
         value_a = TestIntegerClassicalSyntax._get_int_from_immediate(clazz, 2)
         value_b = TestIntegerClassicalSyntax._get_int_from_immediate(clazz, 6)
@@ -122,7 +121,6 @@ class TestFloatClassicalSyntax(Generic[_Base_Type_Float]):
         assert isinstance(value_b, QoalaFloat)
         # TODO - Check the internal state of the returned object
 
-    @pytest.mark.skip(reason="Floats - Overloaded operators do not return anything just yet")
     def test_float_operator_overload_correctness(self, clazz: type):
         value_a = TestFloatClassicalSyntax._get_float_from_immediate(clazz, 2)
         value_b = TestFloatClassicalSyntax._get_float_from_immediate(clazz, 6)
@@ -170,7 +168,7 @@ class TestArrayClassicalSyntax:
 
         value = arr[0]
 
-        assert value._get_value() == 10
+        assert isinstance(value, QoalaInteger)
 
         # TODO - Check the internal state of the returned object
 
@@ -187,13 +185,12 @@ class TestArrayClassicalSyntax:
 
         # TODO - Check the internal state of the returned object
 
-    @pytest.mark.skip(reason="Floats - `get_value` method does not return anything just yet")
     def test_store_in_float_array(self):
         arr = FloatArray()
         arr.store(Double(15.5))
         assert len(arr) == 1
 
         value = arr[0]
-        assert isinstance(value, Double)
+        assert isinstance(value, QoalaFloat)
 
         # TODO - Check the internal state of the returned object

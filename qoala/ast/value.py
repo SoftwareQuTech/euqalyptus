@@ -1,10 +1,11 @@
 from abc import ABC
 from enum import Enum, auto
-from typing import Generic, TypeVar, Self, Optional
+from typing import Generic, TypeVar, Self, Optional, Type
 
 from qoala.ast import QoalaExpression
 
 _T = TypeVar("_T")
+_cls = TypeVar("_cls", bound=QoalaExpression)
 
 
 class Signedness(Enum):
@@ -22,6 +23,10 @@ class QoalaValue(ABC, QoalaExpression, Generic[_T]):
     signedness: Signedness
     value: _T
 
+    @classmethod
+    def _create_expression(cls, clazz: Type[_cls], operand_a: QoalaExpression, operand_b: QoalaExpression):
+        return clazz(operand_a, operand_b)
+
 
 class QoalaInteger(QoalaValue[int]):
     def __init__(self, value: _T, width: int, signedness: Signedness, other: Optional[Self] = None):
@@ -37,17 +42,19 @@ class QoalaInteger(QoalaValue[int]):
     # Operations associated with all integer types:
     def add(self, other: QoalaExpression) -> QoalaExpression:
         from qoala.ast.operations.integer import Add
-        instance = Add(self, other)
-        return instance
+        return super()._create_expression(Add, self, other)
 
     def subtract(self, other: QoalaExpression) -> QoalaExpression:
-        pass
+        from qoala.ast.operations.integer import Subtract
+        return super()._create_expression(Subtract, self, other)
 
     def multiply(self, other: QoalaExpression) -> QoalaExpression:
-        pass
+        from qoala.ast.operations.integer import Multiply
+        return super()._create_expression(Multiply, self, other)
 
     def divide(self, other: QoalaExpression) -> QoalaExpression:
-        pass
+        from qoala.ast.operations.integer import Divide
+        return super()._create_expression(Divide, self, other)
 
     # Method used for operator overload
     def __add__(self, other: Self) -> Self:
@@ -74,20 +81,22 @@ class QoalaFloat(QoalaValue[float]):
             self.signedness = signedness
             self.value = value
 
-    # Operations associated with all integer types:
+    # Operations associated with all float types:
     def add(self, other: QoalaExpression) -> QoalaExpression:
         from qoala.ast.operations.integer import Add
-        instance = Add(self, other)
-        return instance
+        return super()._create_expression(Add, self, other)
 
     def subtract(self, other: QoalaExpression) -> QoalaExpression:
-        pass
+        from qoala.ast.operations.integer import Subtract
+        return super()._create_expression(Subtract, self, other)
 
     def multiply(self, other: QoalaExpression) -> QoalaExpression:
-        pass
+        from qoala.ast.operations.integer import Multiply
+        return super()._create_expression(Multiply, self, other)
 
     def divide(self, other: QoalaExpression) -> QoalaExpression:
-        pass
+        from qoala.ast.operations.integer import Divide
+        return super()._create_expression(Divide, self, other)
 
     # Method used for operator overload
     def __add__(self, other: Self) -> Self:
