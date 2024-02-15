@@ -43,7 +43,10 @@ class QoalaInteger(QoalaNumericValue[int]):
         if other is not None:
             self.width = other.width
             self.signedness = other.signedness
-            self.value = other.value
+            if value is not None:
+                self.value = value
+            else:
+                self.value = other.value
         else:
             self.width = width
             self.signedness = signedness
@@ -90,7 +93,10 @@ class QoalaFloat(QoalaNumericValue[float]):
         if other is not None:
             self.width = other.width
             self.signedness = Signedness.UNKNOWN
-            self.value = other.value
+            if value is not None:
+                self.value = value
+            else:
+                self.value = other.value
         else:
             self.width = width
             self.signedness = Signedness.UNKNOWN
@@ -153,7 +159,15 @@ class QoalaArray(QoalaValue[QoalaExpression]):
                 if isinstance(element, QoalaExpression):
                     self.members.append(element)
                 elif isinstance(element, base_type):
-                    pass
+                    match self.base_type.__name__:
+                        case "int":
+                            new_element = QoalaInteger(value=element, width=32, signedness=Signedness.SIGNED)
+                        case "float":
+                            new_element = QoalaFloat(value=element, width=32)
+                        case _:
+                            raise UnknownTypeError(f"Unknown base type '{self.base_type}'")
+                    if new_element is not None:
+                        self.members.append(new_element)
                 else:
                     raise UnknownTypeError(f"The element '{element}' cannot be "
                                            f"inserted on an array of type '{self.base_type}'")
