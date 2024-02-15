@@ -1,34 +1,61 @@
+from typing import Union
+
+import pytest
+
 from qoala.ast.operations.numeric import Add, Subtract, Multiply, Divide
-from qoala.ast.value import QoalaInteger, Signedness
+from qoala.ast.value import QoalaInteger, QoalaFloat, Signedness
+from qoala.types.classical.floats import Float
 from qoala.types.classical.integer import Int32
 
 
 class TestIntegerSemantics:
-    def test_basic_integers(self):
-        int_a = Int32(10)
-        int_b = Int32(20)
+    numeric_test_data = [
+        (10, 20, Int32, QoalaInteger),
+        (11.1, 22.2, Float, QoalaFloat)
+    ]
+
+    @pytest.mark.parametrize("val_a, val_b, numeric_type, internal_type", numeric_test_data)
+    def test_basic_numeric_semantics(
+            self,
+            val_a: Union[int, float],
+            val_b: Union[int, float],
+            numeric_type: Union[Int32, Float],
+            internal_type: Union[QoalaInteger, QoalaFloat],
+    ):
+        int_a = numeric_type(val_a)
+        int_b = numeric_type(val_b)
         int_c = int_a + int_b
         int_d = int_a - int_b
         int_e = int_a * int_b
         int_f = int_a / int_b
 
         # From the syntax tests, we know that all the statements above
-        # Return a QoalaExpression. We now want to test for the specific
+        # return a QoalaExpression. We now want to test for the specific
         # type and the content within it
-        assert isinstance(int_a, QoalaInteger)
-        assert isinstance(int_b, QoalaInteger)
+        assert isinstance(int_a, internal_type)
+        assert isinstance(int_b, internal_type)
         assert isinstance(int_c, Add)
         assert isinstance(int_d, Subtract)
         assert isinstance(int_e, Multiply)
         assert isinstance(int_f, Divide)
 
         assert int_a.width == 32
-        assert int_a.signedness == Signedness.SIGNED
-        assert int_a.value == 10
+        if numeric_type == Int32:
+            assert int_a.signedness == Signedness.SIGNED
+        elif numeric_type == Float:
+            assert int_a.signedness == Signedness.UNKNOWN
+        else:
+            pytest.fail("Unknown numeric type")
+        assert int_a.value == val_a
 
         assert int_b.width == 32
-        assert int_b.signedness == Signedness.SIGNED
-        assert int_b.value == 20
+        if numeric_type == Int32:
+            assert int_a.signedness == Signedness.SIGNED
+        elif numeric_type == Float:
+            assert int_a.signedness == Signedness.UNKNOWN
+        else:
+            pytest.fail("Unknown numeric type")
+        assert int_b.value == val_b
 
         assert int_c.operand_a == int_a
         assert int_c.operand_b == int_b
