@@ -151,7 +151,7 @@ class TestArrayClassicalSyntax:
         val_a = Int(10)
         val_b = Int(20)
         int_array_a = IntArray()
-        int_array_b = IntArray(val_a, val_b)
+        int_array_b = IntArray(val_a, val_b, 8)
 
         assert isinstance(int_array_a, QoalaArray)
         assert isinstance(int_array_b, QoalaArray)

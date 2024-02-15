@@ -1,4 +1,4 @@
-from typing import Generic, TypeVar, Optional, Sized, Union
+from typing import Generic, TypeVar, Optional, Sized, Union, Type
 
 from qoala.ast.value import QoalaArray, QoalaExpression
 from qoala.types.classical import ClassicalType
@@ -13,11 +13,11 @@ class _Array(Generic[_Array_Type], Sized):
         return QoalaArray(*elements, **kwargs)
 
     @staticmethod
-    def _assert_elements(*elements: QoalaExpression):
+    def _assert_elements(*elements: QoalaExpression, base_type: Type):
         for element in elements:
             # Here we can assert that the elements are expressions
             # whether they can evaluate to a Double or not, is a semantic check
-            assert isinstance(element, float) or isinstance(element, QoalaExpression)
+            assert isinstance(element, base_type) or isinstance(element, QoalaExpression)
 
     def store(self, new_element: _Array_Type) -> None:
         # Nothing to do here
@@ -42,7 +42,7 @@ class IntArray(_Array[Int]):
         kwargs["base_size"] = 32
         if "length" not in kwargs:
             kwargs["length"] = 0
-        _Array._assert_elements(*elements)
+        _Array._assert_elements(*elements, base_type=int)
         return super().__new__(cls, *elements, **kwargs)
 
     def __init__(
@@ -60,7 +60,7 @@ class FloatArray(_Array[Double]):
         kwargs["base_size"] = 32
         if "length" not in kwargs:
             kwargs["length"] = 0
-        _Array._assert_elements(*elements)
+        _Array._assert_elements(*elements, base_type=float)
         return super().__new__(cls, *elements, **kwargs)
 
     def __init__(

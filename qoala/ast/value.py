@@ -1,8 +1,9 @@
 from abc import ABC
 from enum import Enum, auto
-from typing import Generic, TypeVar, Self, Optional, Type
+from typing import Generic, TypeVar, Self, Optional, Type, List
 
 from qoala.ast import QoalaExpression, QoalaStatement
+from qoala.ast.errors import UnknownTypeError
 
 _T = TypeVar("_T")
 _cls = TypeVar("_cls", bound=QoalaExpression)
@@ -133,6 +134,7 @@ class QoalaArray(QoalaValue[QoalaExpression]):
     base_type: Type
     base_size: int
     length: int
+    members: List[QoalaExpression]
 
     def __init__(
             self,
@@ -141,9 +143,23 @@ class QoalaArray(QoalaValue[QoalaExpression]):
             base_size: int,
             length: int
     ):
+        self.members = []
         self.base_type = base_type
         self.base_size = base_size
-        self.length = length
+        if len(elements) > 0:
+            self.length = 0
+            for element in elements:
+                assert isinstance(element, base_type) or isinstance(element, QoalaExpression)
+                if isinstance(element, QoalaExpression):
+                    self.members.append(element)
+                elif isinstance(element, base_type):
+                    pass
+                else:
+                    raise UnknownTypeError(f"The element '{element}' cannot be "
+                                           f"inserted on an array of type '{self.base_type}'")
+                self.length = self.length + 1
+        else:
+            self.length = length
 
     def store(self, new_element: QoalaExpression) -> QoalaStatement:
         # Invoking a "store" method on the array is clearly a statement.
