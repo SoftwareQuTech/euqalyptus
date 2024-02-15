@@ -55,7 +55,7 @@ class Int32(SignedIntegerType[int]):
             kwargs["value"] = kwargs["other"]
             del kwargs["other"]
 
-        return QoalaInteger(*kwargs)
+        return QoalaInteger(**kwargs)
 
     def __init__(
             self,
@@ -93,7 +93,7 @@ class UInt32(UnsignedIntegerType[int]):
             kwargs["value"] = kwargs["other"]
             del kwargs["other"]
 
-        return QoalaInteger(*kwargs)
+        return QoalaInteger(**kwargs)
 
     def __init__(
             self,

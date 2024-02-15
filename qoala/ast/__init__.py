@@ -12,9 +12,5 @@ class QoalaExpression:
     pass
 
 
-class QoalaConstant(QoalaExpression, ABC):
-    pass
-
-
 class QoalaOperation(QoalaExpression, ABC):
     pass

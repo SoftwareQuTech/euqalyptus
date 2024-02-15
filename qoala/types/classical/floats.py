@@ -47,7 +47,7 @@ class Float(FloatingPointType[float]):
             kwargs["value"] = kwargs["other"]
             del kwargs["other"]
 
-        return QoalaFloat(*kwargs)
+        return QoalaFloat(**kwargs)
 
     def __init__(
             self,
@@ -81,7 +81,7 @@ class Double(FloatingPointType[float]):
             kwargs["value"] = kwargs["other"]
             del kwargs["other"]
 
-        return QoalaFloat(*kwargs)
+        return QoalaFloat(**kwargs)
 
     def __init__(
             self,
