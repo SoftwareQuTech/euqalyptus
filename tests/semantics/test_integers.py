@@ -4,8 +4,10 @@ import pytest
 
 from qoala.ast.operations.numeric import Add, Subtract, Multiply, Divide
 from qoala.ast.value import QoalaInteger, QoalaFloat, Signedness
+from qoala.types.classical import InvalidArgumentError
+from qoala.types.classical.arrays import IntArray, FloatArray
 from qoala.types.classical.floats import Float
-from qoala.types.classical.integer import Int32
+from qoala.types.classical.integer import Int32, UInt32
 
 
 class TestIntegerSemantics:
@@ -68,3 +70,25 @@ class TestIntegerSemantics:
 
         assert int_f.operand_a == int_a
         assert int_f.operand_b == int_b
+
+    def test_wrong_numeric_initialization(self):
+        with pytest.raises(InvalidArgumentError) as ex:
+            _ = UInt32(-10)
+        assert str(ex.value) == "'UInt32' type only supports positive integer values"
+
+        with pytest.raises(InvalidArgumentError) as ex:
+            _ = Int32(10.2)
+        assert str(ex.value) == "'Int32' type only supports integer values"
+
+        with pytest.raises(InvalidArgumentError) as ex:
+            _ = UInt32(0.25)
+        assert str(ex.value) == "'UInt32' type only supports integer values"
+
+        with pytest.raises(InvalidArgumentError) as ex:
+            _ = UInt32(-3.25)
+        assert str(ex.value) == "'UInt32' type only supports integer values"
+
+    arrays_test_data = [
+        ((10, 20), (5, 3), Int32, IntArray),
+        ((15.3, 10), (-5.8, 4.1), Float, FloatArray)
+    ]

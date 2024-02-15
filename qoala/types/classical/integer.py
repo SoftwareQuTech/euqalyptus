@@ -2,7 +2,7 @@ from abc import ABC
 from typing import Self, Optional
 
 from qoala.ast.value import QoalaInteger, Signedness
-from qoala.types.classical import ClassicalType, _Internal_Value_Type
+from qoala.types.classical import ClassicalType, _Internal_Value_Type, InvalidArgumentError
 from qoala.utils import as_int_when_value
 
 
@@ -47,6 +47,8 @@ class Int32(SignedIntegerType[int]):
             del kwargs["immediate"]
         elif len(args) >= 1:
             kwargs["value"] = args[0]
+            if not isinstance(args[0], int):
+                raise InvalidArgumentError(f"'{Int32.__name__}' type only supports integer values")
         else:
             kwargs["value"] = 0
 
@@ -78,15 +80,19 @@ class UInt32(UnsignedIntegerType[int]):
     def __new__(cls, *args, **kwargs):
         kwargs["width"] = 32
         kwargs["signedness"] = Signedness.UNSIGNED
-
         if "immediate" in kwargs:
             assert isinstance(kwargs["immediate"], int)
             kwargs["value"] = kwargs["immediate"]
             del kwargs["immediate"]
         elif len(args) >= 1:
             kwargs["value"] = args[0]
+            if not isinstance(args[0], int):
+                raise InvalidArgumentError(f"'{UInt32.__name__}' type only supports integer values")
+            if args[0] < 0:
+                raise InvalidArgumentError(f"'{UInt32.__name__}' type only supports positive integer values")
         else:
             kwargs["value"] = 0
+
 
         if "other" in kwargs:
             assert isinstance(kwargs["other"], QoalaInteger)
