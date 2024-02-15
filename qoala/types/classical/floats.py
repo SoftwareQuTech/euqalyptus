@@ -2,10 +2,10 @@ from abc import ABC
 from typing import Self
 
 from qoala.ast.value import QoalaFloat
-from qoala.types.classical import QoalaClassicalType, _Internal_Value_Type
+from qoala.types.classical import ClassicalType, _Internal_Value_Type
 
 
-class FloatingPointType(QoalaClassicalType[_Internal_Value_Type], ABC):
+class FloatingPointType(ClassicalType[_Internal_Value_Type], ABC):
     # We overload the operators, so IDEs do not get confused because of the
     # dynamic type of floats, so instances of this class "can use" the overloaded
     # operator. This is because the constructor of this class (method __new__)

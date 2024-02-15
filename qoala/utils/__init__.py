@@ -1,4 +1,4 @@
-from qoala.types.classical import QoalaClassicalType
+from qoala.types.classical import ClassicalType
 
 
 class NoValueError(RuntimeError):
@@ -23,7 +23,7 @@ def as_int_when_value(cls):
                     f"The object '{repr(self)}' has no value yet."
                 )
             try:
-                if isinstance(*args, QoalaClassicalType):
+                if isinstance(*args, ClassicalType):
                     raise RuntimeError(
                         "Cannot directly do a binary operation between two. "
                         "Convert them to `int`s first."

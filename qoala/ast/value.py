@@ -32,7 +32,13 @@ class QoalaNumericValue(QoalaValue[_T], ABC):
 
 
 class QoalaInteger(QoalaNumericValue[int]):
-    def __init__(self, value: _T, width: int, signedness: Signedness, other: Optional[Self] = None):
+    def __init__(
+            self,
+            value: _T,
+            width: int,
+            signedness: Signedness,
+            other: Optional[Self] = None
+    ):
         if other is not None:
             self.width = other.width
             self.signedness = other.signedness
@@ -74,7 +80,12 @@ class QoalaInteger(QoalaNumericValue[int]):
 
 
 class QoalaFloat(QoalaNumericValue[float]):
-    def __init__(self, value: _T, width: int, other: Optional[Self] = None):
+    def __init__(
+            self,
+            value: _T,
+            width: int,
+            other: Optional[Self] = None
+    ):
         if other is not None:
             self.width = other.width
             self.signedness = Signedness.UNKNOWN
@@ -122,7 +133,14 @@ class QoalaArray(QoalaValue[QoalaExpression]):
     base_type: Type
     base_size: int
     length: int
-    def __init__(self, *elements, base_type: Type, base_size: int, length: int):
+
+    def __init__(
+            self,
+            *elements,
+            base_type: Type,
+            base_size: int,
+            length: int
+    ):
         self.base_type = base_type
         self.base_size = base_size
         self.length = length

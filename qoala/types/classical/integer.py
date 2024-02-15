@@ -2,12 +2,12 @@ from abc import ABC
 from typing import Self, Optional
 
 from qoala.ast.value import QoalaInteger, Signedness
-from qoala.types.classical import QoalaClassicalType, _Internal_Value_Type
+from qoala.types.classical import ClassicalType, _Internal_Value_Type
 from qoala.utils import as_int_when_value
 
 
 @as_int_when_value
-class IntegerType(QoalaClassicalType[_Internal_Value_Type], ABC):
+class IntegerType(ClassicalType[_Internal_Value_Type], ABC):
     # We overload the operators, so IDEs do not get confused because of the
     # dynamic type of integers, so instances of this class "can use" the overloaded
     # operator. This is because the constructor of this class (method __new__)
@@ -105,7 +105,7 @@ class UInt32(UnsignedIntegerType[int]):
         pass
 
 
-class Measure(QoalaClassicalType[int]):
+class Measure(ClassicalType[int]):
     """
     Integer value that represents the returned value form measuring a qubit.
     This integer can `only` have the value `0` or `1`, which is the potential
@@ -113,6 +113,4 @@ class Measure(QoalaClassicalType[int]):
     This class does not support operations like "add", since it is not how
     these operations are defined for the result of a measurement.
     """
-    def _get_value(self) -> _Internal_Value_Type:
-        # TODO - Implement
-        pass
+    pass

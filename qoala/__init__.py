@@ -9,6 +9,7 @@ class QoalaProgram(ABC):
     Programs that extend this class must implement the `main` method,
     which acts as the entry point of the program.
     """
+
     @abstractmethod
     def main(self, args: List[Any]) -> int:
         """

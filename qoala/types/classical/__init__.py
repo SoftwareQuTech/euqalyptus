@@ -6,7 +6,7 @@ from qoala.types import QoalaType
 _Internal_Value_Type = TypeVar('_Internal_Value_Type')
 
 
-class QoalaClassicalType(Generic[_Internal_Value_Type], QoalaType, ABC):
+class ClassicalType(Generic[_Internal_Value_Type], QoalaType, ABC):
     """
     Base class that represents an integer in the classical computation
     model. Similarly, an instance of this class represents a classical

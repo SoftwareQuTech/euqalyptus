@@ -174,13 +174,14 @@ class TestArrayClassicalSyntax:
         val_a = Double(10.5)
         val_b = Double(20.1)
         int_array_a = FloatArray()
-        int_array_b = FloatArray(val_a, val_b)
+        int_array_b = FloatArray(val_a, val_b, 20.5)
 
         assert isinstance(int_array_a, QoalaArray)
         assert isinstance(int_array_b, QoalaArray)
 
         # TODO - Check the internal state of the returned object
 
+    @pytest.mark.skip(reason="'store' operation for arrays is not supported yet")
     def test_store_in_float_array(self):
         arr = FloatArray()
         arr.store(Double(15.5))

@@ -1,11 +1,11 @@
-from typing import Generic, TypeVar, Optional, Sized
+from typing import Generic, TypeVar, Optional, Sized, Union
 
 from qoala.ast.value import QoalaArray, QoalaExpression
-from qoala.types.classical import QoalaClassicalType
+from qoala.types.classical import ClassicalType
 from qoala.types.classical.floats import Double
 from qoala.types.classical.integer import Int
 
-_Array_Type = TypeVar("_Array_Type", bound=QoalaClassicalType)
+_Array_Type = TypeVar("_Array_Type", bound=ClassicalType)
 
 
 class _Array(Generic[_Array_Type], Sized):
@@ -47,7 +47,7 @@ class IntArray(_Array[Int]):
 
     def __init__(
             self,
-            *elements: _Array_Type,
+            *elements: Union[_Array_Type, int],
             other_array: Optional[QoalaArray] = None
     ):
         # Nothing to do here
@@ -65,7 +65,7 @@ class FloatArray(_Array[Double]):
 
     def __init__(
             self,
-            *elements: _Array_Type,
+            *elements: Union[_Array_Type, float],
             other_array: Optional[QoalaArray] = None
     ):
         # Nothing to do here
