@@ -1,13 +1,10 @@
-from abc import ABC
 from typing import Self, Optional
 
 from qoala.ast.value import QoalaInteger, Signedness
 from qoala.types.classical import ClassicalType, _Internal_Value_Type, InvalidArgumentError
-from qoala.utils import as_int_when_value
 
 
-@as_int_when_value
-class IntegerType(ClassicalType[_Internal_Value_Type], ABC):
+class IntegerType(ClassicalType[_Internal_Value_Type]):
     # We overload the operators, so IDEs do not get confused because of the
     # dynamic type of integers, so instances of this class "can use" the overloaded
     # operator. This is because the constructor of this class (method __new__)
@@ -25,11 +22,11 @@ class IntegerType(ClassicalType[_Internal_Value_Type], ABC):
         pass
 
 
-class SignedIntegerType(IntegerType[_Internal_Value_Type], ABC):
+class SignedIntegerType(IntegerType[_Internal_Value_Type]):
     pass
 
 
-class UnsignedIntegerType(IntegerType[_Internal_Value_Type], ABC):
+class UnsignedIntegerType(IntegerType[_Internal_Value_Type]):
     pass
 
 
@@ -92,7 +89,6 @@ class UInt32(UnsignedIntegerType[int]):
                 raise InvalidArgumentError(f"'{UInt32.__name__}' type only supports positive integer values")
         else:
             kwargs["value"] = 0
-
 
         if "other" in kwargs:
             assert isinstance(kwargs["other"], QoalaInteger)

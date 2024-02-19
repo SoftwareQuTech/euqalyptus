@@ -1,16 +1,19 @@
-from abc import ABC
 from typing import TypeVar
 
 _T = TypeVar("_T")
 
 
-class QoalaStatement:
+class QoalaASTElement:
     pass
 
 
-class QoalaExpression:
+class QoalaStatement(QoalaASTElement):
     pass
 
 
-class QoalaOperation(QoalaExpression, ABC):
+class QoalaExpression(QoalaASTElement):
+    pass
+
+
+class QoalaOperation(QoalaExpression):
     pass

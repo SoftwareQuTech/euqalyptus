@@ -1,7 +1,7 @@
-from abc import ABC
 from enum import Enum, auto
 from typing import Generic, TypeVar, Self, Optional, Type, List
 
+from qoala import QoalaProgram
 from qoala.ast import QoalaExpression, QoalaStatement
 from qoala.ast.errors import UnknownTypeError
 
@@ -15,7 +15,7 @@ class Signedness(Enum):
     UNSIGNED = auto()
 
 
-class QoalaValue(ABC, QoalaExpression, Generic[_T]):
+class QoalaValue(QoalaExpression, Generic[_T]):
     """
     Class used to represent a value in the AST. Nodes of this type (i.e.
     subclasses) are usually the leaves of the AST.
@@ -26,7 +26,7 @@ class QoalaValue(ABC, QoalaExpression, Generic[_T]):
         return op_class(*operands)
 
 
-class QoalaNumericValue(QoalaValue[_T], ABC):
+class QoalaNumericValue(QoalaValue[_T]):
     signedness: Signedness
     width: int
     value: _T
@@ -51,6 +51,7 @@ class QoalaInteger(QoalaNumericValue[int]):
             self.width = width
             self.signedness = signedness
             self.value = value
+        QoalaProgram.add_to_body(self)
 
     # Operations associated with all integer types:
     def add(self, other: QoalaExpression) -> QoalaExpression:
@@ -101,6 +102,7 @@ class QoalaFloat(QoalaNumericValue[float]):
             self.width = width
             self.signedness = Signedness.UNKNOWN
             self.value = value
+        QoalaProgram.add_to_body(self)
 
     # Operations associated with all float types:
     def add(self, other: QoalaExpression) -> QoalaExpression:
@@ -174,6 +176,7 @@ class QoalaArray(QoalaValue[QoalaExpression]):
                 self.length = self.length + 1
         else:
             self.length = length
+        QoalaProgram.add_to_body(self)
 
     def store(self, new_element: QoalaExpression) -> QoalaStatement:
         # Invoking a "store" method on the array is clearly a statement.

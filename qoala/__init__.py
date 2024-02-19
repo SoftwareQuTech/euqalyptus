@@ -1,6 +1,19 @@
 from abc import ABC, abstractmethod
 from collections.abc import Callable
-from typing import List, Any
+from typing import List, Any, Self
+
+from qoala.ast import QoalaASTElement
+
+
+class QoalaContext:
+    def __init__(self):
+        self._body: List[QoalaASTElement] = []
+
+    def clear_body(self):
+        self._body.clear()
+
+    def add_element_to_body(self, elem: QoalaASTElement):
+        self._body.append(elem)
 
 
 class QoalaProgramBase(ABC):
@@ -40,17 +53,26 @@ class QoalaProgram:
     Function decorator used to mark methods as qoala programs.
     TODO - Complete this doc
     """
-
-    _entry_fun: Callable[[Any, ...], int]
-    _body: List
+    _instance: Self
 
     def __init__(self, entry_fun: Callable):
+        self._context = QoalaContext()
         self._entry_fun = entry_fun
-        self._body = []
+        QoalaProgram._instance = self
+
+    @property
+    def _body(self):
+        return self._context._body
+
+    @classmethod
+    def add_to_body(cls, item: QoalaASTElement):
+        QoalaProgram._instance._context.add_element_to_body(item)
 
     def __call__(self, *args, **kwargs) -> int:
-        return self._entry_fun(*args, **kwargs)
+        return self.compile(*args, **kwargs)
 
     def compile(self, *args, **kwargs):
         # TODO - Implement (if needed) more functionality than just invoking the function
-        return self.__call__(*args, **kwargs)
+        QoalaProgram._instance = self
+        self._context.clear_body()
+        return self._entry_fun(*args, **kwargs)
