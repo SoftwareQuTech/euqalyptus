@@ -181,8 +181,7 @@ class QoalaArray(QoalaValue[QoalaExpression]):
     def store(self, new_element: QoalaExpression) -> QoalaStatement:
         # Invoking a "store" method on the array is clearly a statement.
         # How do we store statements in the AST?
-        # TODO - Implement
-        pass
+        raise NotImplementedError("'store' operation for arrays not implemented")
 
     def __len__(self) -> int:
         # TODO - Does this operation make sense?

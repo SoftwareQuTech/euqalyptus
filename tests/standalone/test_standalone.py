@@ -1,4 +1,5 @@
 from qoala import QoalaProgram
+from qoala.types.classical.arrays import IntArray, FloatArray
 from qoala.types.classical.floats import Float
 from qoala.types.classical.integer import Int
 
@@ -25,6 +26,20 @@ def program_with_arg(val_a: int, val_b: float):
     int_b = Float(val_b)
 
 
+@QoalaProgram
+def program_with_array_access():
+    int_a = Int(15)
+    arr_a = IntArray(10, int_a)
+
+    elem = arr_a[1]
+
+
+@QoalaProgram
+def program_with_array_mutation():
+    arr = FloatArray()
+    arr.store(10.2)
+
+
 class TestQoalaDecorator:
     def test_decorator_on_mt_program(self):
         empty_program.compile()
@@ -40,3 +55,14 @@ class TestQoalaDecorator:
         program_with_arg.compile(1, 2.5)
 
         assert len(program_with_arg._body) == 2
+
+    def test_program_with_array(self):
+        program_with_array_access.compile()
+
+        assert len(program_with_array_access._body) == 4
+
+    def test_program_with_array_mutation(self):
+        program_with_array_mutation.compile()
+
+        assert len(program_with_array_mutation._body) == 3
+
