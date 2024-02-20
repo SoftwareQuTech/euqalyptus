@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 from collections.abc import Callable
 from threading import Lock
-from typing import List, Any, Self
+from typing import List, Self
 
 from qoala.ast import QoalaASTElement
 
@@ -26,7 +26,7 @@ class QoalaProgramBase(ABC):
     """
 
     @abstractmethod
-    def main(self, args: List[Any]) -> int:
+    def main(self, *args, **kwargs) -> int:
         """
         Entry point function for a quantum internet program.
         This function must use the quantum and classical primitives
@@ -37,6 +37,9 @@ class QoalaProgramBase(ABC):
         ----------
         args : List[Any]
             A list of objects used as the arguments of the function.
+
+        kwargs : Dict[Any, Any]
+            A dictionary containing the keyworded arguments for the function.
 
         Returns
         -------
