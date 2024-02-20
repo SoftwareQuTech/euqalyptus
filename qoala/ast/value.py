@@ -1,3 +1,4 @@
+from dataclasses import dataclass
 from enum import Enum, auto
 from typing import Generic, TypeVar, Self, Optional, Type, List
 
@@ -26,10 +27,21 @@ class QoalaValue(QoalaExpression, Generic[_T]):
         return op_class(*operands)
 
 
+@dataclass(init=False)
 class QoalaNumericValue(QoalaValue[_T]):
     signedness: Signedness
     width: int
     value: _T
+
+    @classmethod
+    def from_immediate(cls, value: _T) -> Self:
+        if isinstance(value, int):
+            return QoalaInteger(value=value, width=32, signedness=Signedness.SIGNED)
+        elif isinstance(value, float):
+            return QoalaFloat(value=value, width=32)
+        else:
+            raise UnknownTypeError(f"A Qoala value could not be created from immediate '{value}'. "
+                                   f"Supported immediate types are 'int' and 'float'.")
 
 
 class QoalaInteger(QoalaNumericValue[int]):
@@ -138,7 +150,8 @@ class QoalaFloat(QoalaNumericValue[float]):
 # FIXME - In the meantime, we will model arrays as if they were
 #         values. We might want to reconsider this decision in
 #         the future.
-class QoalaArray(QoalaValue[QoalaExpression]):
+@dataclass
+class QoalaArray(QoalaValue[QoalaExpression], Generic[_T]):
     base_type: Type
     base_size: int
     length: int
@@ -178,16 +191,19 @@ class QoalaArray(QoalaValue[QoalaExpression]):
             self.length = length
         QoalaProgram.add_to_body(self)
 
-    def store(self, new_element: QoalaExpression) -> QoalaStatement:
-        # Invoking a "store" method on the array is clearly a statement.
-        # How do we store statements in the AST?
-        raise NotImplementedError("'store' operation for arrays not implemented")
+    def store(self, new_element: QoalaExpression | _T) -> QoalaStatement:
+        if isinstance(new_element, self.base_type):
+            to_add = QoalaNumericValue.from_immediate(new_element)
+        else:
+            to_add = new_element
+        from qoala.ast.operations.arrays import SetItem
+        return QoalaValue._create_expression_for_op(SetItem, self, to_add)
 
     def __len__(self) -> int:
         # TODO - Does this operation make sense?
         raise NotImplementedError("'len' operation for arrays not implemented")
 
-    def __getitem__(self, item) -> QoalaExpression:
+    def __getitem__(self, item: QoalaExpression | _T) -> QoalaExpression:
         from qoala.ast.operations.arrays import GetItem
         return QoalaValue._create_expression_for_op(GetItem, self, item)
 

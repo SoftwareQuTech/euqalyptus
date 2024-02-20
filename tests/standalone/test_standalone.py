@@ -37,7 +37,10 @@ def program_with_array_access():
 @QoalaProgram
 def program_with_array_mutation():
     arr = FloatArray()
+    arr_b = IntArray()
+
     arr.store(10.2)
+    arr_b.store(5)
 
 
 class TestQoalaDecorator:
@@ -64,5 +67,5 @@ class TestQoalaDecorator:
     def test_program_with_array_mutation(self):
         program_with_array_mutation.compile()
 
-        assert len(program_with_array_mutation._body) == 3
+        assert len(program_with_array_mutation._body) == 6
 
