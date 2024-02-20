@@ -181,7 +181,6 @@ class TestArrayClassicalSyntax:
 
         # TODO - Check the internal state of the returned object
 
-    @pytest.mark.skip(reason="'store' operation for arrays is not supported yet")
     def test_store_in_float_array(self):
         arr = FloatArray()
         arr.store(Double(15.5))

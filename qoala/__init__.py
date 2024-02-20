@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
 from collections.abc import Callable
+from threading import Lock
 from typing import List, Any, Self
 
 from qoala.ast import QoalaASTElement
@@ -54,11 +55,11 @@ class QoalaProgram:
     TODO - Complete this doc
     """
     _instance: Self
+    _compiler_lock: Lock = Lock()
 
     def __init__(self, entry_fun: Callable):
         self._context = QoalaContext()
         self._entry_fun = entry_fun
-        QoalaProgram._instance = self
 
     @property
     def _body(self):
@@ -66,13 +67,24 @@ class QoalaProgram:
 
     @classmethod
     def add_to_body(cls, item: QoalaASTElement):
-        QoalaProgram._instance._context.add_element_to_body(item)
+        if hasattr(QoalaProgram, "_instance"):
+            QoalaProgram._instance._context.add_element_to_body(item)
 
     def __call__(self, *args, **kwargs) -> int:
         return self.compile(*args, **kwargs)
 
-    def compile(self, *args, **kwargs):
+    def compile(self, *args, **kwargs) -> int:
         # TODO - Implement (if needed) more functionality than just invoking the function
+        # To ease the insertion of the statement into the program body, we need to
+        # keep a reference to the current instance of the QoalaProgram we are compiling.
+        # This does not allow parallel compilation, since instructions of different programs
+        # would end in the same body, of a single function.
+        QoalaProgram._compiler_lock.acquire()
         QoalaProgram._instance = self
+        # We clear the body of this qoala program.
         self._context.clear_body()
-        return self._entry_fun(*args, **kwargs)
+        ret_val = self._entry_fun(*args, **kwargs)
+        # We delete the reference to the QoalaProgram under compilation
+        del QoalaProgram._instance
+        QoalaProgram._compiler_lock.release()
+        return ret_val

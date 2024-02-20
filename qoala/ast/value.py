@@ -204,8 +204,8 @@ class QoalaArray(QoalaValue[QoalaExpression], Generic[_T]):
         # TODO - Does this operation make sense?
         raise NotImplementedError("'len' operation for arrays not implemented")
 
-    def __getitem__(self, item: QoalaExpression | _T) -> QoalaExpression:
-        if isinstance(item, self.base_type):
+    def __getitem__(self, item: QoalaExpression | int) -> QoalaExpression:
+        if isinstance(item, int):
             to_add = QoalaNumericValue.from_immediate(item)
         else:
             to_add = item
