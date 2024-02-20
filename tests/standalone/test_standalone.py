@@ -88,12 +88,12 @@ class TestQoalaDecorator:
         assert program_with_array_access._body[2].base_type == int
         assert program_with_array_access._body[2].base_size == 32
         assert program_with_array_access._body[2].length == 2
-        assert isinstance(program_with_array_access._body[2].elements[0], QoalaInteger)
-        assert isinstance(program_with_array_access._body[2].elements[1], QoalaInteger)
-        assert isinstance(program_with_array_access._body[3], GetItem)
-        assert isinstance(program_with_array_access._body[4], QoalaInteger)
-        assert program_with_array_access._body[3].base_array == program_with_array_access._body[2]
-        assert program_with_array_access._body[3].index == program_with_array_access._body[4]
+        assert isinstance(program_with_array_access._body[2].members[0], QoalaInteger)
+        assert isinstance(program_with_array_access._body[2].members[1], QoalaInteger)
+        assert isinstance(program_with_array_access._body[3], QoalaInteger)
+        assert isinstance(program_with_array_access._body[4], GetItem)
+        assert program_with_array_access._body[4].base_array == program_with_array_access._body[2]
+        assert program_with_array_access._body[4].index == program_with_array_access._body[3]
 
     def test_program_with_array_mutation(self):
         program_with_array_mutation.compile()

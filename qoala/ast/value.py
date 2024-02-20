@@ -24,6 +24,7 @@ class QoalaValue(QoalaExpression, Generic[_T]):
 
     @staticmethod
     def _create_expression_for_op(op_class: Type[_cls], *operands: QoalaExpression):
+        assert all(isinstance(operand, QoalaExpression) for operand in operands)
         return op_class(*operands)
 
 
@@ -204,8 +205,12 @@ class QoalaArray(QoalaValue[QoalaExpression], Generic[_T]):
         raise NotImplementedError("'len' operation for arrays not implemented")
 
     def __getitem__(self, item: QoalaExpression | _T) -> QoalaExpression:
+        if isinstance(item, self.base_type):
+            to_add = QoalaNumericValue.from_immediate(item)
+        else:
+            to_add = item
         from qoala.ast.operations.arrays import GetItem
-        return QoalaValue._create_expression_for_op(GetItem, self, item)
+        return QoalaValue._create_expression_for_op(GetItem, self, to_add)
 
 
 class QoalaMeasure(QoalaValue[int]):
