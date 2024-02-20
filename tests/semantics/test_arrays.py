@@ -23,7 +23,7 @@ class TestArraySemantics:
             vals_type: Type,
             base_type: Type,
             array_type: Type,
-            member_type: Union[QoalaInteger, QoalaFloat]
+            member_type: QoalaInteger | QoalaFloat
     ):
         array_values: List[member_type, vals_type] = []
         in_order_values: Queue[vals_type] = Queue()
