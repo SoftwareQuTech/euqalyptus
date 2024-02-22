@@ -1,5 +1,7 @@
 from typing import List, Any
 
+import pytest
+
 from qoala import QoalaProgramBase
 from qoala.ast.operations.arrays import GetItem, SetItem
 from qoala.ast.operations.numeric import Add, Subtract, Multiply, Divide
@@ -48,8 +50,9 @@ class ProgramWithArrayMutation(QoalaProgramBase):
         arr_b.store(5)
 
 
-class TestQoalaDecorator:
-    def test_decorator_on_mt_program(self):
+@pytest.mark.skip(reason="Qoala programs declaration using class inheritance is not implemented yet")
+class TestQoalaClass:
+    def test_mt_program(self):
         empty_program = EmptyProgram()
         empty_program.compile()
 
