@@ -1,5 +1,5 @@
 from abc import ABC, abstractmethod
-from typing import Optional, Self, Union
+from typing import Optional, Self
 
 from qoala.types.classical.floats import Float
 from qoala.types.classical.integer import Bit, QoalaIntegerType
@@ -108,9 +108,9 @@ class Qubit(QoalaQuantumType, ABC):
     @abstractmethod
     def rot_X(
             self,
-            n: Union[int, QoalaIntegerType] = 0,
-            d: Union[int, QoalaIntegerType] = 0,
-            angle: Union[float, Float, None] = None
+            n: int | QoalaIntegerType = 0,
+            d: int | QoalaIntegerType = 0,
+            angle: float | Float | None = None
     ):
         """
         Do a rotation around the X-axis of the specified angle.
@@ -141,9 +141,9 @@ class Qubit(QoalaQuantumType, ABC):
     @abstractmethod
     def rot_Y(
             self,
-            n: Union[int, QoalaIntegerType] = 0,
-            d: Union[int, QoalaIntegerType] = 0,
-            angle: Union[float, Float, None] = None
+            n: int | QoalaIntegerType = 0,
+            d: int | QoalaIntegerType = 0,
+            angle: float | Float | None = None
     ):
         """
         Do a rotation around the Y-axis of the specified angle.
@@ -174,9 +174,9 @@ class Qubit(QoalaQuantumType, ABC):
     @abstractmethod
     def rot_Z(
             self,
-            n: Union[int, QoalaIntegerType] = 0,
-            d: Union[int, QoalaIntegerType] = 0,
-            angle: Union[float, Float, None] = None
+            n: int | QoalaIntegerType = 0,
+            d: int | QoalaIntegerType = 0,
+            angle: float | Float | None = None
     ):
         """
         Do a rotation around the Z-axis of the specified angle.
@@ -296,27 +296,27 @@ class LocalQubit(Qubit):
 
     def rot_X(
             self,
-            n: Union[int, QoalaIntegerType] = 0,
-            d: Union[int, QoalaIntegerType] = 0,
-            angle: Union[float, Float, None] = None
+            n: int | QoalaIntegerType = 0,
+            d: int | QoalaIntegerType = 0,
+            angle: float | Float | None = None
     ):
         # TODO - Implement
         pass
 
     def rot_Y(
             self,
-            n: Union[int, QoalaIntegerType] = 0,
-            d: Union[int, QoalaIntegerType] = 0,
-            angle: Union[float, Float, None] = None
+            n: int | QoalaIntegerType = 0,
+            d: int | QoalaIntegerType = 0,
+            angle: float | Float | None = None
     ):
         # TODO - Implement
         pass
 
     def rot_Z(
             self,
-            n: Union[int, QoalaIntegerType] = 0,
-            d: Union[int, QoalaIntegerType] = 0,
-            angle: Union[float, Float, None] = None
+            n: int | QoalaIntegerType = 0,
+            d: int | QoalaIntegerType = 0,
+            angle: float | Float | None = None
     ):
         # TODO - Implement
         pass
