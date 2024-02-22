@@ -11,7 +11,7 @@ class QoalaProgram(ABC):
     """
 
     @abstractmethod
-    def main(self, args: List[Any]) -> int:
+    def main(self, *args: Any) -> Any:
         """
         Entry point function for a quantum internet program.
         This function must use the quantum and classical primitives

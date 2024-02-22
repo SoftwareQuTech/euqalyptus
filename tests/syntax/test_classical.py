@@ -4,11 +4,11 @@ import pytest
 
 from qoala.ast.value import QoalaExpression, QoalaInteger, QoalaFloat, QoalaArray
 from qoala.types.classical.arrays import IntArray, FloatArray
-from qoala.types.classical.floats import Float, Double, FloatingPointType
-from qoala.types.classical.integer import Int32, UInt32, Int, IntegerType
+from qoala.types.classical.floats import Float, Double, QoalaFloatingPointType
+from qoala.types.classical.integer import Int32, UInt32, Int, QoalaIntegerType
 
-_Base_Type_Int = TypeVar("_Base_Type_Int", bound=IntegerType)
-_Base_Type_Float = TypeVar("_Base_Type_Float", bound=FloatingPointType)
+_Base_Type_Int = TypeVar("_Base_Type_Int", bound=QoalaIntegerType)
+_Base_Type_Float = TypeVar("_Base_Type_Float", bound=QoalaFloatingPointType)
 
 """
 In these classes, we aim to test the syntax of the classical operations.

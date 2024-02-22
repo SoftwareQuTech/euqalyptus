@@ -2,7 +2,7 @@ from abc import ABC, abstractmethod
 from typing import Optional, Self, Union
 
 from qoala.types.classical.floats import Float
-from qoala.types.classical.integer import Measure, IntegerType
+from qoala.types.classical.integer import Bit, QoalaIntegerType
 from qoala.types.quantum import QoalaQuantumType
 
 
@@ -12,24 +12,17 @@ class Qubit(QoalaQuantumType, ABC):
 
     A `Qubit` instance represents a quantum state that is stored in a physical qubit
     somewhere in the quantum node.
-    The particular qubit is identified by its virtual qubit ID.
-    To which physical qubit ID this is mapped (at a given time), is handled completely
-    by the quantum node controller and is not known to the `Qubit` itself.
 
     A `Qubit` object can be instantiated in a program.
-    Such an instantiation is automatically compiled into NetQASM instructions that
+    Such an instantiation is automatically compiled into the QoalaHIR instructions that
     allocate and initialize a new qubit in the quantum node controller.
-
-    A `Qubit` object may also be obtained by other SDK functions that return them, like
-    the `create()` method on an `EPRSocket`, which returns the object as a handle to
-    the qubit that is now entangled with one in another node.
 
     Qubit operations like applying gates and measuring them are done by calling
     methods on a `Qubit` instance.
     """
 
     @abstractmethod
-    def measure(self) -> Measure:
+    def measure(self) -> Bit:
         """
         Measure the qubit in the standard basis and get the measurement outcome.
 
@@ -115,8 +108,8 @@ class Qubit(QoalaQuantumType, ABC):
     @abstractmethod
     def rot_X(
             self,
-            n: Union[int, IntegerType] = 0,
-            d: Union[int, IntegerType] = 0,
+            n: Union[int, QoalaIntegerType] = 0,
+            d: Union[int, QoalaIntegerType] = 0,
             angle: Union[float, Float, None] = None
     ):
         """
@@ -148,8 +141,8 @@ class Qubit(QoalaQuantumType, ABC):
     @abstractmethod
     def rot_Y(
             self,
-            n: Union[int, IntegerType] = 0,
-            d: Union[int, IntegerType] = 0,
+            n: Union[int, QoalaIntegerType] = 0,
+            d: Union[int, QoalaIntegerType] = 0,
             angle: Union[float, Float, None] = None
     ):
         """
@@ -181,8 +174,8 @@ class Qubit(QoalaQuantumType, ABC):
     @abstractmethod
     def rot_Z(
             self,
-            n: Union[int, IntegerType] = 0,
-            d: Union[int, IntegerType] = 0,
+            n: Union[int, QoalaIntegerType] = 0,
+            d: Union[int, QoalaIntegerType] = 0,
             angle: Union[float, Float, None] = None
     ):
         """
@@ -269,9 +262,9 @@ class Qubit(QoalaQuantumType, ABC):
 
 
 class LocalQubit(Qubit):
-    def measure(self) -> Measure:
+    def measure(self) -> Bit:
         # TODO - Implement: Modify the dummy object returned
-        return Measure()
+        return Bit()
 
     def X(self):
         # TODO - Implement
@@ -303,8 +296,8 @@ class LocalQubit(Qubit):
 
     def rot_X(
             self,
-            n: Union[int, IntegerType] = 0,
-            d: Union[int, IntegerType] = 0,
+            n: Union[int, QoalaIntegerType] = 0,
+            d: Union[int, QoalaIntegerType] = 0,
             angle: Union[float, Float, None] = None
     ):
         # TODO - Implement
@@ -312,8 +305,8 @@ class LocalQubit(Qubit):
 
     def rot_Y(
             self,
-            n: Union[int, IntegerType] = 0,
-            d: Union[int, IntegerType] = 0,
+            n: Union[int, QoalaIntegerType] = 0,
+            d: Union[int, QoalaIntegerType] = 0,
             angle: Union[float, Float, None] = None
     ):
         # TODO - Implement
@@ -321,8 +314,8 @@ class LocalQubit(Qubit):
 
     def rot_Z(
             self,
-            n: Union[int, IntegerType] = 0,
-            d: Union[int, IntegerType] = 0,
+            n: Union[int, QoalaIntegerType] = 0,
+            d: Union[int, QoalaIntegerType] = 0,
             angle: Union[float, Float, None] = None
     ):
         # TODO - Implement

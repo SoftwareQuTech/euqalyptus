@@ -1,11 +1,11 @@
 from typing import Generic, TypeVar, Optional, Sized, Union, Type
 
 from qoala.ast.value import QoalaArray, QoalaExpression
-from qoala.types.classical import ClassicalType
+from qoala.types.classical import QoalaClassicalType
 from qoala.types.classical.floats import Double
 from qoala.types.classical.integer import Int
 
-_Array_Type = TypeVar("_Array_Type", bound=ClassicalType)
+_Array_Type = TypeVar("_Array_Type", bound=QoalaClassicalType)
 
 
 class _Array(Generic[_Array_Type], Sized):

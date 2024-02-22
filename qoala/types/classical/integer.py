@@ -2,12 +2,12 @@ from abc import ABC
 from typing import Self, Optional
 
 from qoala.ast.value import QoalaInteger, Signedness
-from qoala.types.classical import ClassicalType, _Internal_Value_Type, InvalidArgumentError
+from qoala.types.classical import QoalaClassicalType, _Internal_Value_Type, InvalidArgumentError
 from qoala.utils import as_int_when_value
 
 
 @as_int_when_value
-class IntegerType(ClassicalType[_Internal_Value_Type], ABC):
+class QoalaIntegerType(QoalaClassicalType[_Internal_Value_Type], ABC):
     # We overload the operators, so IDEs do not get confused because of the
     # dynamic type of integers, so instances of this class "can use" the overloaded
     # operator. This is because the constructor of this class (method __new__)
@@ -25,11 +25,11 @@ class IntegerType(ClassicalType[_Internal_Value_Type], ABC):
         pass
 
 
-class SignedIntegerType(IntegerType[_Internal_Value_Type], ABC):
+class SignedIntegerType(QoalaIntegerType[_Internal_Value_Type], ABC):
     pass
 
 
-class UnsignedIntegerType(IntegerType[_Internal_Value_Type], ABC):
+class UnsignedIntegerType(QoalaIntegerType[_Internal_Value_Type], ABC):
     pass
 
 
@@ -111,7 +111,7 @@ class UInt32(UnsignedIntegerType[int]):
         pass
 
 
-class Measure(ClassicalType[int]):
+class Bit(QoalaClassicalType[int]):
     """
     Integer value that represents the returned value form measuring a qubit.
     This integer can `only` have the value `0` or `1`, which is the potential
