@@ -213,5 +213,10 @@ class QoalaArray(QoalaValue[QoalaExpression], Generic[_T]):
         return QoalaValue._create_expression_for_op(GetItem, self, to_add)
 
 
-class QoalaMeasure(QoalaValue[int]):
+class QoalaBit(QoalaValue[int]):
+    """
+    Represents the result of performing a measurement of the qubit.
+    Theoretically, the result of measuring a qubit can be either 0 or 1.
+    For this reason, this class is called "bit"
+    """
     pass
