@@ -7,7 +7,7 @@ from qoala.types.classical.errors import InvalidArgumentError
 _Internal_Value_Type = TypeVar('_Internal_Value_Type')
 
 
-class ClassicalType(Generic[_Internal_Value_Type], QoalaType, ABC):
+class QoalaClassicalType(Generic[_Internal_Value_Type], QoalaType, ABC):
     """
     Base class that represents an integer in the classical computation
     model. Similarly, an instance of this class represents a classical

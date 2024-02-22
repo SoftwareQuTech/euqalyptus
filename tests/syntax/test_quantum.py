@@ -1,5 +1,5 @@
 from qoala.types.classical.floats import Float
-from qoala.types.classical.integer import Measure, Int
+from qoala.types.classical.integer import Bit, Int
 from qoala.types.quantum.qubit import Qubit, LocalQubit
 
 
@@ -15,7 +15,7 @@ class TestQuantumSyntax:
         measurement = qubit.measure()
 
         assert isinstance(qubit, Qubit)
-        assert isinstance(measurement, Measure)
+        assert isinstance(measurement, Bit)
 
     def test_qubit_operations_with_no_args(self):
         qubit = LocalQubit()
@@ -33,7 +33,7 @@ class TestQuantumSyntax:
 
         assert isinstance(qubit, Qubit)
 
-        assert isinstance(measurement, Measure)
+        assert isinstance(measurement, Bit)
 
     def test_qubit_operations_with_args(self):
         n_val = Int(20)
@@ -67,5 +67,5 @@ class TestQuantumSyntax:
         measurement = qubit.measure()
 
         assert isinstance(qubit, Qubit)
-        assert isinstance(measurement, Measure)
+        assert isinstance(measurement, Bit)
 

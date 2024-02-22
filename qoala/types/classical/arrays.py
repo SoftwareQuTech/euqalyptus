@@ -1,12 +1,12 @@
 from typing import Generic, TypeVar, Optional, Sized, Union, Type
 
 from qoala.ast.value import QoalaArray, QoalaExpression
-from qoala.types.classical import ClassicalType
+from qoala.types.classical import QoalaClassicalType
 from qoala.types.classical.errors import InvalidArgumentError
 from qoala.types.classical.floats import Double
 from qoala.types.classical.integer import Int
 
-_Qoala_Base_Type = TypeVar("_Qoala_Base_Type", bound=ClassicalType)
+_Qoala_Base_Type = TypeVar("_Qoala_Base_Type", bound=QoalaClassicalType)
 _Native_Base_Type = TypeVar("_Native_Base_Type", int, float)
 
 
