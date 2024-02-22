@@ -5,6 +5,9 @@ from qoala.types.classical.integer import Int
 from qoala.types.quantum.qubit import LocalQubit
 
 
+# TODO - Rethink if these tests make sense or not; it seems that it is not
+#        possible to assert more than what it is asserted here, which is
+#        pretty much what we can assert about syntax.
 class TestQuantumSemantics:
     def test_basic_quantum_semantics(self):
         qubit = LocalQubit()
@@ -71,5 +74,6 @@ class TestQuantumSemantics:
         measurement = qubit.measure()
 
         assert isinstance(qubit, QoalaLocalQubit)
+        assert isinstance(qubit_b, QoalaLocalQubit)
         assert isinstance(measurement, QoalaBit)
         # TODO - Assert the internal status of the allocated qubit and measurement result

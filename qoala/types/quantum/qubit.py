@@ -1,6 +1,7 @@
 from abc import ABC, abstractmethod
 from typing import Optional, Self
 
+from qoala.ast.qubit import QoalaLocalQubit
 from qoala.types.classical.floats import Float
 from qoala.types.classical.integer import Bit, QoalaIntegerType
 from qoala.types.quantum import QoalaQuantumType
@@ -262,6 +263,10 @@ class Qubit(QoalaQuantumType, ABC):
 
 
 class LocalQubit(Qubit):
+    def __new__(cls, *args, **kwargs):
+        # TODO - Implement creation of the internal representation of Qubit
+        return QoalaLocalQubit()
+
     def measure(self) -> Bit:
         # TODO - Implement: Modify the dummy object returned
         return Bit()

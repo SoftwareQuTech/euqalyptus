@@ -5,6 +5,7 @@ from qoala.ast.value import QoalaInteger, QoalaFloat, QoalaArray
 from qoala.types.classical.arrays import IntArray, FloatArray
 from qoala.types.classical.floats import Float
 from qoala.types.classical.integer import Int
+from qoala.types.quantum.qubit import LocalQubit
 
 
 @QoalaProgram
@@ -44,6 +45,52 @@ def program_with_array_mutation():
 
     arr.store(10.2)
     arr_b.store(5)
+
+
+@QoalaProgram
+def program_local_qubit_with_simple_gates():
+    qubit = LocalQubit()
+
+    qubit.X()
+    qubit.Y()
+    qubit.Z()
+    qubit.T()
+    qubit.H()
+    qubit.K()
+    qubit.S()
+
+    measurement = qubit.measure()
+    qubit.reset()
+
+
+@QoalaProgram
+def program_local_qubit_with_complex_gates():
+    n_val = Int(20)
+    d_val = Int(30)
+    angle_val = Float(21.2)
+
+    qubit = LocalQubit()
+    qubit_b = LocalQubit()
+
+    qubit.rot_X(
+        n=10,
+        d=30
+    )
+    qubit.rot_Y(
+        n=10,
+        d=d_val,
+        angle=10.5
+    )
+    qubit.rot_Z(
+        n=n_val,
+        d=d_val,
+        angle=angle_val
+    )
+
+    qubit.cnot(qubit_b)
+    qubit.cphase(qubit_b)
+
+    measurement = qubit.measure()
 
 
 class TestQoalaDecorator:
@@ -115,3 +162,13 @@ class TestQoalaDecorator:
         assert isinstance(program_with_array_mutation._body[5], SetItem)
         assert program_with_array_mutation._body[5].base_array == program_with_array_mutation._body[1]
         assert program_with_array_mutation._body[5].index == program_with_array_mutation._body[4]
+
+    def test_quantum_program_with_simple_gates(self):
+        program_local_qubit_with_simple_gates.compile()
+
+        assert len(program_local_qubit_with_simple_gates._body) == 6
+
+    def test_quantum_program_with_complex_gates(self):
+        program_local_qubit_with_complex_gates.compile()
+
+        assert len(program_local_qubit_with_complex_gates._body) == 6
