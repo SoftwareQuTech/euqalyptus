@@ -1,0 +1,18 @@
+[project]
+name = "qoala-compiler"
+version = "0.0.1"
+dependencies = [
+    "pytest >= 8.0.0",
+    "Deprecated >= 1.2.14"
+]
+requires-python = ">=3.11"
+authors = [
+    {name = "Bart van der Vecht", email ="b.vanderVecht@tudelft.nl"},
+    {name = "Diego Rivera", email ="d.a.g.a.rivera@tudelft.nl"}
+]
+maintainers = [
+    {name = "Bart van der Vecht", email ="b.vanderVecht@tudelft.nl"},
+    {name = "Diego Rivera", email ="d.a.g.a.rivera@tudelft.nl"}
+]
+description = ""
+readme = {file= "README.md", content-type="text/markdown"}

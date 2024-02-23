@@ -1,0 +1,2 @@
+class InvalidArgumentError(RuntimeError):
+    pass
