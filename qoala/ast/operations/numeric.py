@@ -1,8 +1,11 @@
+from dataclasses import dataclass
+
 from qoala import QoalaProgram
 from qoala.ast import QoalaOperation
 from qoala.ast.value import QoalaExpression
 
 
+@dataclass(init=False)
 class Add(QoalaOperation):
     operand_a: QoalaExpression
     operand_b: QoalaExpression
@@ -14,6 +17,7 @@ class Add(QoalaOperation):
         QoalaProgram.add_to_body(self)
 
 
+@dataclass(init=False)
 class Subtract(QoalaOperation):
     operand_a: QoalaExpression
     operand_b: QoalaExpression
@@ -25,6 +29,7 @@ class Subtract(QoalaOperation):
         QoalaProgram.add_to_body(self)
 
 
+@dataclass(init=False)
 class Multiply(QoalaExpression):
     operand_a: QoalaExpression
     operand_b: QoalaExpression
@@ -36,6 +41,7 @@ class Multiply(QoalaExpression):
         QoalaProgram.add_to_body(self)
 
 
+@dataclass(init=False)
 class Divide(QoalaExpression):
     operand_a: QoalaExpression
     operand_b: QoalaExpression

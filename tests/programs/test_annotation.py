@@ -1,6 +1,18 @@
 from qoala import QoalaProgram
 from qoala.ast.operations.arrays import GetItem, SetItem
 from qoala.ast.operations.numeric import Add, Subtract, Multiply, Divide
+from qoala.ast.operations.quantum import (
+    XGate,
+    YGate,
+    ZGate,
+    TGate,
+    HGate,
+    KGate,
+    SGate,
+    QubitMeasure,
+    QubitReset
+)
+from qoala.ast.qubit import QoalaLocalQubit
 from qoala.ast.value import QoalaInteger, QoalaFloat, QoalaArray
 from qoala.types.classical.arrays import IntArray, FloatArray
 from qoala.types.classical.floats import Float
@@ -166,9 +178,19 @@ class TestQoalaDecorator:
     def test_quantum_program_with_simple_gates(self):
         program_local_qubit_with_simple_gates.compile()
 
-        assert len(program_local_qubit_with_simple_gates._body) == 6
+        assert len(program_local_qubit_with_simple_gates._body) == 10
+        assert isinstance(program_local_qubit_with_simple_gates._body[0], QoalaLocalQubit)
+        assert isinstance(program_local_qubit_with_simple_gates._body[1], XGate)
+        assert isinstance(program_local_qubit_with_simple_gates._body[2], YGate)
+        assert isinstance(program_local_qubit_with_simple_gates._body[3], ZGate)
+        assert isinstance(program_local_qubit_with_simple_gates._body[4], TGate)
+        assert isinstance(program_local_qubit_with_simple_gates._body[5], HGate)
+        assert isinstance(program_local_qubit_with_simple_gates._body[6], KGate)
+        assert isinstance(program_local_qubit_with_simple_gates._body[7], SGate)
+        assert isinstance(program_local_qubit_with_simple_gates._body[8], QubitMeasure)
+        assert isinstance(program_local_qubit_with_simple_gates._body[9], QubitReset)
 
     def test_quantum_program_with_complex_gates(self):
         program_local_qubit_with_complex_gates.compile()
 
-        assert len(program_local_qubit_with_complex_gates._body) == 6
+        assert len(program_local_qubit_with_complex_gates._body) == 15

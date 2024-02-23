@@ -1,9 +1,10 @@
 from typing import Self
 
+from qoala.ast import QoalaExpression
 from qoala.ast.value import QoalaBit, QoalaInteger, QoalaFloat
 
 
-class QoalaQubit:
+class QoalaQubit(QoalaExpression):
     pass
 
 

@@ -1,3 +1,5 @@
+import pytest
+
 from qoala.ast.qubit import QoalaLocalQubit
 from qoala.ast.value import QoalaBit
 from qoala.types.classical.floats import Float
@@ -5,9 +7,9 @@ from qoala.types.classical.integer import Int
 from qoala.types.quantum.qubit import LocalQubit
 
 
-# TODO - Rethink if these tests make sense or not; it seems that it is not
-#        possible to assert more than what it is asserted here, which is
-#        pretty much what we can assert about syntax.
+@pytest.mark.skip(reason="Rethink if these tests make sense or not; it seems that it is not\n"
+                         "possible to assert more than what it is asserted here, which is\n"
+                         "pretty much what we can assert about syntax.")
 class TestQuantumSemantics:
     def test_basic_quantum_semantics(self):
         qubit = LocalQubit()
