@@ -29,8 +29,6 @@ class QoalaFloatingPointType(QoalaClassicalType[_Internal_Value_Type], ABC):
 #        the internal representation.
 # TODO - Expose the symbol of the internal representation
 #        of this type
-# FIXME - This type might not be needed. According to the specification
-#         QoalaHIR only supports the `f32` type (a.k.a. doubles)
 class Float(QoalaFloatingPointType[float]):
     def __new__(cls, *args, **kwargs):
         kwargs["width"] = 32
