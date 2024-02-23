@@ -213,5 +213,9 @@ class QoalaBit(QoalaValue[int]):
     Represents the result of performing a measurement of the qubit.
     Theoretically, the result of measuring a qubit can be either 0 or 1.
     For this reason, this class is called "bit"
+    IMPORTANT: Despite it is possible to use the `Bit` type from the
+    qoala.types.classical.integer packages to get an object of this type,
+    this usage is *not* recommended. This class has been conceived to
+    model the _type returned by the 'measure' operation on a qubit_.
     """
     pass

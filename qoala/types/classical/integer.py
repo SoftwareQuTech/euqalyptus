@@ -114,5 +114,8 @@ class Bit(QoalaClassicalType[int]):
     returned values from measuring a qubit.
     This class does not support operations like "add", since it is not how
     these operations are defined for the result of a measurement.
+    IMPORTANT: Despite a programmer could use the 'Bit' type of the
+    qoala.types.classical.integer package to declare and create a value of this
+    type, this is a use case that it is *not* encouraged.
     """
     pass

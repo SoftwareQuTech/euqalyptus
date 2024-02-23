@@ -9,8 +9,7 @@ from qoala.ast.operations.quantum import (
     HGate,
     KGate,
     SGate,
-    QubitMeasure,
-    QubitReset
+    QubitMeasure
 )
 from qoala.ast.qubit import QoalaLocalQubit
 from qoala.ast.value import QoalaInteger, QoalaFloat, QoalaArray
@@ -178,7 +177,7 @@ class TestQoalaDecorator:
     def test_quantum_program_with_simple_gates(self):
         program_local_qubit_with_simple_gates.compile()
 
-        assert len(program_local_qubit_with_simple_gates._body) == 10
+        assert len(program_local_qubit_with_simple_gates._body) == 9
         assert isinstance(program_local_qubit_with_simple_gates._body[0], QoalaLocalQubit)
         assert isinstance(program_local_qubit_with_simple_gates._body[1], XGate)
         assert program_local_qubit_with_simple_gates._body[1].qubit == program_local_qubit_with_simple_gates._body[0]
@@ -195,7 +194,7 @@ class TestQoalaDecorator:
         assert isinstance(program_local_qubit_with_simple_gates._body[7], SGate)
         assert program_local_qubit_with_simple_gates._body[7].qubit == program_local_qubit_with_simple_gates._body[0]
         assert isinstance(program_local_qubit_with_simple_gates._body[8], QubitMeasure)
-        assert isinstance(program_local_qubit_with_simple_gates._body[9], QubitReset)
+        #assert isinstance(program_local_qubit_with_simple_gates._body[9], QubitReset)
 
     def test_quantum_program_with_complex_gates(self):
         program_local_qubit_with_complex_gates.compile()

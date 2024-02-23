@@ -1,7 +1,8 @@
 from typing import Self
 
+from qoala import QoalaProgram
 from qoala.ast import QoalaExpression, QoalaOperation
-from qoala.ast.value import QoalaBit, QoalaInteger, QoalaFloat
+from qoala.ast.value import QoalaInteger, QoalaFloat
 
 
 class QoalaQubit(QoalaExpression):
@@ -9,37 +10,44 @@ class QoalaQubit(QoalaExpression):
 
 
 class QoalaLocalQubit(QoalaQubit):
-    def measure(self) -> QoalaBit:
-        # TODO - Implement: Modify the dummy object returned
-        return QoalaBit()
+    def __init__(self):
+        QoalaProgram.add_to_body(self)
+
+    def measure(self) -> QoalaOperation:
+        # When we measure, _at runtime_ we get a value of type Bit (or QoalaBit).
+        # However, here we need to model how the measure operation is compiled
+        # Being this said, we need to return a "QubitMeasure" operation
+        from qoala.ast.operations.quantum import QubitMeasure
+        # TODO - Do we need to specify the base?
+        return QubitMeasure(self)
 
     def X(self):
         from qoala.ast.operations.quantum import XGate
         return QoalaOperation._create_expression_for_op(XGate, self)
 
     def Y(self):
-        # TODO - Implement
-        pass
+        from qoala.ast.operations.quantum import YGate
+        return QoalaOperation._create_expression_for_op(YGate, self)
 
     def Z(self):
-        # TODO - Implement
-        pass
+        from qoala.ast.operations.quantum import ZGate
+        return QoalaOperation._create_expression_for_op(ZGate, self)
 
     def T(self):
-        # TODO - Implement
-        pass
+        from qoala.ast.operations.quantum import TGate
+        return QoalaOperation._create_expression_for_op(TGate, self)
 
     def H(self):
-        # TODO - Implement
-        pass
+        from qoala.ast.operations.quantum import HGate
+        return QoalaOperation._create_expression_for_op(HGate, self)
 
     def K(self):
-        # TODO - Implement
-        pass
+        from qoala.ast.operations.quantum import KGate
+        return QoalaOperation._create_expression_for_op(KGate, self)
 
     def S(self):
-        # TODO - Implement
-        pass
+        from qoala.ast.operations.quantum import SGate
+        return QoalaOperation._create_expression_for_op(SGate, self)
 
     def rot_X(
             self,
