@@ -1,4 +1,4 @@
-from typing import TypeVar
+from typing import TypeVar, Type
 
 _T = TypeVar("_T")
 
@@ -15,5 +15,11 @@ class QoalaExpression(QoalaASTElement):
     pass
 
 
+_cls = TypeVar("_cls", bound=QoalaExpression)
+
+
 class QoalaOperation(QoalaExpression):
-    pass
+    @staticmethod
+    def _create_expression_for_op(op_class: Type[_cls], *operands: QoalaExpression) -> _cls:
+        assert all(isinstance(operand, QoalaExpression) for operand in operands)
+        return op_class(*operands)

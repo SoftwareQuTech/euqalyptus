@@ -3,11 +3,10 @@ from enum import Enum, auto
 from typing import Generic, TypeVar, Self, Optional, Type, List
 
 from qoala import QoalaProgram
-from qoala.ast import QoalaExpression, QoalaStatement
+from qoala.ast import QoalaExpression, QoalaStatement, QoalaOperation
 from qoala.ast.errors import UnknownTypeError
 
 _T = TypeVar("_T")
-_cls = TypeVar("_cls", bound=QoalaExpression)
 
 
 class Signedness(Enum):
@@ -21,11 +20,7 @@ class QoalaValue(QoalaExpression, Generic[_T]):
     Class used to represent a value in the AST. Nodes of this type (i.e.
     subclasses) are usually the leaves of the AST.
     """
-
-    @staticmethod
-    def _create_expression_for_op(op_class: Type[_cls], *operands: QoalaExpression):
-        assert all(isinstance(operand, QoalaExpression) for operand in operands)
-        return op_class(*operands)
+    pass
 
 
 @dataclass(init=False)
@@ -69,19 +64,19 @@ class QoalaInteger(QoalaNumericValue[int]):
     # Operations associated with all integer types:
     def add(self, other: QoalaExpression) -> QoalaExpression:
         from qoala.ast.operations.numeric import Add
-        return QoalaValue._create_expression_for_op(Add, self, other)
+        return QoalaOperation._create_expression_for_op(Add, self, other)
 
     def subtract(self, other: QoalaExpression) -> QoalaExpression:
         from qoala.ast.operations.numeric import Subtract
-        return QoalaValue._create_expression_for_op(Subtract, self, other)
+        return QoalaOperation._create_expression_for_op(Subtract, self, other)
 
     def multiply(self, other: QoalaExpression) -> QoalaExpression:
         from qoala.ast.operations.numeric import Multiply
-        return QoalaValue._create_expression_for_op(Multiply, self, other)
+        return QoalaOperation._create_expression_for_op(Multiply, self, other)
 
     def divide(self, other: QoalaExpression) -> QoalaExpression:
         from qoala.ast.operations.numeric import Divide
-        return QoalaValue._create_expression_for_op(Divide, self, other)
+        return QoalaOperation._create_expression_for_op(Divide, self, other)
 
     # Method used for operator overload
     def __add__(self, other: Self) -> Self:
@@ -120,19 +115,19 @@ class QoalaFloat(QoalaNumericValue[float]):
     # Operations associated with all float types:
     def add(self, other: QoalaExpression) -> QoalaExpression:
         from qoala.ast.operations.numeric import Add
-        return QoalaValue._create_expression_for_op(Add, self, other)
+        return QoalaOperation._create_expression_for_op(Add, self, other)
 
     def subtract(self, other: QoalaExpression) -> QoalaExpression:
         from qoala.ast.operations.numeric import Subtract
-        return QoalaValue._create_expression_for_op(Subtract, self, other)
+        return QoalaOperation._create_expression_for_op(Subtract, self, other)
 
     def multiply(self, other: QoalaExpression) -> QoalaExpression:
         from qoala.ast.operations.numeric import Multiply
-        return QoalaValue._create_expression_for_op(Multiply, self, other)
+        return QoalaOperation._create_expression_for_op(Multiply, self, other)
 
     def divide(self, other: QoalaExpression) -> QoalaExpression:
         from qoala.ast.operations.numeric import Divide
-        return QoalaValue._create_expression_for_op(Divide, self, other)
+        return QoalaOperation._create_expression_for_op(Divide, self, other)
 
     # Method used for operator overload
     def __add__(self, other: Self) -> Self:
@@ -198,7 +193,7 @@ class QoalaArray(QoalaValue[QoalaExpression], Generic[_T]):
         else:
             to_add = new_element
         from qoala.ast.operations.arrays import SetItem
-        return QoalaValue._create_expression_for_op(SetItem, self, to_add)
+        return QoalaOperation._create_expression_for_op(SetItem, self, to_add)
 
     def __len__(self) -> int:
         # TODO - Does this operation make sense?
@@ -210,7 +205,7 @@ class QoalaArray(QoalaValue[QoalaExpression], Generic[_T]):
         else:
             to_add = item
         from qoala.ast.operations.arrays import GetItem
-        return QoalaValue._create_expression_for_op(GetItem, self, to_add)
+        return QoalaOperation._create_expression_for_op(GetItem, self, to_add)
 
 
 class QoalaBit(QoalaValue[int]):

@@ -1,6 +1,6 @@
 from typing import Self
 
-from qoala.ast import QoalaExpression
+from qoala.ast import QoalaExpression, QoalaOperation
 from qoala.ast.value import QoalaBit, QoalaInteger, QoalaFloat
 
 
@@ -14,8 +14,8 @@ class QoalaLocalQubit(QoalaQubit):
         return QoalaBit()
 
     def X(self):
-        # TODO - Implement
-        pass
+        from qoala.ast.operations.quantum import XGate
+        return QoalaOperation._create_expression_for_op(XGate, self)
 
     def Y(self):
         # TODO - Implement

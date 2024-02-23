@@ -181,12 +181,19 @@ class TestQoalaDecorator:
         assert len(program_local_qubit_with_simple_gates._body) == 10
         assert isinstance(program_local_qubit_with_simple_gates._body[0], QoalaLocalQubit)
         assert isinstance(program_local_qubit_with_simple_gates._body[1], XGate)
+        assert program_local_qubit_with_simple_gates._body[1].qubit == program_local_qubit_with_simple_gates._body[0]
         assert isinstance(program_local_qubit_with_simple_gates._body[2], YGate)
+        assert program_local_qubit_with_simple_gates._body[2].qubit == program_local_qubit_with_simple_gates._body[0]
         assert isinstance(program_local_qubit_with_simple_gates._body[3], ZGate)
+        assert program_local_qubit_with_simple_gates._body[3].qubit == program_local_qubit_with_simple_gates._body[0]
         assert isinstance(program_local_qubit_with_simple_gates._body[4], TGate)
+        assert program_local_qubit_with_simple_gates._body[4].qubit == program_local_qubit_with_simple_gates._body[0]
         assert isinstance(program_local_qubit_with_simple_gates._body[5], HGate)
+        assert program_local_qubit_with_simple_gates._body[5].qubit == program_local_qubit_with_simple_gates._body[0]
         assert isinstance(program_local_qubit_with_simple_gates._body[6], KGate)
+        assert program_local_qubit_with_simple_gates._body[6].qubit == program_local_qubit_with_simple_gates._body[0]
         assert isinstance(program_local_qubit_with_simple_gates._body[7], SGate)
+        assert program_local_qubit_with_simple_gates._body[7].qubit == program_local_qubit_with_simple_gates._body[0]
         assert isinstance(program_local_qubit_with_simple_gates._body[8], QubitMeasure)
         assert isinstance(program_local_qubit_with_simple_gates._body[9], QubitReset)
 
