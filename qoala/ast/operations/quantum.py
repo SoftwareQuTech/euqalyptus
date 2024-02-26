@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 
 from qoala import QoalaProgram
-from qoala.ast import QoalaOperation
+from qoala.ast import QoalaOperation, FloatOrExpression, IntegerOrExpression
 from qoala.ast.qubit import QoalaQubit
 from qoala.ast.value import QoalaExpression
 
@@ -103,3 +103,36 @@ class SGate(QoalaOperation):
         assert isinstance(operands[0], QoalaQubit)
         self.qubit = operands[0]
         QoalaProgram.add_to_body(self)
+
+
+@dataclass(init=False)
+class RotateX(QoalaOperation):
+    n: IntegerOrExpression
+    d: IntegerOrExpression
+    angle: FloatOrExpression
+
+    def __init__(self, *operands: QoalaExpression):
+        # TODO - Implement the transformation of immediates to expressions
+        pass
+
+
+@dataclass(init=False)
+class RotateY(QoalaOperation):
+    n: IntegerOrExpression
+    d: IntegerOrExpression
+    angle: FloatOrExpression
+
+    def __init__(self, *operands: QoalaExpression):
+        # TODO - Implement the transformation of immediates to expressions
+        pass
+
+
+@dataclass(init=False)
+class RotateZ(QoalaOperation):
+    n: IntegerOrExpression
+    d: IntegerOrExpression
+    angle: FloatOrExpression
+
+    def __init__(self, *operands: QoalaExpression):
+        # TODO - Implement the transformation of immediates to expressions
+        pass

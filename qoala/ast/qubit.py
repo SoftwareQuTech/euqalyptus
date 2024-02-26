@@ -1,8 +1,7 @@
 from typing import Self
 
 from qoala import QoalaProgram
-from qoala.ast import QoalaExpression, QoalaOperation
-from qoala.ast.value import QoalaInteger, QoalaFloat
+from qoala.ast import QoalaExpression, QoalaOperation, FloatOrExpression, IntegerOrExpression
 
 
 class QoalaQubit(QoalaExpression):
@@ -51,30 +50,30 @@ class QoalaLocalQubit(QoalaQubit):
 
     def rot_X(
             self,
-            n: int | QoalaInteger = 0,
-            d: int | QoalaInteger = 0,
-            angle: float | QoalaFloat | None = None
+            n: IntegerOrExpression = 0,
+            d: IntegerOrExpression = 0,
+            angle: FloatOrExpression | None = None
     ):
-        # TODO - Implement
-        pass
+        from qoala.ast.operations.quantum import RotateX
+        return QoalaOperation._create_expression_for_op(RotateX, self, n, d, angle)
 
     def rot_Y(
             self,
-            n: int | QoalaInteger = 0,
-            d: int | QoalaInteger = 0,
-            angle: float | QoalaFloat | None = None
+            n: IntegerOrExpression = 0,
+            d: IntegerOrExpression = 0,
+            angle: FloatOrExpression | None = None
     ):
-        # TODO - Implement
-        pass
+        from qoala.ast.operations.quantum import RotateY
+        return QoalaOperation._create_expression_for_op(RotateY, self, n, d, angle)
 
     def rot_Z(
             self,
-            n: int | QoalaInteger = 0,
-            d: int | QoalaInteger = 0,
-            angle: float | QoalaFloat | None = None
+            n: IntegerOrExpression = 0,
+            d: IntegerOrExpression = 0,
+            angle: FloatOrExpression | None = None
     ):
-        # TODO - Implement
-        pass
+        from qoala.ast.operations.quantum import RotateZ
+        return QoalaOperation._create_expression_for_op(RotateZ, self, n, d, angle)
 
     def cnot(self, target: Self) -> None:
         # TODO - Implement
