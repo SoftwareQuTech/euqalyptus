@@ -170,3 +170,23 @@ class RotateZ(Rotate):
             angle: QoalaFloatOrExpression
     ):
         super().__init__(qubit=qubit, n=n, d=d, angle=angle, axis=RotateBaseAxis.Z)
+
+
+@dataclass(init=False)
+class CNotGate(QoalaOperation):
+    target: QoalaQubit
+
+    def __init__(self, target: QoalaExpression):
+        assert isinstance(target, QoalaQubit)
+        self.target = target
+        QoalaProgram.add_to_body(self)
+
+
+@dataclass(init=False)
+class CPhaseGate(QoalaOperation):
+    target: QoalaQubit
+
+    def __init__(self, target: QoalaExpression):
+        assert isinstance(target, QoalaQubit)
+        self.target = target
+        QoalaProgram.add_to_body(self)
