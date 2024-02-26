@@ -85,8 +85,8 @@ class QoalaLocalQubit(QoalaQubit):
         pass
 
     def reset(self) -> None:
-        # TODO - Implement
-        pass
+        from qoala.ast.operations.quantum import QubitReset
+        return QoalaOperation._create_expression_for_op(QubitReset, self)
 
     def free(self) -> None:
         # TODO - Implement
