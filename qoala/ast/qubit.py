@@ -1,7 +1,8 @@
 from typing import Self
 
 from qoala import QoalaProgram
-from qoala.ast import QoalaExpression, QoalaOperation, FloatOrExpression, IntegerOrExpression
+from qoala.ast import QoalaExpression, QoalaOperation
+from qoala.ast.value import QoalaNumericValue, ImmediateQIntOrExpression, ImmediateQFloatOrExpression
 
 
 class QoalaQubit(QoalaExpression):
@@ -50,30 +51,72 @@ class QoalaLocalQubit(QoalaQubit):
 
     def rot_X(
             self,
-            n: IntegerOrExpression = 0,
-            d: IntegerOrExpression = 0,
-            angle: FloatOrExpression | None = None
+            n: ImmediateQIntOrExpression = 0,
+            d: ImmediateQIntOrExpression = 0,
+            angle: ImmediateQFloatOrExpression | None = None
     ):
+        if isinstance(n, int):
+            n_val = QoalaNumericValue.from_immediate(n)
+        else:
+            n_val = n
+        if isinstance(d, int):
+            d_val = QoalaNumericValue.from_immediate(d)
+        else:
+            d_val = d
+        if angle is None:
+            angle_val = QoalaNumericValue.from_immediate(0.0)
+        elif isinstance(angle, float):
+            angle_val = QoalaNumericValue.from_immediate(angle)
+        else:
+            angle_val = angle
         from qoala.ast.operations.quantum import RotateX
-        return QoalaOperation._create_expression_for_op(RotateX, self, n, d, angle)
+        return QoalaOperation._create_expression_for_op(RotateX, qubit=self, n=n_val, d=d_val, angle=angle_val)
 
     def rot_Y(
             self,
-            n: IntegerOrExpression = 0,
-            d: IntegerOrExpression = 0,
-            angle: FloatOrExpression | None = None
+            n: ImmediateQIntOrExpression = 0,
+            d: ImmediateQIntOrExpression = 0,
+            angle: ImmediateQFloatOrExpression | None = None
     ):
+        if isinstance(n, int):
+            n_val = QoalaNumericValue.from_immediate(n)
+        else:
+            n_val = n
+        if isinstance(d, int):
+            d_val = QoalaNumericValue.from_immediate(d)
+        else:
+            d_val = d
+        if angle is None:
+            angle_val = QoalaNumericValue.from_immediate(0.0)
+        elif isinstance(angle, float):
+            angle_val = QoalaNumericValue.from_immediate(angle)
+        else:
+            angle_val = angle
         from qoala.ast.operations.quantum import RotateY
-        return QoalaOperation._create_expression_for_op(RotateY, self, n, d, angle)
+        return QoalaOperation._create_expression_for_op(RotateY, qubit=self, n=n_val, d=d_val, angle=angle_val)
 
     def rot_Z(
             self,
-            n: IntegerOrExpression = 0,
-            d: IntegerOrExpression = 0,
-            angle: FloatOrExpression | None = None
+            n: ImmediateQIntOrExpression = 0,
+            d: ImmediateQIntOrExpression = 0,
+            angle: ImmediateQFloatOrExpression | None = None
     ):
+        if isinstance(n, int):
+            n_val = QoalaNumericValue.from_immediate(n)
+        else:
+            n_val = n
+        if isinstance(d, int):
+            d_val = QoalaNumericValue.from_immediate(d)
+        else:
+            d_val = d
+        if angle is None:
+            angle_val = QoalaNumericValue.from_immediate(0.0)
+        elif isinstance(angle, float):
+            angle_val = QoalaNumericValue.from_immediate(angle)
+        else:
+            angle_val = angle
         from qoala.ast.operations.quantum import RotateZ
-        return QoalaOperation._create_expression_for_op(RotateZ, self, n, d, angle)
+        return QoalaOperation._create_expression_for_op(RotateZ, qubit=self, n=n_val, d=d_val, angle=angle_val)
 
     def cnot(self, target: Self) -> None:
         # TODO - Implement

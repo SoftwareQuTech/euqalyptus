@@ -10,7 +10,10 @@ from qoala.ast.operations.quantum import (
     KGate,
     SGate,
     QubitMeasure,
-    QubitReset
+    QubitReset,
+    RotateX,
+    RotateY,
+    RotateZ
 )
 from qoala.ast.qubit import QoalaLocalQubit
 from qoala.ast.value import QoalaInteger, QoalaFloat, QoalaArray
@@ -200,4 +203,36 @@ class TestQoalaDecorator:
     def test_quantum_program_with_complex_gates(self):
         program_local_qubit_with_complex_gates.compile()
 
-        assert len(program_local_qubit_with_complex_gates._body) == 15
+        assert len(program_local_qubit_with_complex_gates._body) == 14
+        assert isinstance(program_local_qubit_with_complex_gates._body[0], QoalaInteger)
+        assert isinstance(program_local_qubit_with_complex_gates._body[1], QoalaInteger)
+        assert isinstance(program_local_qubit_with_complex_gates._body[2], QoalaFloat)
+        assert isinstance(program_local_qubit_with_complex_gates._body[3], QoalaLocalQubit)
+        assert isinstance(program_local_qubit_with_complex_gates._body[4], QoalaLocalQubit)
+        assert isinstance(program_local_qubit_with_complex_gates._body[5], QoalaInteger)
+        assert program_local_qubit_with_complex_gates._body[5].value == 10
+        assert isinstance(program_local_qubit_with_complex_gates._body[6], QoalaInteger)
+        assert program_local_qubit_with_complex_gates._body[6].value == 30
+        assert isinstance(program_local_qubit_with_complex_gates._body[7], QoalaFloat)
+        assert program_local_qubit_with_complex_gates._body[7].value == 0.0
+        assert isinstance(program_local_qubit_with_complex_gates._body[8], RotateX)
+        assert program_local_qubit_with_complex_gates._body[8].qubit == program_local_qubit_with_complex_gates._body[3]
+        assert program_local_qubit_with_complex_gates._body[8].n == program_local_qubit_with_complex_gates._body[5]
+        assert program_local_qubit_with_complex_gates._body[8].d == program_local_qubit_with_complex_gates._body[6]
+        assert program_local_qubit_with_complex_gates._body[8].angle == program_local_qubit_with_complex_gates._body[7]
+        assert isinstance(program_local_qubit_with_complex_gates._body[9], QoalaInteger)
+        assert program_local_qubit_with_complex_gates._body[9].value == 10
+        assert isinstance(program_local_qubit_with_complex_gates._body[10], QoalaFloat)
+        assert program_local_qubit_with_complex_gates._body[10].value == 10.5
+        assert isinstance(program_local_qubit_with_complex_gates._body[11], RotateY)
+        assert program_local_qubit_with_complex_gates._body[11].qubit == program_local_qubit_with_complex_gates._body[3]
+        assert program_local_qubit_with_complex_gates._body[11].n == program_local_qubit_with_complex_gates._body[9]
+        assert program_local_qubit_with_complex_gates._body[11].d == program_local_qubit_with_complex_gates._body[1]
+        assert program_local_qubit_with_complex_gates._body[11].angle == program_local_qubit_with_complex_gates._body[10]
+        assert isinstance(program_local_qubit_with_complex_gates._body[12], RotateZ)
+        assert program_local_qubit_with_complex_gates._body[12].qubit == program_local_qubit_with_complex_gates._body[3]
+        assert program_local_qubit_with_complex_gates._body[12].n == program_local_qubit_with_complex_gates._body[0]
+        assert program_local_qubit_with_complex_gates._body[12].d == program_local_qubit_with_complex_gates._body[1]
+        assert program_local_qubit_with_complex_gates._body[12].angle == program_local_qubit_with_complex_gates._body[2]
+
+        assert isinstance(program_local_qubit_with_complex_gates._body[13], QubitMeasure)

@@ -267,6 +267,10 @@ class LocalQubit(Qubit):
         # TODO - Implement creation of the internal representation of Qubit
         return QoalaLocalQubit()
 
+    def __init__(self):
+        # Nothing to do here
+        pass
+
     def measure(self) -> Bit:
         # TODO - Implement: Modify the dummy object returned
         return Bit()

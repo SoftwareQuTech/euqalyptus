@@ -143,6 +143,13 @@ class QoalaFloat(QoalaNumericValue[float]):
         return self.divide(other)
 
 
+QoalaFloatOrExpression = QoalaFloat | QoalaExpression
+QoalaIntegerOrExpression = QoalaInteger | QoalaExpression
+
+ImmediateQFloatOrExpression = QoalaFloatOrExpression | float
+ImmediateQIntOrExpression = QoalaIntegerOrExpression | int
+
+
 # FIXME - In the meantime, we will model arrays as if they were
 #         values. We might want to reconsider this decision in
 #         the future.
