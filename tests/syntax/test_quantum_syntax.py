@@ -1,21 +1,23 @@
+from qoala.ast.operations.quantum import QubitMeasure
+from qoala.ast.qubit import QoalaQubit
 from qoala.types.classical.floats import Float
-from qoala.types.classical.integer import Bit, Int
-from qoala.types.quantum.qubit import Qubit, LocalQubit
+from qoala.types.classical.integer import Int
+from qoala.types.quantum.qubit import LocalQubit
 
 
 class TestQuantumSyntax:
     def test_qubit_allocation(self):
         qubit = LocalQubit()
 
-        assert isinstance(qubit, Qubit)
+        assert isinstance(qubit, QoalaQubit)
 
     def test_qubit_measurement(self):
         qubit = LocalQubit()
 
         measurement = qubit.measure()
 
-        assert isinstance(qubit, Qubit)
-        assert isinstance(measurement, Bit)
+        assert isinstance(qubit, QoalaQubit)
+        assert isinstance(measurement, QubitMeasure)
 
     def test_qubit_operations_with_no_args(self):
         qubit = LocalQubit()
@@ -31,9 +33,9 @@ class TestQuantumSyntax:
         measurement = qubit.measure()
         qubit.reset()
 
-        assert isinstance(qubit, Qubit)
+        assert isinstance(qubit, QoalaQubit)
 
-        assert isinstance(measurement, Bit)
+        assert isinstance(measurement, QubitMeasure)
 
     def test_qubit_operations_with_args(self):
         n_val = Int(20)
@@ -66,6 +68,6 @@ class TestQuantumSyntax:
 
         measurement = qubit.measure()
 
-        assert isinstance(qubit, Qubit)
-        assert isinstance(measurement, Bit)
+        assert isinstance(qubit, QoalaQubit)
+        assert isinstance(measurement, QubitMeasure)
 

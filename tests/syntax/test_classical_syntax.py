@@ -55,13 +55,11 @@ class TestIntegerClassicalSyntax(Generic[_Base_Type_Int]):
     def test_int_creation(self, clazz: type):
         value_a = TestIntegerClassicalSyntax._get_int_from_immediate(clazz, 0)
         assert isinstance(value_a, QoalaInteger)
-        # TODO - Check the internal state of the returned object
 
     def test_int_creation_from_other_integer(self, clazz: type):
         value_a = TestIntegerClassicalSyntax._get_int_from_immediate(clazz, 10)
         value_b = TestIntegerClassicalSyntax._get_int_from_same_type(clazz, value_a)
         assert isinstance(value_b, QoalaInteger)
-        # TODO - Check the internal state of the returned object
 
     def test_int_operator_overload_correctness(self, clazz: type):
         value_a = TestIntegerClassicalSyntax._get_int_from_immediate(clazz, 2)
@@ -84,8 +82,6 @@ class TestIntegerClassicalSyntax(Generic[_Base_Type_Int]):
         assert isinstance(value_h, QoalaExpression)
         assert isinstance(value_i, QoalaExpression)
         assert isinstance(value_j, QoalaExpression)
-
-        # TODO - Check the internal state of the returned object
 
 
 @pytest.mark.parametrize("clazz", (Float, Double))
@@ -113,13 +109,11 @@ class TestFloatClassicalSyntax(Generic[_Base_Type_Float]):
     def test_float_creation(self, clazz: type):
         value_a = TestFloatClassicalSyntax._get_float_from_immediate(clazz, 0)
         assert isinstance(value_a, QoalaFloat)
-        # TODO - Check the internal state of the returned object
 
     def test_float_creation_from_other_int32(self, clazz: type):
         value_a = TestFloatClassicalSyntax._get_float_from_immediate(clazz, 10)
         value_b = TestFloatClassicalSyntax._get_float_from_same_type(clazz, value_a)
         assert isinstance(value_b, QoalaFloat)
-        # TODO - Check the internal state of the returned object
 
     def test_float_operator_overload_correctness(self, clazz: type):
         value_a = TestFloatClassicalSyntax._get_float_from_immediate(clazz, 2)
@@ -143,8 +137,6 @@ class TestFloatClassicalSyntax(Generic[_Base_Type_Float]):
         assert isinstance(value_i, QoalaExpression)
         assert isinstance(value_j, QoalaExpression)
 
-        # TODO - Check the internal state of the returned object
-
 
 class TestArrayClassicalSyntax:
     def test_declare_integer_array(self):
@@ -156,8 +148,6 @@ class TestArrayClassicalSyntax:
         assert isinstance(int_array_a, QoalaArray)
         assert isinstance(int_array_b, QoalaArray)
 
-        # TODO - Check the internal state of the returned object
-
     def test_store_in_integer_array(self):
         arr = IntArray()
         arr.store(Int(10))
@@ -168,8 +158,6 @@ class TestArrayClassicalSyntax:
 
         assert isinstance(value, QoalaExpression)
 
-        # TODO - Check the internal state of the returned object
-
     def test_declare_float_array(self):
         val_a = Double(10.5)
         val_b = Double(20.1)
@@ -179,9 +167,6 @@ class TestArrayClassicalSyntax:
         assert isinstance(int_array_a, QoalaArray)
         assert isinstance(int_array_b, QoalaArray)
 
-        # TODO - Check the internal state of the returned object
-
-    @pytest.mark.skip(reason="'store' operation for arrays is not supported yet")
     def test_store_in_float_array(self):
         arr = FloatArray()
         arr.store(Double(15.5))
@@ -189,5 +174,3 @@ class TestArrayClassicalSyntax:
 
         value = arr[0]
         assert isinstance(value, QoalaExpression)
-
-        # TODO - Check the internal state of the returned object

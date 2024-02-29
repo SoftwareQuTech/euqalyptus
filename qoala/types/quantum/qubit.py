@@ -1,6 +1,8 @@
 from abc import ABC, abstractmethod
-from typing import Optional, Self, Union
+from typing import Optional, Self
 
+from qoala.ast.qubit import QoalaLocalQubit
+from qoala.ast.value import QoalaBit
 from qoala.types.classical.floats import Float
 from qoala.types.classical.integer import Bit, QoalaIntegerType
 from qoala.types.quantum import QoalaQuantumType
@@ -108,9 +110,9 @@ class Qubit(QoalaQuantumType, ABC):
     @abstractmethod
     def rot_X(
             self,
-            n: Union[int, QoalaIntegerType] = 0,
-            d: Union[int, QoalaIntegerType] = 0,
-            angle: Union[float, Float, None] = None
+            n: int | QoalaIntegerType = 0,
+            d: int | QoalaIntegerType = 0,
+            angle: float | Float | None = None
     ):
         """
         Do a rotation around the X-axis of the specified angle.
@@ -141,9 +143,9 @@ class Qubit(QoalaQuantumType, ABC):
     @abstractmethod
     def rot_Y(
             self,
-            n: Union[int, QoalaIntegerType] = 0,
-            d: Union[int, QoalaIntegerType] = 0,
-            angle: Union[float, Float, None] = None
+            n: int | QoalaIntegerType = 0,
+            d: int | QoalaIntegerType = 0,
+            angle: float | Float | None = None
     ):
         """
         Do a rotation around the Y-axis of the specified angle.
@@ -174,9 +176,9 @@ class Qubit(QoalaQuantumType, ABC):
     @abstractmethod
     def rot_Z(
             self,
-            n: Union[int, QoalaIntegerType] = 0,
-            d: Union[int, QoalaIntegerType] = 0,
-            angle: Union[float, Float, None] = None
+            n: int | QoalaIntegerType = 0,
+            d: int | QoalaIntegerType = 0,
+            angle: float | Float | None = None
     ):
         """
         Do a rotation around the Z-axis of the specified angle.
@@ -262,71 +264,78 @@ class Qubit(QoalaQuantumType, ABC):
 
 
 class LocalQubit(Qubit):
-    def measure(self) -> Bit:
-        # TODO - Implement: Modify the dummy object returned
-        return Bit()
+    def __new__(cls, *args, **kwargs):
+        return QoalaLocalQubit()
+
+    def __init__(self):
+        # Nothing to do here
+        pass
+
+    def measure(self) -> QoalaBit:
+        # Nothing to do here
+        pass
 
     def X(self):
-        # TODO - Implement
+        # Nothing to do here
         pass
 
     def Y(self):
-        # TODO - Implement
+        # Nothing to do here
         pass
 
     def Z(self):
-        # TODO - Implement
+        # Nothing to do here
         pass
 
     def T(self):
-        # TODO - Implement
+        # Nothing to do here
         pass
 
     def H(self):
-        # TODO - Implement
+        # Nothing to do here
         pass
 
     def K(self):
-        # TODO - Implement
+        # Nothing to do here
         pass
 
     def S(self):
-        # TODO - Implement
+        # Nothing to do here
         pass
 
     def rot_X(
             self,
-            n: Union[int, QoalaIntegerType] = 0,
-            d: Union[int, QoalaIntegerType] = 0,
-            angle: Union[float, Float, None] = None
+            n: int | QoalaIntegerType = 0,
+            d: int | QoalaIntegerType = 0,
+            angle: float | Float | None = None
     ):
-        # TODO - Implement
+        # Nothing to do here
         pass
 
     def rot_Y(
             self,
-            n: Union[int, QoalaIntegerType] = 0,
-            d: Union[int, QoalaIntegerType] = 0,
-            angle: Union[float, Float, None] = None
+            n: int | QoalaIntegerType = 0,
+            d: int | QoalaIntegerType = 0,
+            angle: float | Float | None = None
     ):
-        # TODO - Implement
+        # Nothing to do here
         pass
 
     def rot_Z(
             self,
-            n: Union[int, QoalaIntegerType] = 0,
-            d: Union[int, QoalaIntegerType] = 0,
-            angle: Union[float, Float, None] = None
+            n: int | QoalaIntegerType = 0,
+            d: int | QoalaIntegerType = 0,
+            angle: float | Float | None = None
     ):
-        # TODO - Implement
+        # Nothing to do here
         pass
 
     def cnot(self, target: Self) -> None:
-        # TODO - Implement
+        # Nothing to do here
         pass
 
     def cphase(self, target: Self) -> None:
-        # TODO - Implement
+        # Nothing to do here
         pass
 
     def reset(self) -> None:

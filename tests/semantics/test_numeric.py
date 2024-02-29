@@ -3,6 +3,7 @@ import pytest
 from qoala.ast.operations.numeric import Add, Subtract, Multiply, Divide
 from qoala.ast.value import QoalaInteger, QoalaFloat, Signedness
 from qoala.types.classical import InvalidArgumentError
+from qoala.types.classical.arrays import IntArray, FloatArray
 from qoala.types.classical.floats import Float
 from qoala.types.classical.integer import Int32, UInt32
 
@@ -84,3 +85,11 @@ class TestNumbersSemantics:
         with pytest.raises(InvalidArgumentError) as ex:
             _ = UInt32(-3.25)
         assert str(ex.value) == "'UInt32' type only supports integer values"
+
+    def test_wrong_array_initialization(self):
+        with pytest.raises(InvalidArgumentError) as ex:
+            _ = IntArray(10.2)
+        assert str(ex.value) == "Array of type 'IntArray' can only hold values of type 'int'"
+        with pytest.raises(InvalidArgumentError) as ex:
+            _ = FloatArray(10)
+        assert str(ex.value) == "Array of type 'FloatArray' can only hold values of type 'float'"

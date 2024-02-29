@@ -1,13 +1,10 @@
-from abc import ABC
 from typing import Self, Optional
 
 from qoala.ast.value import QoalaInteger, Signedness
 from qoala.types.classical import QoalaClassicalType, _Internal_Value_Type, InvalidArgumentError
-from qoala.utils import as_int_when_value
 
 
-@as_int_when_value
-class QoalaIntegerType(QoalaClassicalType[_Internal_Value_Type], ABC):
+class QoalaIntegerType(QoalaClassicalType[_Internal_Value_Type]):
     # We overload the operators, so IDEs do not get confused because of the
     # dynamic type of integers, so instances of this class "can use" the overloaded
     # operator. This is because the constructor of this class (method __new__)
@@ -25,11 +22,11 @@ class QoalaIntegerType(QoalaClassicalType[_Internal_Value_Type], ABC):
         pass
 
 
-class SignedIntegerType(QoalaIntegerType[_Internal_Value_Type], ABC):
+class SignedIntegerType(QoalaIntegerType[_Internal_Value_Type]):
     pass
 
 
-class UnsignedIntegerType(QoalaIntegerType[_Internal_Value_Type], ABC):
+class UnsignedIntegerType(QoalaIntegerType[_Internal_Value_Type]):
     pass
 
 
@@ -93,7 +90,6 @@ class UInt32(UnsignedIntegerType[int]):
         else:
             kwargs["value"] = 0
 
-
         if "other" in kwargs:
             assert isinstance(kwargs["other"], QoalaInteger)
             kwargs["value"] = kwargs["other"]
@@ -118,5 +114,8 @@ class Bit(QoalaClassicalType[int]):
     returned values from measuring a qubit.
     This class does not support operations like "add", since it is not how
     these operations are defined for the result of a measurement.
+    IMPORTANT: Despite a programmer could use the 'Bit' type of the
+    qoala.types.classical.integer package to declare and create a value of this
+    type, this is a use case that it is *not* encouraged.
     """
     pass
