@@ -1,35 +1,14 @@
-from dataclasses import dataclass
 from abc import ABC, abstractmethod
 from collections.abc import Callable
 from threading import Lock
 from typing import List, Self, Any, Dict, Tuple
 
 from qoala.ast import QoalaASTElement
+from qoala.module import QoalaModule
 
 
 class NotYetCompiledError(RuntimeError):
     pass
-
-
-@dataclass
-class QoalaModule:
-    _body: List[QoalaASTElement]
-
-    def __init__(self):
-        self._body = []
-
-    def clear_body(self):
-        self._body.clear()
-
-    def add_element_to_body(self, elem: QoalaASTElement):
-        self._body.append(elem)
-
-    @property
-    def asm(self) -> str:
-        return "TODO"
-
-    def __str__(self) -> str:
-        return self.asm
 
 
 class QoalaProgramBase(ABC):
@@ -77,7 +56,7 @@ class QoalaProgram:
     _is_compiled: bool
 
     def __init__(self, entry_fun: Callable):
-        self._module = QoalaModule()
+        self._module = QoalaModule(entry_fun.__name__)
         self._entry_fun = entry_fun
         self._is_compiled = False
 
