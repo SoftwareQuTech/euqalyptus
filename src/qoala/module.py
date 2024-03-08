@@ -7,7 +7,7 @@ from qoalahir.ir import *
 from qoalahir.dialects import hir, func
 
 
-@dataclass
+@dataclass(init=False)
 class QoalaModule:
     _body: List[QoalaASTElement]
     _function_name: str
@@ -49,6 +49,7 @@ class QoalaModule:
                     #        which will add the operation to the right insertion point
                     # qubit = hir.NewQubitOp().qout
                     # op = hir.HadamardOp(qubit)
-                    pass
+                    for operation in self._body:
+                        operation.to_hir(ctx)
             # Before closing the context, we print the ASM we just created
             self._qir_module = qir_module

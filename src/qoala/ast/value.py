@@ -6,6 +6,9 @@ from qoala import QoalaProgram
 from qoala.ast import QoalaExpression, QoalaStatement, QoalaOperation
 from qoala.ast.errors import UnknownTypeError
 
+from qoalahir.ir import Context, IntegerType, F32Type
+from qoalahir.dialects.arith import ConstantOp
+
 _T = TypeVar("_T")
 
 
@@ -91,6 +94,22 @@ class QoalaInteger(QoalaNumericValue[int]):
     def __truediv__(self, other: Self) -> Self:
         return self.divide(other)
 
+    def can_evaluate_to(self, cls):
+        if cls == QoalaInteger:
+            return True
+        else:
+            return False
+
+    def to_hir(self, ctx: Context):
+        if self.signedness == Signedness.SIGNED:
+            integer_type = IntegerType.get_signed(self.width, context=ctx)
+        elif self.signedness == Signedness.UNSIGNED:
+            integer_type = IntegerType.get_unsigned(self.width, context=ctx)
+        else:
+            integer_type = IntegerType.get_signless(self.width, context=ctx)
+        self._qoala_hir_val = ConstantOp(value=self.value, result=integer_type)
+        return self._qoala_hir_val
+
 
 class QoalaFloat(QoalaNumericValue[float]):
     def __init__(
@@ -141,6 +160,17 @@ class QoalaFloat(QoalaNumericValue[float]):
 
     def __truediv__(self, other: Self) -> Self:
         return self.divide(other)
+
+    def to_hir(self, ctx: Context):
+        float_type = F32Type.get(ctx)
+        self._qoala_hir_val = ConstantOp(value=self.value, result=float_type)
+        return self._qoala_hir_val
+
+    def can_evaluate_to(self, cls):
+        if cls == QoalaFloat:
+            return True
+        else:
+            return False
 
 
 QoalaFloatOrExpression = QoalaFloat | QoalaExpression
