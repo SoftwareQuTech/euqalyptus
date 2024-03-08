@@ -1,9 +1,14 @@
 import pytest
 
-from qoala import QoalaProgram, NotYetCompiledError
+from qoala import QoalaProgram, QoalaModule, NotYetCompiledError
 from qoala.types.classical.integer import Int
 from qoala.types.classical.floats import Float
 from qoala.types.quantum.qubit import LocalQubit
+
+
+@QoalaProgram
+def empty_program():
+    pass
 
 
 @QoalaProgram
@@ -45,10 +50,31 @@ def complex_quantum_program():
 
 
 class TestQoalaHIRPythonBindings:
+    def test_empty_program_to_qoala_HIR(self):
+        with pytest.raises(NotYetCompiledError) as ex:
+            _, _ = empty_program.module
+        assert str(ex.value) == "The program has not been compiled yet. Did you invoke 'compile()' on it?"
+        _, module = empty_program.compile()
+        assert isinstance(module, QoalaModule)
+        expected_asm = """"builtin.module"() ({
+  "func.func"() <{function_type = (none) -> none, sym_name = "simple_arith_program"}> ({
+  }) : () -> ()
+}) : () -> ()
+"""
+        assert str(module.asm) == expected_asm
     def test_simple_program_to_qoala_HIR(self):
         with pytest.raises(NotYetCompiledError) as ex:
-            module = simple_arith_program.module
+            _, _ = simple_arith_program.module
         assert str(ex.value) == "The program has not been compiled yet. Did you invoke 'compile()' on it?"
+        _, module = simple_arith_program.compile()
+        assert isinstance(module, QoalaModule)
+        expected_asm = """"builtin.module"() ({
+  "func.func"() <{function_type = (none) -> none, sym_name = "simple_arith_program"}> ({
+    # TODO
+  }) : () -> ()
+}) : () -> ()
+"""
+        assert str(module.asm) == expected_asm
 
     def test_complex_progra_to_qoala_HIR(self):
         pass

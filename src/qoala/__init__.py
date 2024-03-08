@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from abc import ABC, abstractmethod
 from collections.abc import Callable
 from threading import Lock
-from typing import List, Self, Any, Dict
+from typing import List, Self, Any, Dict, Tuple
 
 from qoala.ast import QoalaASTElement
 
@@ -97,10 +97,10 @@ class QoalaProgram:
         if hasattr(QoalaProgram, "_instance"):
             QoalaProgram._instance._module.add_element_to_body(item)
 
-    def __call__(self, *args, **kwargs) -> QoalaModule:
+    def __call__(self, *args: Any, **kwargs: Any) -> Tuple[int, QoalaModule]:
         return self.compile(*args, **kwargs)
 
-    def compile(self, *args, **kwargs) -> QoalaModule:
+    def compile(self, *args: Any, **kwargs: Any) -> Tuple[int, QoalaModule]:
         # TODO - Implement (if needed) more functionality than just invoking the function
         # To ease the insertion of the statement into the program body, we need to
         # keep a reference to the current instance of the QoalaProgram we are compiling.
@@ -115,4 +115,4 @@ class QoalaProgram:
         # We delete the reference to the QoalaProgram under compilation
         del QoalaProgram._instance
         QoalaProgram._compiler_lock.release()
-        return ret_val
+        return ret_val, self._module
