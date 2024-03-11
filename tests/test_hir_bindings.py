@@ -1,8 +1,8 @@
 import pytest
 
 from qoala import QoalaProgram, QoalaModule, NotYetCompiledError
-from qoala.types.classical.integer import Int
 from qoala.types.classical.floats import Float
+from qoala.types.classical.integer import Int
 from qoala.types.quantum.qubit import LocalQubit
 
 
@@ -89,7 +89,7 @@ class TestQoalaHIRPythonBindings:
   "func.func"() <{function_type = (none) -> none, sym_name = "simple_arith_program_with_int"}> ({
     %0 = "arith.constant"() <{value = 10 : si32}> : () -> si32
     %1 = "arith.constant"() <{value = 20 : si32}> : () -> si32
-    %2 = "arith.addi"(%0, %1) : (si32, si32) -> si32
+    %2 = "arith.addi"(%0, %1) <{overflowFlags = #arith.overflow<none>}> : (si32, si32) -> si32
   }) : () -> ()
 }) : () -> ()
 """
