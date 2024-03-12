@@ -81,10 +81,12 @@ class TestQoalaHIRPythonBindings:
         assert str(ex.value) == "The program has not been compiled yet. Did you invoke 'compile()' on it?"
         _, module = simple_arith_program_with_int.compile()
         assert isinstance(module, QoalaModule)
-        # Note - The qoala type "Int", creates a _signed_ integer of 32 bits width. We use this information
-        #        (the signedness) to create the builtin type using IntegerType.get_(un)signed(width).
-        #        Since we request a _signed_ integer type, then we will end up with a "si32" type in the
-        #        generated intermediate representation.
+        # Note 1 - The qoala type "Int", creates a _signed_ integer of 32 bits width. We use this information
+        #          (the signedness) to create the MLIR arith builtin type using IntegerType.get_(un)signed(width).
+        #          Since we request a _signed_ integer type, then we will end up with a "si32" type in the
+        #          generated intermediate representation.
+        # Note 2 - Since LLVM 18, the  "arith.addi" operation also prints the "overflowFlags" attribute even
+        #          if we don't specify it (hence, why we have "none" in the parametric type)
         expected_asm = """"builtin.module"() ({
   "func.func"() <{function_type = (none) -> none, sym_name = "simple_arith_program_with_int"}> ({
     %0 = "arith.constant"() <{value = 10 : si32}> : () -> si32
@@ -113,7 +115,7 @@ class TestQoalaHIRPythonBindings:
 """
         assert str(module.asm) == expected_asm
 
-    @pytest.mark.skip(reason="Generation of QoalaHIRof comples operations not supported yet")
+    @pytest.mark.skip(reason="Generation of QoalaHIR of complex operations not supported yet")
     def test_complex_program_to_qoala_hir(self):
         with pytest.raises(NotYetCompiledError) as ex:
             _, _ = complex_quantum_program.module
