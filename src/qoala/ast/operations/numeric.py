@@ -33,7 +33,7 @@ class Add(QoalaOperation):
         if self.operand_a.can_evaluate_to(QoalaInteger):
             self._qoala_hir_val = AddIOp(self.operand_a._qoala_hir_val, self.operand_b._qoala_hir_val)
         elif self.operand_a.can_evaluate_to(QoalaFloat):
-            self._qoala_hir_val = AddFOp(self.operand_a._qoala_hir_val, self.operand_b._qoala_hir_val, fastmath=None)
+            self._qoala_hir_val = AddFOp(self.operand_a._qoala_hir_val, self.operand_b._qoala_hir_val)
         else:
             raise RuntimeError()
         return self._qoala_hir_val

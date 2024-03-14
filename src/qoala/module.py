@@ -4,7 +4,7 @@ from typing import List
 from qoala.ast import QoalaASTElement
 
 from qoalahir.ir import *
-from qoalahir.dialects import hir, func
+from qoalahir.dialects import hir, func, builtin
 
 
 @dataclass(init=False)
@@ -31,25 +31,20 @@ class QoalaModule:
     def __str__(self) -> str:
         return self.asm
 
-    def _init_qir_module(self) -> Module:
+    def _init_qir_module(self) -> None:
         with Context() as ctx, Location.unknown():
             hir.register_dialect(ctx)
             qir_module = Module.create()
             with InsertionPoint(qir_module.body):
-                none_type = NoneType.get(ctx)
-                func_type = FunctionType.get(inputs=[none_type], results=[none_type])
+                func_type = FunctionType.get(inputs=[], results=[])
                 function = func.FuncOp(
                     name=f"{self._function_name}",
                     type=func_type,
                 )
                 block = Block.create_at_start(function.body)
                 with InsertionPoint(block):
-                    # TODO - Insert the actual ASM in the module
-                    #        An idea to achieve this is to invoke a function on each of the QoalaASTElement of _body
-                    #        which will add the operation to the right insertion point
-                    # qubit = hir.NewQubitOp().qout
-                    # op = hir.HadamardOp(qubit)
                     for operation in self._body:
                         operation.to_hir(ctx)
-            # Before closing the context, we print the ASM we just created
+                    func.ReturnOp([])
+            # Before closing the context, we save the ASM we just created
             self._qir_module = qir_module

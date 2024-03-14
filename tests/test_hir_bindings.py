@@ -67,11 +67,11 @@ class TestQoalaHIRPythonBindings:
         assert str(ex.value) == "The program has not been compiled yet. Did you invoke 'compile()' on it?"
         _, module = empty_program.compile()
         assert isinstance(module, QoalaModule)
-        expected_asm = """"builtin.module"() ({
-  "func.func"() <{function_type = (none) -> none, sym_name = "empty_program"}> ({
-  ^bb0:
-  }) : () -> ()
-}) : () -> ()
+        expected_asm = """module {
+  func.func @empty_program() {
+    return
+  }
+}
 """
         assert str(module.asm) == expected_asm
 
@@ -83,17 +83,14 @@ class TestQoalaHIRPythonBindings:
         assert isinstance(module, QoalaModule)
         # Note 1 - The qoala type "Int", creates a _signed_ integer of 32 bits width. We use this information
         #          (the signedness) to create the MLIR arith builtin type using IntegerType.get_(un)signed(width).
-        #          Since we request a _signed_ integer type, then we will end up with a "si32" type in the
-        #          generated intermediate representation.
-        # Note 2 - Since LLVM 18, the  "arith.addi" operation also prints the "overflowFlags" attribute even
-        #          if we don't specify it (hence, why we have "none" in the parametric type)
-        expected_asm = """"builtin.module"() ({
-  "func.func"() <{function_type = (none) -> none, sym_name = "simple_arith_program_with_int"}> ({
-    %0 = "arith.constant"() <{value = 10 : si32}> : () -> si32
-    %1 = "arith.constant"() <{value = 20 : si32}> : () -> si32
-    %2 = "arith.addi"(%0, %1) <{overflowFlags = #arith.overflow<none>}> : (si32, si32) -> si32
-  }) : () -> ()
-}) : () -> ()
+        expected_asm = """module {
+  func.func @simple_arith_program_with_int() {
+    %c10_i32 = arith.constant 10 : i32
+    %c20_i32 = arith.constant 20 : i32
+    %0 = arith.addi %c10_i32, %c20_i32 : i32
+    return
+  }
+}
 """
         assert str(module.asm) == expected_asm
 
@@ -105,13 +102,14 @@ class TestQoalaHIRPythonBindings:
         assert isinstance(module, QoalaModule)
         # NOTE: For some reason we get the "fastmath" attribute in the "arith.addf" operation
         #       In the meantime, we will simply let it be there, but it will be nice to get rid of it
-        expected_asm = """"builtin.module"() ({
-  "func.func"() <{function_type = (none) -> none, sym_name = "simple_arith_program_with_floats"}> ({
-    %0 = "arith.constant"() <{value = 1.000000e+01 : f32}> : () -> f32
-    %1 = "arith.constant"() <{value = 2.000000e+01 : f32}> : () -> f32
-    %2 = "arith.addf"(%0, %1) <{fastmath = #arith.fastmath<none>}> : (f32, f32) -> f32
-  }) : () -> ()
-}) : () -> ()
+        expected_asm = """module {
+  func.func @simple_arith_program_with_floats() {
+    %cst = arith.constant 1.000000e+01 : f32
+    %cst_0 = arith.constant 2.000000e+01 : f32
+    %0 = arith.addf %cst, %cst_0 : f32
+    return
+  }
+}
 """
         assert str(module.asm) == expected_asm
 

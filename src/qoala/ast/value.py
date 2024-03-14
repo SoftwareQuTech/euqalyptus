@@ -6,7 +6,8 @@ from qoala import QoalaProgram
 from qoala.ast import QoalaExpression, QoalaStatement, QoalaOperation
 from qoala.ast.errors import UnknownTypeError
 
-from qoalahir.ir import Context, IntegerType, F32Type
+from qoalahir.ir import Context
+from qoalahir.extras.types import i32, ui32, f32
 from qoalahir.dialects.arith import ConstantOp
 
 _T = TypeVar("_T")
@@ -102,11 +103,11 @@ class QoalaInteger(QoalaNumericValue[int]):
 
     def to_hir(self, ctx: Context):
         if self.signedness == Signedness.SIGNED:
-            integer_type = IntegerType.get_signed(self.width, context=ctx)
+            integer_type = i32()
         elif self.signedness == Signedness.UNSIGNED:
-            integer_type = IntegerType.get_unsigned(self.width, context=ctx)
+            integer_type = ui32()
         else:
-            integer_type = IntegerType.get_signless(self.width, context=ctx)
+            integer_type = i32()
         self._qoala_hir_val = ConstantOp(value=self.value, result=integer_type)
         return self._qoala_hir_val
 
@@ -162,7 +163,7 @@ class QoalaFloat(QoalaNumericValue[float]):
         return self.divide(other)
 
     def to_hir(self, ctx: Context):
-        float_type = F32Type.get(ctx)
+        float_type = f32()
         self._qoala_hir_val = ConstantOp(value=self.value, result=float_type)
         return self._qoala_hir_val
 

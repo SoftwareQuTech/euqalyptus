@@ -15,7 +15,7 @@ class QoalaASTElement(ABC):
         pass
 
 
-class QoalaStatement(QoalaASTElement):
+class QoalaStatement(QoalaASTElement, ABC):
     pass
 
 
@@ -31,7 +31,7 @@ class QoalaExpression(QoalaASTElement, ABC):
 _cls = TypeVar("_cls", bound=QoalaExpression)
 
 
-class QoalaOperation(QoalaExpression):
+class QoalaOperation(QoalaExpression, ABC):
     @staticmethod
     def _create_expression_for_op(
             op_class: Type[_cls],
