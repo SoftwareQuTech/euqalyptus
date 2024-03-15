@@ -23,11 +23,11 @@ def simple_arith_program():
 
     float_c = float_a - float_b
 
-    int_d = 10 * int_c
-    int_e = int_d / 5
+    int_d = Int(5) * int_c
+    int_e = int_d / Int(5)
 
-    float_d = float_c * 20.0
-    float_e = float_d / 4.0
+    float_d = float_c * Float(20.0)
+    float_e = float_d / Float(4.0)
 
 
 @QoalaProgram
@@ -90,7 +90,7 @@ class TestQoalaHIRPythonBindings:
     %0 = arith.addi %c10_i32, %c20_i32 : i32
     %cst = arith.constant 1.000000e+01 : f32
     %cst_0 = arith.constant 2.000000e+01 : f32
-    %1 = arith.addf %cst, %cst_0 : f32
+    %1 = arith.subf %cst, %cst_0 : f32
     return
   }
 }
