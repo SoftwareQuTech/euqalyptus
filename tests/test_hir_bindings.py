@@ -12,22 +12,22 @@ def empty_program():
 
 
 @QoalaProgram
-def simple_arith_program_with_int():
+def simple_arith_program():
     int_a = Int(10)
     int_b = Int(20)
 
     int_c = int_a + int_b
 
+    float_a = Float(10.0)
+    float_b = Float(20.0)
 
-@QoalaProgram
-def simple_arith_program_with_floats():
-    # Despite that it is supported, if we pass an integer (like "10") as the immediate
-    # we will trigger a SIGSEGV in the mlir bindings library
-    # TODO- Investigate this issue!
-    int_a = Float(10.0)
-    int_b = Float(20.0)
+    float_c = float_a - float_b
 
-    int_c = int_a + int_b
+    int_d = 10 * int_c
+    int_e = int_d / 5
+
+    float_d = float_c * 20.0
+    float_e = float_d / 4.0
 
 
 @QoalaProgram
@@ -77,36 +77,20 @@ class TestQoalaHIRPythonBindings:
 
     def test_simple_integer_program_to_qoala_hir(self):
         with pytest.raises(NotYetCompiledError) as ex:
-            _, _ = simple_arith_program_with_int.module
+            _, _ = simple_arith_program.module
         assert str(ex.value) == "The program has not been compiled yet. Did you invoke 'compile()' on it?"
-        _, module = simple_arith_program_with_int.compile()
+        _, module = simple_arith_program.compile()
         assert isinstance(module, QoalaModule)
         # Note 1 - The qoala type "Int", creates a _signed_ integer of 32 bits width. We use this information
         #          (the signedness) to create the MLIR arith builtin type using IntegerType.get_(un)signed(width).
         expected_asm = """module {
-  func.func @simple_arith_program_with_int() {
+  func.func @simple_arith_program() {
     %c10_i32 = arith.constant 10 : i32
     %c20_i32 = arith.constant 20 : i32
     %0 = arith.addi %c10_i32, %c20_i32 : i32
-    return
-  }
-}
-"""
-        assert str(module.asm) == expected_asm
-
-    def test_simple_float_program_to_qoala_hir(self):
-        with pytest.raises(NotYetCompiledError) as ex:
-            _, _ = simple_arith_program_with_floats.module
-        assert str(ex.value) == "The program has not been compiled yet. Did you invoke 'compile()' on it?"
-        _, module = simple_arith_program_with_floats.compile()
-        assert isinstance(module, QoalaModule)
-        # NOTE: For some reason we get the "fastmath" attribute in the "arith.addf" operation
-        #       In the meantime, we will simply let it be there, but it will be nice to get rid of it
-        expected_asm = """module {
-  func.func @simple_arith_program_with_floats() {
     %cst = arith.constant 1.000000e+01 : f32
     %cst_0 = arith.constant 2.000000e+01 : f32
-    %0 = arith.addf %cst, %cst_0 : f32
+    %1 = arith.addf %cst, %cst_0 : f32
     return
   }
 }
