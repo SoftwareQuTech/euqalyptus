@@ -1,10 +1,14 @@
+from abc import ABC
 from dataclasses import dataclass
 from enum import Enum, auto
 
 from qoala import QoalaProgram
 from qoala.ast.operations import QoalaOperation
 from qoala.ast.qubit import QoalaQubit
-from qoala.ast.value import QoalaExpression, QoalaFloatOrExpression, QoalaIntegerOrExpression
+from qoala.ast.value import QoalaExpression, QoalaFloatOrExpression, QoalaIntegerOrExpression, QoalaBit
+
+from qoalahir.ir import Context
+from qoalahir.dialects.hir import HadamardOp, RotXOp, RotYOp, RotZOp, CnotOp, MeasureOp
 
 
 @dataclass(init=False)
@@ -17,9 +21,19 @@ class QubitMeasure(QoalaOperation):
         self.qubit = operands[0]
         QoalaProgram.add_to_body(self)
 
+    def can_evaluate_to(self, cls):
+        if cls == QoalaBit:
+            return True
+        else:
+            return False
+
+    def to_hir(self, ctx: Context):
+        self._qoala_hir_val = MeasureOp(qin0=self.qubit)
+        return self._qoala_hir_val
+
 
 @dataclass(init=False)
-class QubitReset(QoalaOperation):
+class QubitReset(QoalaOperation, ABC):
     qubit: QoalaQubit
 
     def __init__(self, *operands: QoalaExpression):
@@ -27,6 +41,15 @@ class QubitReset(QoalaOperation):
         assert isinstance(operands[0], QoalaQubit)
         self.qubit = operands[0]
         QoalaProgram.add_to_body(self)
+
+    def can_evaluate_to(self, cls):
+        # "void" operation; can always evaluate to anything
+        return True
+
+    def to_hir(self, ctx: Context):
+        # TODO - There is no "ResetOp" operation in hir dialect
+        self._qoala_hir_val = None
+        return self._qoala_hir_val
 
 
 @dataclass(init=False)
@@ -39,6 +62,17 @@ class XGate(QoalaOperation):
         self.qubit = operands[0]
         QoalaProgram.add_to_body(self)
 
+    def can_evaluate_to(self, cls):
+        if cls == QoalaQubit:
+            return True
+        else:
+            return False
+
+    def to_hir(self, ctx: Context):
+        # TODO - There is no "XGate" operation in hir dialect
+        self._qoala_hir_val = None
+        return self._qoala_hir_val
+
 
 @dataclass(init=False)
 class YGate(QoalaOperation):
@@ -49,6 +83,17 @@ class YGate(QoalaOperation):
         assert isinstance(operands[0], QoalaQubit)
         self.qubit = operands[0]
         QoalaProgram.add_to_body(self)
+
+    def can_evaluate_to(self, cls):
+        if cls == QoalaQubit:
+            return True
+        else:
+            return False
+
+    def to_hir(self, ctx: Context):
+        # TODO - There is no "YGate" operation in hir dialect
+        self._qoala_hir_val = None
+        return self._qoala_hir_val
 
 
 @dataclass(init=False)
@@ -61,6 +106,17 @@ class ZGate(QoalaOperation):
         self.qubit = operands[0]
         QoalaProgram.add_to_body(self)
 
+    def can_evaluate_to(self, cls):
+        if cls == QoalaQubit:
+            return True
+        else:
+            return False
+
+    def to_hir(self, ctx: Context):
+        # TODO - There is no "ZGate" operation in hir dialect
+        self._qoala_hir_val = None
+        return self._qoala_hir_val
+
 
 @dataclass(init=False)
 class TGate(QoalaOperation):
@@ -71,6 +127,17 @@ class TGate(QoalaOperation):
         assert isinstance(operands[0], QoalaQubit)
         self.qubit = operands[0]
         QoalaProgram.add_to_body(self)
+
+    def can_evaluate_to(self, cls):
+        if cls == QoalaQubit:
+            return True
+        else:
+            return False
+
+    def to_hir(self, ctx: Context):
+        # TODO - There is no "TGate" operation in hir dialect
+        self._qoala_hir_val = None
+        return self._qoala_hir_val
 
 
 @dataclass(init=False)
@@ -83,6 +150,16 @@ class HGate(QoalaOperation):
         self.qubit = operands[0]
         QoalaProgram.add_to_body(self)
 
+    def can_evaluate_to(self, cls):
+        if cls == QoalaQubit:
+            return True
+        else:
+            return False
+
+    def to_hir(self, ctx: Context):
+        self._qoala_hir_val = HadamardOp(self.qubit)
+        return self._qoala_hir_val
+
 
 @dataclass(init=False)
 class KGate(QoalaOperation):
@@ -93,6 +170,17 @@ class KGate(QoalaOperation):
         assert isinstance(operands[0], QoalaQubit)
         self.qubit = operands[0]
         QoalaProgram.add_to_body(self)
+
+    def can_evaluate_to(self, cls):
+        if cls == QoalaQubit:
+            return True
+        else:
+            return False
+
+    def to_hir(self, ctx: Context):
+        # TODO - There is no "KGate" operation in hir dialect
+        self._qoala_hir_val = None
+        return self._qoala_hir_val
 
 
 @dataclass(init=False)
@@ -105,6 +193,17 @@ class SGate(QoalaOperation):
         self.qubit = operands[0]
         QoalaProgram.add_to_body(self)
 
+    def can_evaluate_to(self, cls):
+        if cls == QoalaQubit:
+            return True
+        else:
+            return False
+
+    def to_hir(self, ctx: Context):
+        # TODO - There is no "SGate" operation in hir dialect
+        self._qoala_hir_val = None
+        return self._qoala_hir_val
+
 
 class RotateBaseAxis(Enum):
     X = auto()
@@ -113,7 +212,7 @@ class RotateBaseAxis(Enum):
 
 
 @dataclass(init=False)
-class Rotate(QoalaOperation):
+class Rotate(QoalaOperation, ABC):
     qubit: QoalaQubit
     n: QoalaIntegerOrExpression
     d: QoalaIntegerOrExpression
@@ -147,6 +246,16 @@ class RotateX(Rotate):
     ):
         super().__init__(qubit=qubit, n=n, d=d, angle=angle, axis=RotateBaseAxis.X)
 
+    def can_evaluate_to(self, cls):
+        if cls == QoalaQubit:
+            return True
+        else:
+            return False
+
+    def to_hir(self, ctx: Context):
+        self._qoala_hir_val = RotXOp(qin=self.qubit, angle=self.angle)
+        return self._qoala_hir_val
+
 
 @dataclass(init=False)
 class RotateY(Rotate):
@@ -158,6 +267,17 @@ class RotateY(Rotate):
             angle: QoalaFloatOrExpression
     ):
         super().__init__(qubit=qubit, n=n, d=d, angle=angle, axis=RotateBaseAxis.Y)
+
+    def can_evaluate_to(self, cls):
+        if cls == QoalaQubit:
+            return True
+        else:
+            return False
+
+    def to_hir(self, ctx: Context):
+        self._qoala_hir_val = RotYOp(qin=self.qubit, angle=self.angle)
+        return self._qoala_hir_val
+
 
 
 @dataclass(init=False)
@@ -171,15 +291,39 @@ class RotateZ(Rotate):
     ):
         super().__init__(qubit=qubit, n=n, d=d, angle=angle, axis=RotateBaseAxis.Z)
 
+    def can_evaluate_to(self, cls):
+        if cls == QoalaQubit:
+            return True
+        else:
+            return False
+
+    def to_hir(self, ctx: Context):
+        self._qoala_hir_val = RotZOp(qin=self.qubit, angle=self.angle)
+        return self._qoala_hir_val
+
+
 
 @dataclass(init=False)
 class CNotGate(QoalaOperation):
+    quibit: QoalaQubit
     target: QoalaQubit
 
-    def __init__(self, target: QoalaExpression):
+    def __init__(self, qubit: QoalaExpression, target: QoalaExpression):
+        assert isinstance(qubit, QoalaQubit)
         assert isinstance(target, QoalaQubit)
         self.target = target
+        self.qubit = qubit
         QoalaProgram.add_to_body(self)
+
+    def can_evaluate_to(self, cls):
+        if cls == QoalaQubit:
+            return True
+        else:
+            return False
+
+    def to_hir(self, ctx: Context):
+        self._qoala_hir_val = CnotOp(qin0=self.qubit, quin1=self.target)
+        return self._qoala_hir_val
 
 
 @dataclass(init=False)
@@ -190,3 +334,14 @@ class CPhaseGate(QoalaOperation):
         assert isinstance(target, QoalaQubit)
         self.target = target
         QoalaProgram.add_to_body(self)
+
+    def can_evaluate_to(self, cls):
+        if cls == QoalaQubit:
+            return True
+        else:
+            return False
+
+    def to_hir(self, ctx: Context):
+        # TODO - There is no "CPhaseGate" operation in hir dialect
+        self._qoala_hir_val = None
+        return self._qoala_hir_val

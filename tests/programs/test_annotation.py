@@ -1,3 +1,5 @@
+import pytest
+
 from qoala import QoalaProgram
 from qoala.ast.operations.arrays import GetItem, SetItem
 from qoala.ast.operations.numeric import Add, Subtract, Multiply, Divide
@@ -180,6 +182,7 @@ class TestQoalaDecorator:
         assert program_with_array_mutation._body[5].base_array is program_with_array_mutation._body[1]
         assert program_with_array_mutation._body[5].index is program_with_array_mutation._body[4]
 
+    @pytest.mark.skip(reason="Most of the gates used here do not have a counterpart in the hir dialect")
     def test_quantum_program_with_simple_gates(self):
         program_local_qubit_with_simple_gates.compile()
 

@@ -1,3 +1,4 @@
+from abc import ABC
 from typing import Self
 
 from qoala import QoalaProgram
@@ -5,8 +6,11 @@ from qoala.ast import QoalaExpression
 from qoala.ast.operations import QoalaOperation
 from qoala.ast.value import QoalaNumericValue, ImmediateQIntOrExpression, ImmediateQFloatOrExpression
 
+from qoalahir.ir import Context
+from qoalahir.dialects.hir import NewQubitOp
 
-class QoalaQubit(QoalaExpression):
+
+class QoalaQubit(QoalaExpression, ABC):
     pass
 
 
@@ -121,7 +125,7 @@ class QoalaLocalQubit(QoalaQubit):
 
     def cnot(self, target: Self) -> QoalaOperation:
         from qoala.ast.operations.quantum import CNotGate
-        return QoalaOperation._create_expression_for_op(CNotGate, target=target)
+        return QoalaOperation._create_expression_for_op(CNotGate, qubit=self, target=target)
 
     def cphase(self, target: Self) -> QoalaOperation:
         from qoala.ast.operations.quantum import CPhaseGate
@@ -134,6 +138,16 @@ class QoalaLocalQubit(QoalaQubit):
     def free(self) -> QoalaOperation:
         # TODO - Implement
         pass
+
+    def can_evaluate_to(self, cls):
+        if cls == QoalaQubit:
+            return True
+        else:
+            return False
+
+    def to_hir(self, ctx: Context):
+        self._qoala_hir_val = NewQubitOp()
+        return self._qoala_hir_val
 
 
 # TODO - Implement remote qubits
