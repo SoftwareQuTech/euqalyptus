@@ -17,17 +17,69 @@ def simple_arith_program():
     int_b = Int(20)
 
     int_c = int_a + int_b
+    int_d = int_a - int_b
+    int_e = int_a * int_b
+    int_f = int_a / int_b
+
+    float_a = Float(10.0)
+    float_b = Float(20.0)
+
+    float_c = float_a + float_b
+    float_d = float_a - float_b
+    float_e = float_a * float_b
+    float_f = float_a / float_b
+
+
+@QoalaProgram
+def simple_arith_program_composed():
+    int_a = Int(10)
+    int_b = Int(20)
+
+    int_c = int_a + int_b
 
     float_a = Float(10.0)
     float_b = Float(20.0)
 
     float_c = float_a - float_b
 
-    int_d = Int(5) * int_c
-    int_e = int_d / Int(5)
+    int_A = Int(20)
+    int_B = Int(5)
+    # int_c uses an integer, but also a "composed" expression (addition)
+    # which can evaluate to an integer
+    int_d = int_A * int_c
+    int_e = int_d / int_B
 
+    float_A = Float(20.0)
+    float_B = Float(4.0)
+    # float_c uses a float, but also a "composed" expression (sustraction)
+    # which can evaluate to an integer
+    float_d = float_c * float_A
+    float_e = float_d / float_B
+
+
+@QoalaProgram
+def simple_arith_program_immediates():
+    int_a = Int(10)
+    int_b = Int(20)
+
+    int_c = int_a + int_b
+
+    float_a = Float(10.0)
+    float_b = Float(20.0)
+
+    float_c = float_a - float_b
+
+    # int_d uses an "immediate", declared as a qoala type
+    int_d = Int(5) * int_c
+    # int_e uses an immediate declared as a python integer
+    # this test automatic casting from python types to qoala types
+    int_e = int_d / 5
+
+    # float_d uses an "immediate", declared as a qoala type
     float_d = float_c * Float(20.0)
-    float_e = float_d / Float(4.0)
+    # float_e uses an immediate declared as a python float
+    # this test automatic casting from python types to qoala types
+    float_e = float_d /4.0
 
 
 @QoalaProgram
@@ -88,9 +140,15 @@ class TestQoalaHIRPythonBindings:
     %c10_i32 = arith.constant 10 : i32
     %c20_i32 = arith.constant 20 : i32
     %0 = arith.addi %c10_i32, %c20_i32 : i32
+    %1 = arith.subi %c10_i32, %c20_i32 : i32
+    %2 = arith.muli %c10_i32, %c20_i32 : i32
+    %3 = arith.divui %c10_i32, %c20_i32 : i32
     %cst = arith.constant 1.000000e+01 : f32
     %cst_0 = arith.constant 2.000000e+01 : f32
-    %1 = arith.subf %cst, %cst_0 : f32
+    %4 = arith.addf %cst, %cst_0 : f32
+    %5 = arith.subf %cst, %cst_0 : f32
+    %6 = arith.mulf %cst, %cst_0 : f32
+    %7 = arith.divf %cst, %cst_0 : f32
     return
   }
 }
