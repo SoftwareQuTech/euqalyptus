@@ -1,16 +1,15 @@
-from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from enum import Enum, auto
 from typing import Generic, TypeVar, Self, Optional, Type, List
 
+from qoalahir.dialects.arith import ConstantOp
+from qoalahir.extras.types import i32, ui32, f32
+from qoalahir.ir import Context
+
 from qoala import QoalaProgram
 from qoala.ast import QoalaExpression, QoalaStatement
-from qoala.ast.operations import QoalaOperation, with_arith_operators
 from qoala.ast.errors import UnknownTypeError
-
-from qoalahir.ir import Context
-from qoalahir.extras.types import i32, ui32, f32
-from qoalahir.dialects.arith import ConstantOp
+from qoala.ast.operations import QoalaOperation, with_arith_operators
 
 _T = TypeVar("_T")
 

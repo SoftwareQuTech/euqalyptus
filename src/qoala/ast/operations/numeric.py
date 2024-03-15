@@ -1,13 +1,13 @@
 from dataclasses import dataclass
 
+from qoalahir.dialects.arith import AddIOp, AddFOp, SubIOp, SubFOp, MulIOp, MulFOp, DivUIOp, DivFOp
+from qoalahir.ir import Context
+
 from qoala import QoalaProgram
 from qoala.ast import QoalaExpression
 from qoala.ast.errors import WrongEvaluationTypeError
 from qoala.ast.operations import QoalaOperation, with_arith_operators
 from qoala.ast.value import QoalaInteger, QoalaFloat
-
-from qoalahir.ir import Context
-from qoalahir.dialects.arith import AddIOp, AddFOp, SubIOp, SubFOp, MulIOp, MulFOp, DivUIOp, DivSIOp, DivFOp
 
 
 @dataclass(init=False)

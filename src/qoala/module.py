@@ -1,10 +1,10 @@
 from dataclasses import dataclass
 from typing import List
 
-from qoala.ast import QoalaASTElement
-
+from qoalahir.dialects import hir, func
 from qoalahir.ir import *
-from qoalahir.dialects import hir, func, builtin
+
+from qoala.ast import QoalaASTElement
 
 
 @dataclass(init=False)
