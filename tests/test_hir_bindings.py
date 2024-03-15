@@ -127,7 +127,7 @@ class TestQoalaHIRPythonBindings:
 """
         assert str(module.asm) == expected_asm
 
-    def test_simple_integer_program_to_qoala_hir(self):
+    def test_simple_arith_program_to_qoala_hir(self):
         with pytest.raises(NotYetCompiledError) as ex:
             _, _ = simple_arith_program.module
         assert str(ex.value) == "The program has not been compiled yet. Did you invoke 'compile()' on it?"
@@ -149,6 +149,36 @@ class TestQoalaHIRPythonBindings:
     %5 = arith.subf %cst, %cst_0 : f32
     %6 = arith.mulf %cst, %cst_0 : f32
     %7 = arith.divf %cst, %cst_0 : f32
+    return
+  }
+}
+"""
+        assert str(module.asm) == expected_asm
+
+    def test_composed_arith_program_to_qoala_hir(self):
+        with pytest.raises(NotYetCompiledError) as ex:
+            _, _ = simple_arith_program_composed.module
+        assert str(ex.value) == "The program has not been compiled yet. Did you invoke 'compile()' on it?"
+        _, module = simple_arith_program_composed.compile()
+        assert isinstance(module, QoalaModule)
+        # Note 1 - The qoala type "Int", creates a _signed_ integer of 32 bits width. We use this information
+        #          (the signedness) to create the MLIR arith builtin type using IntegerType.get_(un)signed(width).
+        expected_asm = """module {
+  func.func @simple_arith_program_composed() {
+    %c10_i32 = arith.constant 10 : i32
+    %c20_i32 = arith.constant 20 : i32
+    %0 = arith.addi %c10_i32, %c20_i32 : i32
+    %cst = arith.constant 1.000000e+01 : f32
+    %cst_0 = arith.constant 2.000000e+01 : f32
+    %1 = arith.subf %cst, %cst_0 : f32
+    %c20_i32_1 = arith.constant 20 : i32
+    %c5_i32 = arith.constant 5 : i32
+    %2 = arith.muli %c20_i32_1, %0 : i32
+    %3 = arith.divui %2, %c5_i32 : i32
+    %cst_2 = arith.constant 2.000000e+01 : f32
+    %cst_3 = arith.constant 4.000000e+00 : f32
+    %4 = arith.mulf %1, %cst_2 : f32
+    %5 = arith.divf %4, %cst_3 : f32
     return
   }
 }

@@ -1,15 +1,16 @@
 from dataclasses import dataclass
 
 from qoala import QoalaProgram
-from qoala.ast import QoalaOperation
-from qoala.ast.value import QoalaExpression, QoalaInteger, QoalaFloat
-#from qoala.utils import with_arith_operators
+from qoala.ast import QoalaExpression
+from qoala.ast.operations import QoalaOperation, with_arith_operators
+from qoala.ast.value import QoalaInteger, QoalaFloat
 
 from qoalahir.ir import Context
 from qoalahir.dialects.arith import AddIOp, AddFOp, SubIOp, SubFOp, MulIOp, MulFOp, DivUIOp, DivSIOp, DivFOp
 
 
 @dataclass(init=False)
+@with_arith_operators
 class Add(QoalaOperation):
     operand_a: QoalaExpression
     operand_b: QoalaExpression
@@ -21,7 +22,7 @@ class Add(QoalaOperation):
         QoalaProgram.add_to_body(self)
 
     def can_evaluate_to(self, cls):
-        if isinstance(self.operand_a, cls) and isinstance(self.operand_b, cls):
+        if self.operand_a.can_evaluate_to(cls) and self.operand_b.can_evaluate_to(cls):
             return True
         else:
             return False
@@ -40,6 +41,7 @@ class Add(QoalaOperation):
 
 
 @dataclass(init=False)
+@with_arith_operators
 class Subtract(QoalaOperation):
     operand_a: QoalaExpression
     operand_b: QoalaExpression
@@ -51,7 +53,7 @@ class Subtract(QoalaOperation):
         QoalaProgram.add_to_body(self)
 
     def can_evaluate_to(self, cls):
-        if isinstance(self.operand_a, cls) and isinstance(self.operand_b, cls):
+        if self.operand_a.can_evaluate_to(cls) and self.operand_b.can_evaluate_to(cls):
             return True
         else:
             return False
@@ -70,6 +72,7 @@ class Subtract(QoalaOperation):
 
 
 @dataclass(init=False)
+@with_arith_operators
 class Multiply(QoalaExpression):
     operand_a: QoalaExpression
     operand_b: QoalaExpression
@@ -81,7 +84,7 @@ class Multiply(QoalaExpression):
         QoalaProgram.add_to_body(self)
 
     def can_evaluate_to(self, cls):
-        if isinstance(self.operand_a, cls) and isinstance(self.operand_b, cls):
+        if self.operand_a.can_evaluate_to(cls) and self.operand_b.can_evaluate_to(cls):
             return True
         else:
             return False
@@ -100,6 +103,7 @@ class Multiply(QoalaExpression):
 
 
 @dataclass(init=False)
+@with_arith_operators
 class Divide(QoalaExpression):
     operand_a: QoalaExpression
     operand_b: QoalaExpression
@@ -111,7 +115,7 @@ class Divide(QoalaExpression):
         QoalaProgram.add_to_body(self)
 
     def can_evaluate_to(self, cls):
-        if isinstance(self.operand_a, cls) and isinstance(self.operand_b, cls):
+        if self.operand_a.can_evaluate_to(cls) and self.operand_b.can_evaluate_to(cls):
             return True
         else:
             return False
@@ -127,3 +131,15 @@ class Divide(QoalaExpression):
         else:
             raise RuntimeError()
         return self._qoala_hir_val
+
+
+class ArithOperatorFactory:
+    def __new__(cls, *operands, operation: str) -> QoalaExpression:
+        if operation in ["__add__", "__radd__", "__iadd__"]:
+            return Add(*operands)
+        elif operation in ["__sub__", "__rsub__", "__isub__"]:
+            return Subtract(*operands)
+        elif operation in ["__mul__", "__rmul__", "__imul__"]:
+            return Multiply(*operands)
+        elif operation in ["__truediv__", "__rtruediv_", "__itruediv__"]:
+            return Divide(*operands)

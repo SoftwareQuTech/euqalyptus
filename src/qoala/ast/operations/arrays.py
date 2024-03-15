@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 
 from qoala import QoalaProgram
-from qoala.ast import QoalaOperation
+from qoala.ast.operations import QoalaOperation
 from qoala.ast.value import QoalaExpression
 
 

@@ -1,7 +1,8 @@
 from typing import Self
 
 from qoala import QoalaProgram
-from qoala.ast import QoalaExpression, QoalaOperation
+from qoala.ast import QoalaExpression
+from qoala.ast.operations import QoalaOperation
 from qoala.ast.value import QoalaNumericValue, ImmediateQIntOrExpression, ImmediateQFloatOrExpression
 
 

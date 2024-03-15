@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from enum import Enum, auto
 
 from qoala import QoalaProgram
-from qoala.ast import QoalaOperation
+from qoala.ast.operations import QoalaOperation
 from qoala.ast.qubit import QoalaQubit
 from qoala.ast.value import QoalaExpression, QoalaFloatOrExpression, QoalaIntegerOrExpression
 

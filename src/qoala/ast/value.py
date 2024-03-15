@@ -1,9 +1,11 @@
+from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from enum import Enum, auto
 from typing import Generic, TypeVar, Self, Optional, Type, List
 
 from qoala import QoalaProgram
-from qoala.ast import QoalaExpression, QoalaStatement, QoalaOperation
+from qoala.ast import QoalaExpression, QoalaStatement
+from qoala.ast.operations import QoalaOperation, with_arith_operators
 from qoala.ast.errors import UnknownTypeError
 
 from qoalahir.ir import Context
@@ -44,6 +46,7 @@ class QoalaNumericValue(QoalaValue[_T]):
                                    f"Supported immediate types are 'int' and 'float'.")
 
 
+@with_arith_operators
 class QoalaInteger(QoalaNumericValue[int]):
     def __init__(
             self,
@@ -66,34 +69,34 @@ class QoalaInteger(QoalaNumericValue[int]):
         QoalaProgram.add_to_body(self)
 
     # Operations associated with all integer types:
-    def add(self, other: QoalaExpression) -> QoalaExpression:
-        from qoala.ast.operations.numeric import Add
-        return QoalaOperation._create_expression_for_op(Add, self, other)
-
-    def subtract(self, other: QoalaExpression) -> QoalaExpression:
-        from qoala.ast.operations.numeric import Subtract
-        return QoalaOperation._create_expression_for_op(Subtract, self, other)
-
-    def multiply(self, other: QoalaExpression) -> QoalaExpression:
-        from qoala.ast.operations.numeric import Multiply
-        return QoalaOperation._create_expression_for_op(Multiply, self, other)
-
-    def divide(self, other: QoalaExpression) -> QoalaExpression:
-        from qoala.ast.operations.numeric import Divide
-        return QoalaOperation._create_expression_for_op(Divide, self, other)
-
-    # Method used for operator overload
-    def __add__(self, other: Self) -> Self:
-        return self.add(other)
-
-    def __sub__(self, other: Self) -> Self:
-        return self.subtract(other)
-
-    def __mul__(self, other: Self) -> Self:
-        return self.multiply(other)
-
-    def __truediv__(self, other: Self) -> Self:
-        return self.divide(other)
+    # def add(self, other: QoalaExpression) -> QoalaExpression:
+    #     from qoala.ast.operations.numeric import Add
+    #     return QoalaOperation._create_expression_for_op(Add, self, other)
+    #
+    # def subtract(self, other: QoalaExpression) -> QoalaExpression:
+    #     from qoala.ast.operations.numeric import Subtract
+    #     return QoalaOperation._create_expression_for_op(Subtract, self, other)
+    #
+    # def multiply(self, other: QoalaExpression) -> QoalaExpression:
+    #     from qoala.ast.operations.numeric import Multiply
+    #     return QoalaOperation._create_expression_for_op(Multiply, self, other)
+    #
+    # def divide(self, other: QoalaExpression) -> QoalaExpression:
+    #     from qoala.ast.operations.numeric import Divide
+    #     return QoalaOperation._create_expression_for_op(Divide, self, other)
+    #
+    # # Method used for operator overload
+    # def __add__(self, other: Self) -> Self:
+    #     return self.add(other)
+    #
+    # def __sub__(self, other: Self) -> Self:
+    #     return self.subtract(other)
+    #
+    # def __mul__(self, other: Self) -> Self:
+    #     return self.multiply(other)
+    #
+    # def __truediv__(self, other: Self) -> Self:
+    #     return self.divide(other)
 
     def can_evaluate_to(self, cls):
         if cls == QoalaInteger:
@@ -112,6 +115,7 @@ class QoalaInteger(QoalaNumericValue[int]):
         return self._qoala_hir_val
 
 
+@with_arith_operators
 class QoalaFloat(QoalaNumericValue[float]):
     def __init__(
             self,
@@ -133,34 +137,34 @@ class QoalaFloat(QoalaNumericValue[float]):
         QoalaProgram.add_to_body(self)
 
     # Operations associated with all float types:
-    def add(self, other: QoalaExpression) -> QoalaExpression:
-        from qoala.ast.operations.numeric import Add
-        return QoalaOperation._create_expression_for_op(Add, self, other)
-
-    def subtract(self, other: QoalaExpression) -> QoalaExpression:
-        from qoala.ast.operations.numeric import Subtract
-        return QoalaOperation._create_expression_for_op(Subtract, self, other)
-
-    def multiply(self, other: QoalaExpression) -> QoalaExpression:
-        from qoala.ast.operations.numeric import Multiply
-        return QoalaOperation._create_expression_for_op(Multiply, self, other)
-
-    def divide(self, other: QoalaExpression) -> QoalaExpression:
-        from qoala.ast.operations.numeric import Divide
-        return QoalaOperation._create_expression_for_op(Divide, self, other)
-
-    # Method used for operator overload
-    def __add__(self, other: Self) -> Self:
-        return self.add(other)
-
-    def __sub__(self, other: Self) -> Self:
-        return self.subtract(other)
-
-    def __mul__(self, other: Self) -> Self:
-        return self.multiply(other)
-
-    def __truediv__(self, other: Self) -> Self:
-        return self.divide(other)
+    # def add(self, other: QoalaExpression) -> QoalaExpression:
+    #     from qoala.ast.operations.numeric import Add
+    #     return QoalaOperation._create_expression_for_op(Add, self, other)
+    #
+    # def subtract(self, other: QoalaExpression) -> QoalaExpression:
+    #     from qoala.ast.operations.numeric import Subtract
+    #     return QoalaOperation._create_expression_for_op(Subtract, self, other)
+    #
+    # def multiply(self, other: QoalaExpression) -> QoalaExpression:
+    #     from qoala.ast.operations.numeric import Multiply
+    #     return QoalaOperation._create_expression_for_op(Multiply, self, other)
+    #
+    # def divide(self, other: QoalaExpression) -> QoalaExpression:
+    #     from qoala.ast.operations.numeric import Divide
+    #     return QoalaOperation._create_expression_for_op(Divide, self, other)
+    #
+    # # Method used for operator overload
+    # def __add__(self, other: Self) -> Self:
+    #     return self.add(other)
+    #
+    # def __sub__(self, other: Self) -> Self:
+    #     return self.subtract(other)
+    #
+    # def __mul__(self, other: Self) -> Self:
+    #     return self.multiply(other)
+    #
+    # def __truediv__(self, other: Self) -> Self:
+    #     return self.divide(other)
 
     def to_hir(self, ctx: Context):
         float_type = f32()
