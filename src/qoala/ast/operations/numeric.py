@@ -2,6 +2,7 @@ from dataclasses import dataclass
 
 from qoala import QoalaProgram
 from qoala.ast import QoalaExpression
+from qoala.ast.errors import WrongEvaluationTypeError
 from qoala.ast.operations import QoalaOperation, with_arith_operators
 from qoala.ast.value import QoalaInteger, QoalaFloat
 
@@ -36,7 +37,8 @@ class Add(QoalaOperation):
         elif self.operand_a.can_evaluate_to(QoalaFloat):
             self._qoala_hir_val = AddFOp(self.operand_a._qoala_hir_val, self.operand_b._qoala_hir_val)
         else:
-            raise RuntimeError()
+            raise WrongEvaluationTypeError(f"When creating an operation of type '{self.__class__.__name__}', "
+                                           f"the operands cannot be evaluated to any valid value.")
         return self._qoala_hir_val
 
 
@@ -67,7 +69,8 @@ class Subtract(QoalaOperation):
         elif self.operand_a.can_evaluate_to(QoalaFloat):
             self._qoala_hir_val = SubFOp(self.operand_a._qoala_hir_val, self.operand_b._qoala_hir_val)
         else:
-            raise RuntimeError()
+            raise WrongEvaluationTypeError(f"When creating an operation of type '{self.__class__.__name__}', "
+                                           f"the operands cannot be evaluated to any valid value.")
         return self._qoala_hir_val
 
 
@@ -98,7 +101,8 @@ class Multiply(QoalaExpression):
         elif self.operand_a.can_evaluate_to(QoalaFloat):
             self._qoala_hir_val = MulFOp(self.operand_a._qoala_hir_val, self.operand_b._qoala_hir_val)
         else:
-            raise RuntimeError()
+            raise WrongEvaluationTypeError(f"When creating an operation of type '{self.__class__.__name__}', "
+                                           f"the operands cannot be evaluated to any valid value.")
         return self._qoala_hir_val
 
 
@@ -129,7 +133,8 @@ class Divide(QoalaExpression):
         elif self.operand_a.can_evaluate_to(QoalaFloat):
             self._qoala_hir_val = DivFOp(self.operand_a._qoala_hir_val, self.operand_b._qoala_hir_val)
         else:
-            raise RuntimeError()
+            raise WrongEvaluationTypeError(f"When creating an operation of type '{self.__class__.__name__}', "
+                                           f"the operands cannot be evaluated to any valid value.")
         return self._qoala_hir_val
 
 

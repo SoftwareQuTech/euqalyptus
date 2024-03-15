@@ -2,6 +2,7 @@ from abc import ABC
 from typing import Type,TypeVar
 
 from qoala.ast import QoalaExpression
+from qoala.ast.errors import UnknownTypeError
 
 _cls = TypeVar("_cls", bound=QoalaExpression)
 
@@ -31,7 +32,8 @@ def with_arith_operators(cls):
             other: QoalaExpression
             if not isinstance(args[0], QoalaExpression):
                 # TODO - Try to convert the argument to a QoalaExpression (int, float, etc...)
-                raise RuntimeError
+                raise UnknownTypeError(f"The argument '{args[0]}' of type '{type(args[0])}' cannot be used "
+                                       f"with operation '{method_name}'.")
             else:
                 other = args[0]
             from qoala.ast.operations.numeric import ArithOperatorFactory
