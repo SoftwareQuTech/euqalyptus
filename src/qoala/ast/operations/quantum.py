@@ -28,7 +28,7 @@ class QubitMeasure(QoalaOperation):
             return False
 
     def to_hir(self, ctx: Context):
-        self._qoala_hir_val = MeasureOp(qin0=self.qubit)
+        self._qoala_hir_val = MeasureOp(qin0=self.qubit._qoala_hir_val)
         return self._qoala_hir_val
 
 
@@ -253,7 +253,7 @@ class RotateX(Rotate):
             return False
 
     def to_hir(self, ctx: Context):
-        self._qoala_hir_val = RotXOp(qin=self.qubit, angle=self.angle)
+        self._qoala_hir_val = RotXOp(qin=self.qubit._qoala_hir_val, angle=self.angle._qoala_hir_val)
         return self._qoala_hir_val
 
 
@@ -275,7 +275,7 @@ class RotateY(Rotate):
             return False
 
     def to_hir(self, ctx: Context):
-        self._qoala_hir_val = RotYOp(qin=self.qubit, angle=self.angle)
+        self._qoala_hir_val = RotYOp(qin=self.qubit._qoala_hir_val, angle=self.angle._qoala_hir_val)
         return self._qoala_hir_val
 
 
@@ -298,7 +298,7 @@ class RotateZ(Rotate):
             return False
 
     def to_hir(self, ctx: Context):
-        self._qoala_hir_val = RotZOp(qin=self.qubit, angle=self.angle)
+        self._qoala_hir_val = RotZOp(qin=self.qubit._qoala_hir_val, angle=self.angle._qoala_hir_val)
         return self._qoala_hir_val
 
 
@@ -322,7 +322,7 @@ class CNotGate(QoalaOperation):
             return False
 
     def to_hir(self, ctx: Context):
-        self._qoala_hir_val = CnotOp(qin0=self.qubit, quin1=self.target)
+        self._qoala_hir_val = CnotOp(qin0=self.qubit._qoala_hir_val, qin1=self.target._qoala_hir_val)
         return self._qoala_hir_val
 
 
