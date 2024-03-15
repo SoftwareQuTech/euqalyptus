@@ -3,7 +3,7 @@ from enum import Enum, auto
 from typing import Generic, TypeVar, Self, Optional, Type, List
 
 from qoalahir.dialects.arith import ConstantOp
-from qoalahir.extras.types import i32, ui32, f32
+from qoalahir.extras.types import i32, ui32, f32, vector
 from qoalahir.ir import Context
 
 from qoala import QoalaProgram
@@ -67,36 +67,6 @@ class QoalaInteger(QoalaNumericValue[int]):
             self.value = value
         QoalaProgram.add_to_body(self)
 
-    # Operations associated with all integer types:
-    # def add(self, other: QoalaExpression) -> QoalaExpression:
-    #     from qoala.ast.operations.numeric import Add
-    #     return QoalaOperation._create_expression_for_op(Add, self, other)
-    #
-    # def subtract(self, other: QoalaExpression) -> QoalaExpression:
-    #     from qoala.ast.operations.numeric import Subtract
-    #     return QoalaOperation._create_expression_for_op(Subtract, self, other)
-    #
-    # def multiply(self, other: QoalaExpression) -> QoalaExpression:
-    #     from qoala.ast.operations.numeric import Multiply
-    #     return QoalaOperation._create_expression_for_op(Multiply, self, other)
-    #
-    # def divide(self, other: QoalaExpression) -> QoalaExpression:
-    #     from qoala.ast.operations.numeric import Divide
-    #     return QoalaOperation._create_expression_for_op(Divide, self, other)
-    #
-    # # Method used for operator overload
-    # def __add__(self, other: Self) -> Self:
-    #     return self.add(other)
-    #
-    # def __sub__(self, other: Self) -> Self:
-    #     return self.subtract(other)
-    #
-    # def __mul__(self, other: Self) -> Self:
-    #     return self.multiply(other)
-    #
-    # def __truediv__(self, other: Self) -> Self:
-    #     return self.divide(other)
-
     def can_evaluate_to(self, cls):
         if cls == QoalaInteger:
             return True
@@ -135,36 +105,6 @@ class QoalaFloat(QoalaNumericValue[float]):
             self.value = value
         QoalaProgram.add_to_body(self)
 
-    # Operations associated with all float types:
-    # def add(self, other: QoalaExpression) -> QoalaExpression:
-    #     from qoala.ast.operations.numeric import Add
-    #     return QoalaOperation._create_expression_for_op(Add, self, other)
-    #
-    # def subtract(self, other: QoalaExpression) -> QoalaExpression:
-    #     from qoala.ast.operations.numeric import Subtract
-    #     return QoalaOperation._create_expression_for_op(Subtract, self, other)
-    #
-    # def multiply(self, other: QoalaExpression) -> QoalaExpression:
-    #     from qoala.ast.operations.numeric import Multiply
-    #     return QoalaOperation._create_expression_for_op(Multiply, self, other)
-    #
-    # def divide(self, other: QoalaExpression) -> QoalaExpression:
-    #     from qoala.ast.operations.numeric import Divide
-    #     return QoalaOperation._create_expression_for_op(Divide, self, other)
-    #
-    # # Method used for operator overload
-    # def __add__(self, other: Self) -> Self:
-    #     return self.add(other)
-    #
-    # def __sub__(self, other: Self) -> Self:
-    #     return self.subtract(other)
-    #
-    # def __mul__(self, other: Self) -> Self:
-    #     return self.multiply(other)
-    #
-    # def __truediv__(self, other: Self) -> Self:
-    #     return self.divide(other)
-
     def to_hir(self, ctx: Context):
         float_type = f32()
         self._qoala_hir_val = ConstantOp(value=self.value, result=float_type)
@@ -187,7 +127,7 @@ ImmediateQIntOrExpression = QoalaIntegerOrExpression | int
 # FIXME - In the meantime, we will model arrays as if they were
 #         values. We might want to reconsider this decision in
 #         the future.
-@dataclass
+@dataclass(init=False)
 class QoalaArray(QoalaValue[QoalaExpression], Generic[_T]):
     base_type: Type
     base_size: int
@@ -247,6 +187,17 @@ class QoalaArray(QoalaValue[QoalaExpression], Generic[_T]):
             to_add = item
         from qoala.ast.operations.arrays import GetItem
         return QoalaOperation._create_expression_for_op(GetItem, self, to_add)
+
+    def can_evaluate_to(self, cls):
+        if cls == QoalaArray:
+            return True
+        else:
+            return False
+
+    def to_hir(self, ctx: Context):
+        # TODO - Implement the HIR representation fo arrays - tensor or vector?
+        self._qoala_hir_val = vector(10, 20, element_type=i32)
+        return self._qoala_hir_val
 
 
 class QoalaBit(QoalaValue[int]):

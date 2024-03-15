@@ -32,9 +32,6 @@ def with_arith_operators(cls):
             if not isinstance(args[0], QoalaExpression):
                 from qoala.ast.value import QoalaNumericValue
                 other = QoalaNumericValue.from_immediate(args[0])
-                # TODO - Try to convert the argument to a QoalaExpression (int, float, etc...)
-                # raise UnknownTypeError(f"The argument '{args[0]}' of type '{type(args[0])}' cannot be used "
-                #                        f"with operation '{method_name}'.")
             else:
                 other = args[0]
             from qoala.ast.operations.numeric import ArithOperatorFactory
