@@ -3,6 +3,7 @@ from dataclasses import dataclass
 from enum import Enum, auto
 
 from qoala import QoalaProgram
+from qoala.ast.errors import OperationNotYetImplementedError
 from qoala.ast.operations import QoalaOperation
 from qoala.ast.qubit import QoalaQubit
 from qoala.ast.value import QoalaExpression, QoalaFloatOrExpression, QoalaIntegerOrExpression, QoalaBit
@@ -47,9 +48,7 @@ class QubitReset(QoalaOperation, ABC):
         return True
 
     def to_hir(self, ctx: Context):
-        # TODO - There is no "ResetOp" operation in hir dialect
-        self._qoala_hir_val = None
-        return self._qoala_hir_val
+        raise OperationNotYetImplementedError(QubitReset.__name__)
 
 
 @dataclass(init=False)
@@ -69,9 +68,7 @@ class XGate(QoalaOperation):
             return False
 
     def to_hir(self, ctx: Context):
-        # TODO - There is no "XGate" operation in hir dialect
-        self._qoala_hir_val = None
-        return self._qoala_hir_val
+        raise OperationNotYetImplementedError(XGate.__name__)
 
 
 @dataclass(init=False)
@@ -91,9 +88,7 @@ class YGate(QoalaOperation):
             return False
 
     def to_hir(self, ctx: Context):
-        # TODO - There is no "YGate" operation in hir dialect
-        self._qoala_hir_val = None
-        return self._qoala_hir_val
+        raise OperationNotYetImplementedError(YGate.__name__)
 
 
 @dataclass(init=False)
@@ -113,9 +108,7 @@ class ZGate(QoalaOperation):
             return False
 
     def to_hir(self, ctx: Context):
-        # TODO - There is no "ZGate" operation in hir dialect
-        self._qoala_hir_val = None
-        return self._qoala_hir_val
+        raise OperationNotYetImplementedError(ZGate.__name__)
 
 
 @dataclass(init=False)
@@ -135,9 +128,7 @@ class TGate(QoalaOperation):
             return False
 
     def to_hir(self, ctx: Context):
-        # TODO - There is no "TGate" operation in hir dialect
-        self._qoala_hir_val = None
-        return self._qoala_hir_val
+        raise OperationNotYetImplementedError(TGate.__name__)
 
 
 @dataclass(init=False)
@@ -178,9 +169,7 @@ class KGate(QoalaOperation):
             return False
 
     def to_hir(self, ctx: Context):
-        # TODO - There is no "KGate" operation in hir dialect
-        self._qoala_hir_val = None
-        return self._qoala_hir_val
+        raise OperationNotYetImplementedError(KGate.__name__)
 
 
 @dataclass(init=False)
@@ -200,9 +189,7 @@ class SGate(QoalaOperation):
             return False
 
     def to_hir(self, ctx: Context):
-        # TODO - There is no "SGate" operation in hir dialect
-        self._qoala_hir_val = None
-        return self._qoala_hir_val
+        raise OperationNotYetImplementedError(SGate.__name__)
 
 
 class RotateBaseAxis(Enum):
@@ -342,6 +329,4 @@ class CPhaseGate(QoalaOperation):
             return False
 
     def to_hir(self, ctx: Context):
-        # TODO - There is no "CPhaseGate" operation in hir dialect
-        self._qoala_hir_val = None
-        return self._qoala_hir_val
+        raise OperationNotYetImplementedError(CPhaseGate.__name__)
