@@ -8,6 +8,16 @@ from qoalahir.ir import Context
 
 
 @dataclass(init=False)
+class CastToIndex(QoalaExpression):
+    index_val: QoalaExpression
+
+    def __init__(self, *operands: QoalaExpression):
+        assert len(operands) == 1
+        self.index_val: QoalaExpression = operands[0]
+        QoalaProgram.add_to_body(self)
+
+
+@dataclass(init=False)
 class GetItem(QoalaOperation):
     base_array: QoalaExpression
     index: QoalaExpression

@@ -2,14 +2,14 @@ from dataclasses import dataclass
 from enum import Enum, auto
 from typing import Generic, TypeVar, Self, Optional, Type, List
 
-from qoalahir.dialects.arith import ConstantOp
+from qoalahir.dialects.arith import ConstantOp, IndexCastOp
 from qoalahir.dialects.tensor import FromElementsOp,RankedTensorType
 from qoalahir.extras.types import i32, ui32, f32, index
 from qoalahir.ir import Context
 
 from qoala import QoalaProgram
 from qoala.ast import QoalaExpression, QoalaStatement
-from qoala.ast.errors import UnknownTypeError
+from qoala.ast.errors import UnknownTypeError, OperandMismatchError
 from qoala.ast.operations import QoalaOperation, with_arith_operators
 
 _T = TypeVar("_T")
@@ -187,13 +187,20 @@ class QoalaArray(QoalaValue[QoalaExpression], Generic[_T]):
         # TODO - Does this operation make sense?
         raise NotImplementedError("'len' operation for arrays not implemented")
 
-    def __getitem__(self, item: QoalaExpression | int) -> QoalaExpression:
-        if isinstance(item, int):
-            to_add = QoalaNumericValue.from_immediate(item, is_index=True)
+    def __getitem__(self, item_index: QoalaExpression | int) -> QoalaExpression:
+        if isinstance(item_index, int):
+            index_operand = QoalaNumericValue.from_immediate(item_index, is_index=True)
         else:
-            to_add = item
+            # The index is already a qoala expression, which can evaluate either to a float or int
+            # If it evaluates to an int, we need to cast it to an integer
+            if not item_index.can_evaluate_to(QoalaInteger):
+                raise OperandMismatchError(f"The index operand '{item_index}' cannot evaluate to an integer, "
+                                           f"hence it cannot be used index an array.")
+            from qoala.ast.operations.arrays import CastToIndex
+            casted_index = QoalaOperation._create_expression_for_op(CastToIndex, item_index)
+            index_operand = casted_index
         from qoala.ast.operations.arrays import GetItem
-        return QoalaOperation._create_expression_for_op(GetItem, self, to_add)
+        return QoalaOperation._create_expression_for_op(GetItem, self, index_operand)
 
     def can_evaluate_to(self, cls):
         if cls == QoalaArray:
