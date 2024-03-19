@@ -16,6 +16,7 @@ class QoalaQubit(QoalaExpression, ABC):
 
 class QoalaLocalQubit(QoalaQubit):
     def __init__(self):
+        super().__init__()
         QoalaProgram.add_to_body(self)
 
     def measure(self) -> QoalaOperation:
@@ -146,8 +147,8 @@ class QoalaLocalQubit(QoalaQubit):
             return False
 
     def to_hir(self, ctx: Context):
-        self._qoala_hir_val = hir.new_qubit()
-        return self._qoala_hir_val
+        self.hir = hir.new_qubit()
+        return self.hir
 
 
 # TODO - Implement remote qubits

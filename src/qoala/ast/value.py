@@ -59,6 +59,7 @@ class QoalaInteger(QoalaNumericValue[int]):
             is_index_type: bool = False,
             other: Optional[Self] = None
     ):
+        super().__init__()
         if other is not None:
             self.width = other.width
             self.signedness = other.signedness
@@ -88,8 +89,8 @@ class QoalaInteger(QoalaNumericValue[int]):
             integer_type = ui32()
         else:
             integer_type = i32()
-        self._qoala_hir_val = arith.constant(value=self.value, result=integer_type)
-        return self._qoala_hir_val
+        self.hir = arith.constant(value=self.value, result=integer_type)
+        return self.hir
 
 
 @with_arith_operators
@@ -100,6 +101,7 @@ class QoalaFloat(QoalaNumericValue[float]):
             width: int,
             other: Optional[Self] = None
     ):
+        super().__init__()
         if other is not None:
             self.width = other.width
             self.signedness = Signedness.UNKNOWN
@@ -115,8 +117,8 @@ class QoalaFloat(QoalaNumericValue[float]):
 
     def to_hir(self, ctx: Context):
         float_type = f32()
-        self._qoala_hir_val = arith.constant(value=self.value, result=float_type)
-        return self._qoala_hir_val
+        self.hir = arith.constant(value=self.value, result=float_type)
+        return self.hir
 
     def can_evaluate_to(self, cls):
         if cls == QoalaFloat:
@@ -149,6 +151,7 @@ class QoalaArray(QoalaValue[QoalaExpression], Generic[_T]):
             base_size: int,
             length: int
     ):
+        super().__init__()
         self.members = []
         self.base_type = base_type
         self.base_size = base_size
@@ -211,7 +214,7 @@ class QoalaArray(QoalaValue[QoalaExpression], Generic[_T]):
 
     def to_hir(self, ctx: Context):
         # TODO - Implement the HIR representation for arrays - tensor or vector?
-        elements = [element._qoala_hir_val for element in self.members]
+        elements = [element.hir for element in self.members]
         if self.base_type is int:
             hir_base_type = i32()
         elif self.base_type is float:
@@ -219,8 +222,8 @@ class QoalaArray(QoalaValue[QoalaExpression], Generic[_T]):
         else:
             raise UnknownTypeError(f"Base type '{self.base_type.__name__}' for arrays is not supported")
         result_type = tensor.RankedTensorType.get([self.length], hir_base_type)
-        self._qoala_hir_val = tensor.from_elements(elements=elements, result=result_type)
-        return self._qoala_hir_val
+        self.hir = tensor.from_elements(elements=elements, result=result_type)
+        return self.hir
 
 
 class QoalaBit(QoalaValue[int]):

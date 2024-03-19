@@ -17,6 +17,7 @@ class Add(QoalaOperation):
     operand_b: QoalaExpression
 
     def __init__(self, *operands: QoalaExpression):
+        super().__init__()
         assert len(operands) == 2
         self.operand_a = operands[0]
         self.operand_b = operands[1]
@@ -33,13 +34,13 @@ class Add(QoalaOperation):
         #        In the future we could implement semantic checks to automatically cast one
         #        type to another one
         if self.operand_a.can_evaluate_to(QoalaInteger):
-            self._qoala_hir_val = arith.addi(self.operand_a._qoala_hir_val, self.operand_b._qoala_hir_val)
+            self.hir = arith.addi(self.operand_a.hir, self.operand_b.hir)
         elif self.operand_a.can_evaluate_to(QoalaFloat):
-            self._qoala_hir_val = arith.addf(self.operand_a._qoala_hir_val, self.operand_b._qoala_hir_val)
+            self.hir = arith.addf(self.operand_a.hir, self.operand_b.hir)
         else:
             raise WrongEvaluationTypeError(f"When creating an operation of type '{self.__class__.__name__}', "
                                            f"the operands cannot be evaluated to any valid value.")
-        return self._qoala_hir_val
+        return self.hir
 
 
 @dataclass(init=False)
@@ -49,6 +50,7 @@ class Subtract(QoalaOperation):
     operand_b: QoalaExpression
 
     def __init__(self, *operands: QoalaExpression):
+        super().__init__()
         assert len(operands) == 2
         self.operand_a = operands[0]
         self.operand_b = operands[1]
@@ -65,13 +67,13 @@ class Subtract(QoalaOperation):
         #        In the future we could implement semantic checks to automatically cast one
         #        type to another one
         if self.operand_a.can_evaluate_to(QoalaInteger):
-            self._qoala_hir_val = arith.subi(self.operand_a._qoala_hir_val, self.operand_b._qoala_hir_val)
+            self.hir = arith.subi(self.operand_a.hir, self.operand_b.hir)
         elif self.operand_a.can_evaluate_to(QoalaFloat):
-            self._qoala_hir_val = arith.subf(self.operand_a._qoala_hir_val, self.operand_b._qoala_hir_val)
+            self.hir = arith.subf(self.operand_a.hir, self.operand_b.hir)
         else:
             raise WrongEvaluationTypeError(f"When creating an operation of type '{self.__class__.__name__}', "
                                            f"the operands cannot be evaluated to any valid value.")
-        return self._qoala_hir_val
+        return self.hir
 
 
 @dataclass(init=False)
@@ -81,6 +83,7 @@ class Multiply(QoalaExpression):
     operand_b: QoalaExpression
 
     def __init__(self, *operands: QoalaExpression):
+        super().__init__()
         assert len(operands) == 2
         self.operand_a = operands[0]
         self.operand_b = operands[1]
@@ -97,13 +100,13 @@ class Multiply(QoalaExpression):
         #        In the future we could implement semantic checks to automatically cast one
         #        type to another one
         if self.operand_a.can_evaluate_to(QoalaInteger):
-            self._qoala_hir_val = arith.muli(self.operand_a._qoala_hir_val, self.operand_b._qoala_hir_val)
+            self.hir = arith.muli(self.operand_a.hir, self.operand_b.hir)
         elif self.operand_a.can_evaluate_to(QoalaFloat):
-            self._qoala_hir_val = arith.mulf(self.operand_a._qoala_hir_val, self.operand_b._qoala_hir_val)
+            self.hir = arith.mulf(self.operand_a.hir, self.operand_b.hir)
         else:
             raise WrongEvaluationTypeError(f"When creating an operation of type '{self.__class__.__name__}', "
                                            f"the operands cannot be evaluated to any valid value.")
-        return self._qoala_hir_val
+        return self.hir
 
 
 @dataclass(init=False)
@@ -113,6 +116,7 @@ class Divide(QoalaExpression):
     operand_b: QoalaExpression
 
     def __init__(self, *operands: QoalaExpression):
+        super().__init__()
         assert len(operands) == 2
         self.operand_a = operands[0]
         self.operand_b = operands[1]
@@ -129,13 +133,13 @@ class Divide(QoalaExpression):
         #        In the future we could implement semantic checks to automatically cast one
         #        type to another one
         if self.operand_a.can_evaluate_to(QoalaInteger):
-            self._qoala_hir_val = arith.divui(self.operand_a._qoala_hir_val, self.operand_b._qoala_hir_val)
+            self.hir = arith.divui(self.operand_a.hir, self.operand_b.hir)
         elif self.operand_a.can_evaluate_to(QoalaFloat):
-            self._qoala_hir_val = arith.divf(self.operand_a._qoala_hir_val, self.operand_b._qoala_hir_val)
+            self.hir = arith.divf(self.operand_a.hir, self.operand_b.hir)
         else:
             raise WrongEvaluationTypeError(f"When creating an operation of type '{self.__class__.__name__}', "
                                            f"the operands cannot be evaluated to any valid value.")
-        return self._qoala_hir_val
+        return self.hir
 
 
 class ArithOperatorFactory:

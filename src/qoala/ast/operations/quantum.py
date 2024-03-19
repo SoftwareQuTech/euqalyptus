@@ -17,6 +17,7 @@ class QubitMeasure(QoalaOperation):
     qubit: QoalaQubit
 
     def __init__(self, *operands: QoalaExpression):
+        super().__init__()
         assert len(operands) == 1
         assert isinstance(operands[0], QoalaQubit)
         self.qubit = operands[0]
@@ -29,8 +30,8 @@ class QubitMeasure(QoalaOperation):
             return False
 
     def to_hir(self, ctx: Context):
-        self._qoala_hir_val = hir.measure(qin0=self.qubit._qoala_hir_val)
-        return self._qoala_hir_val
+        self.hir = hir.measure(qin0=self.qubit.hir)
+        return self.hir
 
 
 @dataclass(init=False)
@@ -38,6 +39,7 @@ class QubitReset(QoalaOperation, ABC):
     qubit: QoalaQubit
 
     def __init__(self, *operands: QoalaExpression):
+        super().__init__()
         assert len(operands) == 1
         assert isinstance(operands[0], QoalaQubit)
         self.qubit = operands[0]
@@ -56,6 +58,7 @@ class XGate(QoalaOperation):
     qubit: QoalaQubit
 
     def __init__(self, *operands: QoalaExpression):
+        super().__init__()
         assert len(operands) == 1
         assert isinstance(operands[0], QoalaQubit)
         self.qubit = operands[0]
@@ -76,6 +79,7 @@ class YGate(QoalaOperation):
     qubit: QoalaQubit
 
     def __init__(self, *operands: QoalaExpression):
+        super().__init__()
         assert len(operands) == 1
         assert isinstance(operands[0], QoalaQubit)
         self.qubit = operands[0]
@@ -96,6 +100,7 @@ class ZGate(QoalaOperation):
     qubit: QoalaQubit
 
     def __init__(self, *operands: QoalaExpression):
+        super().__init__()
         assert len(operands) == 1
         assert isinstance(operands[0], QoalaQubit)
         self.qubit = operands[0]
@@ -116,6 +121,7 @@ class TGate(QoalaOperation):
     qubit: QoalaQubit
 
     def __init__(self, *operands: QoalaExpression):
+        super().__init__()
         assert len(operands) == 1
         assert isinstance(operands[0], QoalaQubit)
         self.qubit = operands[0]
@@ -136,6 +142,7 @@ class HGate(QoalaOperation):
     qubit: QoalaQubit
 
     def __init__(self, *operands: QoalaExpression):
+        super().__init__()
         assert len(operands) == 1
         assert isinstance(operands[0], QoalaQubit)
         self.qubit = operands[0]
@@ -148,8 +155,8 @@ class HGate(QoalaOperation):
             return False
 
     def to_hir(self, ctx: Context):
-        self._qoala_hir_val = hir.hadamard(self.qubit)
-        return self._qoala_hir_val
+        self.hir = hir.hadamard(self.qubit)
+        return self.hir
 
 
 @dataclass(init=False)
@@ -157,6 +164,7 @@ class KGate(QoalaOperation):
     qubit: QoalaQubit
 
     def __init__(self, *operands: QoalaExpression):
+        super().__init__()
         assert len(operands) == 1
         assert isinstance(operands[0], QoalaQubit)
         self.qubit = operands[0]
@@ -177,6 +185,7 @@ class SGate(QoalaOperation):
     qubit: QoalaQubit
 
     def __init__(self, *operands: QoalaExpression):
+        super().__init__()
         assert len(operands) == 1
         assert isinstance(operands[0], QoalaQubit)
         self.qubit = operands[0]
@@ -213,6 +222,7 @@ class Rotate(QoalaOperation, ABC):
             angle: QoalaFloatOrExpression,
             axis: RotateBaseAxis
     ):
+        super().__init__()
         # We assume the users of this class will pass _at least_ default values for all operands
         assert isinstance(qubit, QoalaQubit)
         self.qubit = qubit
@@ -240,8 +250,11 @@ class RotateX(Rotate):
             return False
 
     def to_hir(self, ctx: Context):
-        self._qoala_hir_val = hir.rot_x(qin=self.qubit._qoala_hir_val, angle=self.angle._qoala_hir_val)
-        return self._qoala_hir_val
+        # We first add this operation to the program
+        self.hir = hir.rot_x(qin=self.qubit.hir, angle=self.angle.hir)
+        # We then register that the qubit has a "new" value
+        self.qubit.hir = self.hir
+        return self.hir
 
 
 @dataclass(init=False)
@@ -262,8 +275,11 @@ class RotateY(Rotate):
             return False
 
     def to_hir(self, ctx: Context):
-        self._qoala_hir_val = hir.rot_y(qin=self.qubit._qoala_hir_val, angle=self.angle._qoala_hir_val)
-        return self._qoala_hir_val
+        # We first add this operation to the program
+        self.hir = hir.rot_y(qin=self.qubit.hir, angle=self.angle.hir)
+        # We then register that the qubit has a "new" value
+        self.qubit.hir = self.hir
+        return self.hir
 
 
 
@@ -285,8 +301,11 @@ class RotateZ(Rotate):
             return False
 
     def to_hir(self, ctx: Context):
-        self._qoala_hir_val = hir.rot_z(qin=self.qubit._qoala_hir_val, angle=self.angle._qoala_hir_val)
-        return self._qoala_hir_val
+        # We first add this operation to the program
+        self.hir = hir.rot_z(qin=self.qubit.hir, angle=self.angle.hir)
+        # We then register that the qubit has a "new" value
+        self.qubit.hir = self.hir
+        return self.hir
 
 
 
@@ -296,6 +315,7 @@ class CNotGate(QoalaOperation):
     target: QoalaQubit
 
     def __init__(self, qubit: QoalaExpression, target: QoalaExpression):
+        super().__init__()
         assert isinstance(qubit, QoalaQubit)
         assert isinstance(target, QoalaQubit)
         self.target = target
@@ -309,8 +329,12 @@ class CNotGate(QoalaOperation):
             return False
 
     def to_hir(self, ctx: Context):
-        self._qoala_hir_val = hir.cnot(qin0=self.qubit._qoala_hir_val, qin1=self.target._qoala_hir_val)
-        return self._qoala_hir_val
+        # We first add this operation to the program
+        self.hir = hir.cnot(qin0=self.qubit.hir, qin1=self.target.hir)
+        # We then register that the qubit has a "new" value
+        self.qubit.hir = self.hir[0]
+        self.target.hir = self.hir[1]
+        return self.hir
 
 
 @dataclass(init=False)
@@ -318,6 +342,7 @@ class CPhaseGate(QoalaOperation):
     target: QoalaQubit
 
     def __init__(self, target: QoalaExpression):
+        super().__init__()
         assert isinstance(target, QoalaQubit)
         self.target = target
         QoalaProgram.add_to_body(self)

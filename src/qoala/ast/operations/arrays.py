@@ -16,6 +16,7 @@ class CastToIndex(QoalaExpression):
     index_val: QoalaExpression
 
     def __init__(self, *operands: QoalaExpression):
+        super().__init__()
         assert len(operands) == 1
         self.index_val: QoalaExpression = operands[0]
         QoalaProgram.add_to_body(self)
@@ -27,8 +28,8 @@ class CastToIndex(QoalaExpression):
             return False
 
     def to_hir(self, ctx: Context):
-        self._qoala_hir_val = arith.index_cast(in_=self.index_val._qoala_hir_val, out=index())
-        return self._qoala_hir_val
+        self.hir = arith.index_cast(in_=self.index_val.hir, out=index())
+        return self.hir
 
 
 @dataclass(init=False)
@@ -37,6 +38,7 @@ class GetItem(QoalaOperation):
     index: QoalaExpression
 
     def __init__(self, *operands: QoalaExpression):
+        super().__init__()
         assert len(operands) == 2
         assert isinstance(operands[0], QoalaArray)
         self.base_array: QoalaArray = operands[0]
@@ -52,7 +54,7 @@ class GetItem(QoalaOperation):
 
     def to_hir(self, ctx: Context):
         # TODO - Implement the HIR representation fo arrays - tensor or vector?
-        self._qoala_hir_val = tensor.extract(tensor=self.base_array.hir, indices=[self.index.hir])
+        self.hir = tensor.extract(tensor=self.base_array.hir, indices=[self.index.hir])
         return self.hir
 
 
@@ -62,6 +64,7 @@ class SetItem(QoalaOperation):
     index: QoalaExpression
 
     def __init__(self, *operands: QoalaExpression):
+        super().__init__()
         assert len(operands) == 2
         assert isinstance(operands[0], QoalaArray)
         self.base_array: QoalaArray = operands[0]

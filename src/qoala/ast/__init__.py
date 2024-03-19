@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
-from typing import TypeVar
+from typing import List, TypeVar
 
 from qoalahir.ir import Context, Operation
 
@@ -21,12 +21,20 @@ class QoalaStatement(QoalaASTElement, ABC):
 
 @dataclass(init=False)
 class QoalaExpression(QoalaASTElement, ABC):
-    _qoala_hir_val: Operation
+    _qoala_hir_vals: List[Operation]
+
+    def __init__(self):
+        self._qoala_hir_vals = []
 
     @property
-    def hir(self):
-        return self._qoala_hir_val
+    def hir(self) -> Operation | List[Operation]:
+        # We return the "most recent" value for this expression
+        return self._qoala_hir_vals[-1]
+
+    @hir.setter
+    def hir(self, new_hir: Operation) -> None:
+        self._qoala_hir_vals.append(new_hir)
 
     @abstractmethod
-    def can_evaluate_to(self, cls):
+    def can_evaluate_to(self, cls) -> bool:
         pass
