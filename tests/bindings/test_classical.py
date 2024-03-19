@@ -3,7 +3,7 @@ import pytest
 from qoala import QoalaProgram, QoalaModule, NotYetCompiledError
 from qoala.types.classical.floats import Float
 from qoala.types.classical.integer import Int
-from qoala.types.quantum.qubit import LocalQubit
+from qoala.types.classical.arrays import IntArray, FloatArray
 
 
 @QoalaProgram
@@ -80,6 +80,18 @@ def simple_arith_program_immediates():
     # float_e uses an immediate declared as a python float
     # this test automatic casting from python types to qoala types
     float_e = float_d / 4.0
+
+
+@QoalaProgram
+def arrays_program():
+    int_array = IntArray(Int(10), 20)
+    float_array = FloatArray(Float(5.5), 1.4)
+
+    int_res = int_array[Int(1)]
+    float_red = float_array[Int(1)]
+
+    # int_array.store(30)
+    # float_array.store(Float(3.14))
 
 
 class TestQoalaHIRPythonBindingsClassical:
@@ -179,6 +191,32 @@ class TestQoalaHIRPythonBindingsClassical:
     %4 = arith.mulf %1, %cst_2 : f32
     %cst_3 = arith.constant 4.000000e+00 : f32
     %5 = arith.divf %4, %cst_3 : f32
+    return
+  }
+}
+"""
+        assert str(module.asm) == expected_asm
+
+    def test_arrays_program_to_qoala_hir(self):
+        with pytest.raises(NotYetCompiledError) as ex:
+            _, _ = arrays_program.module
+        assert str(ex.value) == "The program has not been compiled yet. Did you invoke 'compile()' on it?"
+        _, module = arrays_program.compile()
+        assert isinstance(module, QoalaModule)
+        expected_asm = """module {
+  func.func @arrays_program() {
+    %c10_i32 = arith.constant 10 : i32
+    %c20_i32 = arith.constant 20 : i32
+    %from_elements = tensor.from_elements %c10_i32, %c20_i32 : tensor<2x1xi32>
+    %cst = arith.constant 5.500000e+00 : f32
+    %cst_0 = arith.constant 1.400000e+00 : f32
+    %from_elements_1 = tensor.from_elements %cst, %cst_0 : tensor<2x1xf32>
+    %c1_i32 = arith.constant 1 : i32
+    %0 = arith.index_cast %c1_i32 : index
+    %1 = tensor.extract %0[%0] : i32
+    %c1_i32_0 = arith.constant 1 : i32
+    %2 = arith.index_cast %c1_i32_0 : index
+    %3 = tensor.extract %1[%2] : f32
     return
   }
 }

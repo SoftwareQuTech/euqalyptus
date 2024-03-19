@@ -3,7 +3,7 @@ from typing import Generic, TypeVar, Optional, Sized, Union, Type
 from qoala.ast.value import QoalaArray, QoalaExpression
 from qoala.types.classical import QoalaClassicalType
 from qoala.types.classical.errors import InvalidArgumentError
-from qoala.types.classical.floats import Double
+from qoala.types.classical.floats import Float
 from qoala.types.classical.integer import Int
 
 _Qoala_Base_Type = TypeVar("_Qoala_Base_Type", bound=QoalaClassicalType)
@@ -25,6 +25,7 @@ class _Array(Generic[_Qoala_Base_Type, _Native_Base_Type], Sized):
         if any(not isinstance(element, (base_type, QoalaExpression)) for element in elements):
             raise InvalidArgumentError(f"Array of type '{array_type.__name__}' "
                                        f"can only hold values of type '{base_type.__name__}'")
+
     def store(self, new_element: _Qoala_Base_Type | _Native_Base_Type) -> None:
         # Nothing to do here
         pass
@@ -60,7 +61,7 @@ class IntArray(_Array[Int, int]):
         pass
 
 
-class FloatArray(_Array[Double, float]):
+class FloatArray(_Array[Float, float]):
     def __new__(cls, *elements, **kwargs):
         kwargs["base_type"] = float
         kwargs["base_size"] = 32

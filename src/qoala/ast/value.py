@@ -3,7 +3,8 @@ from enum import Enum, auto
 from typing import Generic, TypeVar, Self, Optional, Type, List
 
 from qoalahir.dialects.arith import ConstantOp
-from qoalahir.extras.types import i32, ui32, f32, vector
+from qoalahir.dialects.tensor import FromElementsOp,RankedTensorType
+from qoalahir.extras.types import i32, ui32, f32
 from qoalahir.ir import Context
 
 from qoala import QoalaProgram
@@ -195,8 +196,16 @@ class QoalaArray(QoalaValue[QoalaExpression], Generic[_T]):
             return False
 
     def to_hir(self, ctx: Context):
-        # TODO - Implement the HIR representation fo arrays - tensor or vector?
-        self._qoala_hir_val = vector(10, 20, element_type=i32)
+        # TODO - Implement the HIR representation for arrays - tensor or vector?
+        elements = [element._qoala_hir_val for element in self.members]
+        if self.base_type is int:
+            hir_base_type = i32()
+        elif self.base_type is float:
+            hir_base_type = f32()
+        else:
+            raise UnknownTypeError(f"Base type '{self.base_type.__name__}' for arrays is not supported")
+        result_type = RankedTensorType.get([self.length, 1], hir_base_type)
+        self._qoala_hir_val = FromElementsOp(elements=elements, result=result_type)
         return self._qoala_hir_val
 
 
