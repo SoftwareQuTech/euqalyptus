@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 
 from qoala import QoalaProgram
+from qoala.ast.errors import OperationNotYetImplementedError
 from qoala.ast.operations import QoalaOperation
 from qoala.ast.value import QoalaExpression, QoalaInteger, QoalaArray
 
@@ -75,6 +76,4 @@ class SetItem(QoalaOperation):
             return False
 
     def to_hir(self, ctx: Context):
-        # TODO - Implement the HIR representation fo arrays - tensor or vector?
-        self._qoala_hir_val = None
-        return self._qoala_hir_val
+        raise OperationNotYetImplementedError(SetItem.__name__)

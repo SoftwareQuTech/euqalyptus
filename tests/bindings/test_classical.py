@@ -91,6 +91,17 @@ def basic_arrays_program():
     float_red = float_array[Int(1)]
 
 
+@QoalaProgram
+def array_with_mutation_program():
+    int_array = IntArray(Int(10), 20)
+    float_array = FloatArray(Float(5.5), 1.4)
+    # This is an interesting case, since it does not mutate the values of the
+    # involved aray (i.e. "no int_array[0] = 30", to override the "10"),
+    # but rather expands the array to store one more value (redimension and store)
+    int_array.store(30)
+    float_array.store(Float(3.14))
+
+
 class TestQoalaHIRPythonBindingsClassical:
     def test_empty_program_to_qoala_hir(self):
         with pytest.raises(NotYetCompiledError) as ex:
@@ -248,3 +259,25 @@ class TestQoalaHIRPythonBindingsClassical:
 }) : () -> ()
 """
         assert str(module.generic_asm) == expected_generic_asm
+
+    @pytest.mark.skip(reason="Mutation of the size of the array is not yet implemented")
+    def test_arrays_with_mutation_program_to_qoala_hir(self):
+        with pytest.raises(NotYetCompiledError) as ex:
+            _, _ = array_with_mutation_program.module
+        assert str(ex.value) == "The program has not been compiled yet. Did you invoke 'compile()' on it?"
+        _, module = array_with_mutation_program.compile()
+        assert isinstance(module, QoalaModule)
+        expected_asm = """module {
+  func.func @array_with_mutation_program() {
+    %c10_i32 = arith.constant 10 : i32
+    %c20_i32 = arith.constant 20 : i32
+    %from_elements = tensor.from_elements %c10_i32, %c20_i32 : tensor<2xi32>
+    %cst = arith.constant 5.500000e+00 : f32
+    %cst_0 = arith.constant 1.400000e+00 : f32
+    %from_elements_1 = tensor.from_elements %cst, %cst_0 : tensor<2xf32>
+    ;; TODO - Mutation not supported yet
+    return
+  }
+}
+"""
+        assert str(module.asm) == expected_asm
