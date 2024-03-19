@@ -1,13 +1,13 @@
 from abc import ABC
 from typing import Self
 
+import qoalahir.dialects.hir as hir
+from qoalahir.ir import Context
+
 from qoala import QoalaProgram
 from qoala.ast import QoalaExpression
 from qoala.ast.operations import QoalaOperation
 from qoala.ast.value import QoalaNumericValue, ImmediateQIntOrExpression, ImmediateQFloatOrExpression
-
-from qoalahir.ir import Context
-import qoalahir.dialects.hir as hir
 
 
 class QoalaQubit(QoalaExpression, ABC):

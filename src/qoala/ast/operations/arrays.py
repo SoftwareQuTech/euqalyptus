@@ -1,14 +1,14 @@
 from dataclasses import dataclass
 
+import qoalahir.dialects.arith as arith
+import qoalahir.dialects.tensor as tensor
+from qoalahir.extras.types import index
+from qoalahir.ir import Context
+
 from qoala import QoalaProgram
 from qoala.ast.errors import OperationNotYetImplementedError
 from qoala.ast.operations import QoalaOperation
 from qoala.ast.value import QoalaExpression, QoalaInteger, QoalaArray
-
-from qoalahir.ir import Context
-import qoalahir.dialects.arith as arith
-from qoalahir.extras.types import index
-import qoalahir.dialects.tensor as tensor
 
 
 @dataclass(init=False)

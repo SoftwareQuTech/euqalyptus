@@ -2,14 +2,14 @@ from abc import ABC
 from dataclasses import dataclass
 from enum import Enum, auto
 
+import qoalahir.dialects.hir as hir
+from qoalahir.ir import Context
+
 from qoala import QoalaProgram
 from qoala.ast.errors import OperationNotYetImplementedError
 from qoala.ast.operations import QoalaOperation
 from qoala.ast.qubit import QoalaQubit
 from qoala.ast.value import QoalaExpression, QoalaFloatOrExpression, QoalaIntegerOrExpression, QoalaBit
-
-from qoalahir.ir import Context
-import qoalahir.dialects.hir as hir
 
 
 @dataclass(init=False)

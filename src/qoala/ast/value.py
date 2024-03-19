@@ -177,7 +177,7 @@ class QoalaArray(QoalaValue[QoalaExpression], Generic[_T]):
 
     def store(self, new_element: QoalaExpression | _T) -> QoalaStatement:
         if isinstance(new_element, self.base_type):
-            to_add = QoalaNumericValue.from_immediate(new_element, is_index=True)
+            to_add = QoalaNumericValue.from_immediate(new_element)
         else:
             to_add = new_element
         from qoala.ast.operations.arrays import SetItem
