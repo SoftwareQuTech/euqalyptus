@@ -1,3 +1,4 @@
+from abc import ABC
 from dataclasses import dataclass
 from enum import Enum, auto
 from typing import Generic, TypeVar, Self, Optional, Type, List
@@ -21,7 +22,7 @@ class Signedness(Enum):
     UNSIGNED = auto()
 
 
-class QoalaValue(QoalaExpression, Generic[_T]):
+class QoalaValue(QoalaExpression, Generic[_T], ABC):
     """
     Class used to represent a value in the AST. Nodes of this type (i.e.
     subclasses) are usually the leaves of the AST.
@@ -30,7 +31,7 @@ class QoalaValue(QoalaExpression, Generic[_T]):
 
 
 @dataclass(init=False)
-class QoalaNumericValue(QoalaValue[_T]):
+class QoalaNumericValue(QoalaValue[_T], ABC):
     signedness: Signedness
     width: int
     value: _T
