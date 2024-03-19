@@ -5,6 +5,9 @@ from qoala.ast.operations import QoalaOperation
 from qoala.ast.value import QoalaExpression, QoalaInteger, QoalaArray
 
 from qoalahir.ir import Context
+import qoalahir.dialects.arith as arith
+from qoalahir.extras.types import index
+import qoalahir.dialects.tensor as tensor
 
 
 @dataclass(init=False)
@@ -16,39 +19,51 @@ class CastToIndex(QoalaExpression):
         self.index_val: QoalaExpression = operands[0]
         QoalaProgram.add_to_body(self)
 
+    def can_evaluate_to(self, cls):
+        if self.index_val.can_evaluate_to(QoalaInteger):
+            return True
+        else:
+            return False
+
+    def to_hir(self, ctx: Context):
+        self._qoala_hir_val = arith.index_cast(in_=self.index_val._qoala_hir_val, out=index())
+        return self._qoala_hir_val
+
 
 @dataclass(init=False)
 class GetItem(QoalaOperation):
-    base_array: QoalaExpression
+    base_array: QoalaArray
     index: QoalaExpression
 
     def __init__(self, *operands: QoalaExpression):
         assert len(operands) == 2
-        self.base_array: QoalaExpression = operands[0]
+        assert isinstance(operands[0], QoalaArray)
+        self.base_array: QoalaArray = operands[0]
         self.index: QoalaExpression = operands[1]
         QoalaProgram.add_to_body(self)
 
     def can_evaluate_to(self, cls):
         if self.index.can_evaluate_to(QoalaInteger) and self.base_array.can_evaluate_to(QoalaArray):
-            # TODO - We need to make sure that the type of 'base_array' is == cls
+            # TODO - We need to make sure that the base type of 'base_array' is cls
             return True
         else:
             return False
 
     def to_hir(self, ctx: Context):
         # TODO - Implement the HIR representation fo arrays - tensor or vector?
-        self._qoala_hir_val = None
-        return self._qoala_hir_val
+        self._qoala_hir_val = tensor.extract(tensor=self.base_array.hir, indices=[self.index.hir])
+        return self.hir
 
 
 @dataclass(init=False)
 class SetItem(QoalaOperation):
-    base_array: QoalaExpression
+    base_array: QoalaArray
     index: QoalaExpression
 
     def __init__(self, *operands: QoalaExpression):
         assert len(operands) == 2
-        self.base_array: QoalaExpression = operands[0]
+        assert isinstance(operands[0], QoalaArray)
+        self.base_array: QoalaArray = operands[0]
         self.index: QoalaExpression = operands[1]
         QoalaProgram.add_to_body(self)
 

@@ -2,8 +2,8 @@ from dataclasses import dataclass
 from enum import Enum, auto
 from typing import Generic, TypeVar, Self, Optional, Type, List
 
-from qoalahir.dialects.arith import ConstantOp, IndexCastOp
-from qoalahir.dialects.tensor import FromElementsOp,RankedTensorType
+import qoalahir.dialects.arith as arith
+import qoalahir.dialects.tensor as tensor
 from qoalahir.extras.types import i32, ui32, f32, index
 from qoalahir.ir import Context
 
@@ -87,7 +87,7 @@ class QoalaInteger(QoalaNumericValue[int]):
             integer_type = ui32()
         else:
             integer_type = i32()
-        self._qoala_hir_val = ConstantOp(value=self.value, result=integer_type)
+        self._qoala_hir_val = arith.constant(value=self.value, result=integer_type)
         return self._qoala_hir_val
 
 
@@ -114,7 +114,7 @@ class QoalaFloat(QoalaNumericValue[float]):
 
     def to_hir(self, ctx: Context):
         float_type = f32()
-        self._qoala_hir_val = ConstantOp(value=self.value, result=float_type)
+        self._qoala_hir_val = arith.constant(value=self.value, result=float_type)
         return self._qoala_hir_val
 
     def can_evaluate_to(self, cls):
@@ -217,8 +217,8 @@ class QoalaArray(QoalaValue[QoalaExpression], Generic[_T]):
             hir_base_type = f32()
         else:
             raise UnknownTypeError(f"Base type '{self.base_type.__name__}' for arrays is not supported")
-        result_type = RankedTensorType.get([self.length, 1], hir_base_type)
-        self._qoala_hir_val = FromElementsOp(elements=elements, result=result_type)
+        result_type = tensor.RankedTensorType.get([self.length], hir_base_type)
+        self._qoala_hir_val = tensor.from_elements(elements=elements, result=result_type)
         return self._qoala_hir_val
 
 

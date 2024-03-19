@@ -23,6 +23,10 @@ class QoalaStatement(QoalaASTElement, ABC):
 class QoalaExpression(QoalaASTElement, ABC):
     _qoala_hir_val: Operation
 
+    @property
+    def hir(self):
+        return self._qoala_hir_val
+
     @abstractmethod
     def can_evaluate_to(self, cls):
         pass

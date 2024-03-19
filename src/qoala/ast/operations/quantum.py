@@ -9,7 +9,7 @@ from qoala.ast.qubit import QoalaQubit
 from qoala.ast.value import QoalaExpression, QoalaFloatOrExpression, QoalaIntegerOrExpression, QoalaBit
 
 from qoalahir.ir import Context
-from qoalahir.dialects.hir import HadamardOp, RotXOp, RotYOp, RotZOp, CnotOp, MeasureOp
+import qoalahir.dialects.hir as hir
 
 
 @dataclass(init=False)
@@ -29,7 +29,7 @@ class QubitMeasure(QoalaOperation):
             return False
 
     def to_hir(self, ctx: Context):
-        self._qoala_hir_val = MeasureOp(qin0=self.qubit._qoala_hir_val)
+        self._qoala_hir_val = hir.measure(qin0=self.qubit._qoala_hir_val)
         return self._qoala_hir_val
 
 
@@ -148,7 +148,7 @@ class HGate(QoalaOperation):
             return False
 
     def to_hir(self, ctx: Context):
-        self._qoala_hir_val = HadamardOp(self.qubit)
+        self._qoala_hir_val = hir.hadamard(self.qubit)
         return self._qoala_hir_val
 
 
@@ -240,7 +240,7 @@ class RotateX(Rotate):
             return False
 
     def to_hir(self, ctx: Context):
-        self._qoala_hir_val = RotXOp(qin=self.qubit._qoala_hir_val, angle=self.angle._qoala_hir_val)
+        self._qoala_hir_val = hir.rot_x(qin=self.qubit._qoala_hir_val, angle=self.angle._qoala_hir_val)
         return self._qoala_hir_val
 
 
@@ -262,7 +262,7 @@ class RotateY(Rotate):
             return False
 
     def to_hir(self, ctx: Context):
-        self._qoala_hir_val = RotYOp(qin=self.qubit._qoala_hir_val, angle=self.angle._qoala_hir_val)
+        self._qoala_hir_val = hir.rot_y(qin=self.qubit._qoala_hir_val, angle=self.angle._qoala_hir_val)
         return self._qoala_hir_val
 
 
@@ -285,7 +285,7 @@ class RotateZ(Rotate):
             return False
 
     def to_hir(self, ctx: Context):
-        self._qoala_hir_val = RotZOp(qin=self.qubit._qoala_hir_val, angle=self.angle._qoala_hir_val)
+        self._qoala_hir_val = hir.rot_z(qin=self.qubit._qoala_hir_val, angle=self.angle._qoala_hir_val)
         return self._qoala_hir_val
 
 
@@ -309,7 +309,7 @@ class CNotGate(QoalaOperation):
             return False
 
     def to_hir(self, ctx: Context):
-        self._qoala_hir_val = CnotOp(qin0=self.qubit._qoala_hir_val, qin1=self.target._qoala_hir_val)
+        self._qoala_hir_val = hir.cnot(qin0=self.qubit._qoala_hir_val, qin1=self.target._qoala_hir_val)
         return self._qoala_hir_val
 
 

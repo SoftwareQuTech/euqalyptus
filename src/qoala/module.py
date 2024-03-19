@@ -12,10 +12,12 @@ class QoalaModule:
     _body: List[QoalaASTElement]
     _function_name: str
     _qir_module: Module
+    _is_initialized: bool
 
     def __init__(self, function_name: str):
         self._body = []
         self._function_name = function_name
+        self._is_initialized = False
 
     def clear_body(self):
         self._body.clear()
@@ -24,9 +26,16 @@ class QoalaModule:
         self._body.append(elem)
 
     @property
+    def generic_asm(self) -> str:
+        if not self._is_initialized:
+            self._init_qir_module()
+        return str(self._qir_module.operation.get_asm(print_generic_op_form=True))
+
+    @property
     def asm(self) -> str:
-        self._init_qir_module()
-        return str(self._qir_module)
+        if not self._is_initialized:
+            self._init_qir_module()
+        return str(self._qir_module.operation.get_asm())
 
     def __str__(self) -> str:
         return self.asm
@@ -48,3 +57,4 @@ class QoalaModule:
                     func.ReturnOp([])
             # Before closing the context, we save the ASM we just created
             self._qir_module = qir_module
+        self._is_initialized = True

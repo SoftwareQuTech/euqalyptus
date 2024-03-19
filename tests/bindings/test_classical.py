@@ -83,15 +83,12 @@ def simple_arith_program_immediates():
 
 
 @QoalaProgram
-def arrays_program():
+def basic_arrays_program():
     int_array = IntArray(Int(10), 20)
     float_array = FloatArray(Float(5.5), 1.4)
 
     int_res = int_array[1]
     float_red = float_array[Int(1)]
-
-    # int_array.store(30)
-    # float_array.store(Float(3.14))
 
 
 class TestQoalaHIRPythonBindingsClassical:
@@ -199,25 +196,55 @@ class TestQoalaHIRPythonBindingsClassical:
 
     def test_arrays_program_to_qoala_hir(self):
         with pytest.raises(NotYetCompiledError) as ex:
-            _, _ = arrays_program.module
+            _, _ = basic_arrays_program.module
         assert str(ex.value) == "The program has not been compiled yet. Did you invoke 'compile()' on it?"
-        _, module = arrays_program.compile()
+        _, module = basic_arrays_program.compile()
         assert isinstance(module, QoalaModule)
+        # NOTE - According to the documentation "`tensor.extract` op reads a ranked tensor and returns one
+        #        element as specified by the given indices. The result of the op is a value with the same
+        #        type as the elements of the tensor."
+        #        Despite that it says that the result type if of the type of the elements, the **pretty-printed**
+        #        return type _is the type of the tensor of the tensor used to access_. This can be seen in the
+        #        "assemblyFormat" property of the Tensor_ExtractOp class in the tensor dialect declaration,
+        #        located in the file /mlir/installation/folder/mlir/Dialect/Tensor/IR/TensorOps.td
+        #        If we request the "generic" version of the MLIR, we can notice the "real" return type of the extract
+        #        (see below). Maybe this limitation is due to the fact that from the "extract" operation asmFormat
+        #        property you cannot access the "$elementType" attribute of the tensor uses as an operand
         expected_asm = """module {
-  func.func @arrays_program() {
+  func.func @basic_arrays_program() {
     %c10_i32 = arith.constant 10 : i32
     %c20_i32 = arith.constant 20 : i32
-    %from_elements = tensor.from_elements %c10_i32, %c20_i32 : tensor<2x1xi32>
+    %from_elements = tensor.from_elements %c10_i32, %c20_i32 : tensor<2xi32>
     %cst = arith.constant 5.500000e+00 : f32
     %cst_0 = arith.constant 1.400000e+00 : f32
-    %from_elements_1 = tensor.from_elements %cst, %cst_0 : tensor<2x1xf32>
+    %from_elements_1 = tensor.from_elements %cst, %cst_0 : tensor<2xf32>
     %c1 = arith.constant 1 : index
-    %1 = tensor.extract %from_elements[%c1] : i32
-    %c1_i32_0 = arith.constant 1 : i32
-    %2 = arith.index_cast %c1_i32_0 : index
-    %3 = tensor.extract %from_elements_1[%2] : f32
+    %extracted = tensor.extract %from_elements[%c1] : tensor<2xi32>
+    %c1_i32 = arith.constant 1 : i32
+    %0 = arith.index_cast %c1_i32 : i32 to index
+    %extracted_2 = tensor.extract %from_elements_1[%0] : tensor<2xf32>
     return
   }
 }
 """
         assert str(module.asm) == expected_asm
+
+        # See the returned valued of the operations on registers %7 and %10
+        expected_generic_asm = """"builtin.module"() ({
+  "func.func"() <{function_type = () -> (), sym_name = "basic_arrays_program"}> ({
+    %0 = "arith.constant"() <{value = 10 : i32}> : () -> i32
+    %1 = "arith.constant"() <{value = 20 : i32}> : () -> i32
+    %2 = "tensor.from_elements"(%0, %1) : (i32, i32) -> tensor<2xi32>
+    %3 = "arith.constant"() <{value = 5.500000e+00 : f32}> : () -> f32
+    %4 = "arith.constant"() <{value = 1.400000e+00 : f32}> : () -> f32
+    %5 = "tensor.from_elements"(%3, %4) : (f32, f32) -> tensor<2xf32>
+    %6 = "arith.constant"() <{value = 1 : index}> : () -> index
+    %7 = "tensor.extract"(%2, %6) : (tensor<2xi32>, index) -> i32
+    %8 = "arith.constant"() <{value = 1 : i32}> : () -> i32
+    %9 = "arith.index_cast"(%8) : (i32) -> index
+    %10 = "tensor.extract"(%5, %9) : (tensor<2xf32>, index) -> f32
+    "func.return"() : () -> ()
+  }) : () -> ()
+}) : () -> ()
+"""
+        assert str(module.generic_asm) == expected_generic_asm

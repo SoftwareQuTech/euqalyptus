@@ -7,7 +7,7 @@ from qoala.ast.operations import QoalaOperation
 from qoala.ast.value import QoalaNumericValue, ImmediateQIntOrExpression, ImmediateQFloatOrExpression
 
 from qoalahir.ir import Context
-from qoalahir.dialects.hir import NewQubitOp
+import qoalahir.dialects.hir as hir
 
 
 class QoalaQubit(QoalaExpression, ABC):
@@ -146,7 +146,7 @@ class QoalaLocalQubit(QoalaQubit):
             return False
 
     def to_hir(self, ctx: Context):
-        self._qoala_hir_val = NewQubitOp()
+        self._qoala_hir_val = hir.new_qubit()
         return self._qoala_hir_val
 
 
