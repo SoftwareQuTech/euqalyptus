@@ -87,7 +87,7 @@ def arrays_program():
     int_array = IntArray(Int(10), 20)
     float_array = FloatArray(Float(5.5), 1.4)
 
-    int_res = int_array[Int(1)]
+    int_res = int_array[1]
     float_red = float_array[Int(1)]
 
     # int_array.store(30)
@@ -211,12 +211,11 @@ class TestQoalaHIRPythonBindingsClassical:
     %cst = arith.constant 5.500000e+00 : f32
     %cst_0 = arith.constant 1.400000e+00 : f32
     %from_elements_1 = tensor.from_elements %cst, %cst_0 : tensor<2x1xf32>
-    %c1_i32 = arith.constant 1 : i32
-    %0 = arith.index_cast %c1_i32 : index
-    %1 = tensor.extract %0[%0] : i32
+    %c1 = arith.constant 1 : index
+    %1 = tensor.extract %from_elements[%c1] : i32
     %c1_i32_0 = arith.constant 1 : i32
     %2 = arith.index_cast %c1_i32_0 : index
-    %3 = tensor.extract %1[%2] : f32
+    %3 = tensor.extract %from_elements_1[%2] : f32
     return
   }
 }

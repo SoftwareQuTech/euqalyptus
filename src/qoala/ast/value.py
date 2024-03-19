@@ -4,7 +4,7 @@ from typing import Generic, TypeVar, Self, Optional, Type, List
 
 from qoalahir.dialects.arith import ConstantOp
 from qoalahir.dialects.tensor import FromElementsOp,RankedTensorType
-from qoalahir.extras.types import i32, ui32, f32
+from qoalahir.extras.types import i32, ui32, f32, index
 from qoalahir.ir import Context
 
 from qoala import QoalaProgram
@@ -36,8 +36,10 @@ class QoalaNumericValue(QoalaValue[_T]):
     value: _T
 
     @classmethod
-    def from_immediate(cls, value: _T) -> Self:
-        if isinstance(value, int):
+    def from_immediate(cls, value: _T, is_index: bool = False) -> Self:
+        if is_index:
+            return QoalaInteger(value=value, width=32, signedness=Signedness.SIGNED, is_index_type=True)
+        elif isinstance(value, int):
             return QoalaInteger(value=value, width=32, signedness=Signedness.SIGNED)
         elif isinstance(value, float):
             return QoalaFloat(value=value, width=32)
@@ -53,6 +55,7 @@ class QoalaInteger(QoalaNumericValue[int]):
             value: _T,
             width: int,
             signedness: Signedness,
+            is_index_type: bool = False,
             other: Optional[Self] = None
     ):
         if other is not None:
@@ -66,6 +69,7 @@ class QoalaInteger(QoalaNumericValue[int]):
             self.width = width
             self.signedness = signedness
             self.value = value
+        self.is_index_type = is_index_type
         QoalaProgram.add_to_body(self)
 
     def can_evaluate_to(self, cls):
@@ -75,7 +79,9 @@ class QoalaInteger(QoalaNumericValue[int]):
             return False
 
     def to_hir(self, ctx: Context):
-        if self.signedness == Signedness.SIGNED:
+        if self.is_index_type:
+            integer_type = index()
+        elif self.signedness == Signedness.SIGNED:
             integer_type = i32()
         elif self.signedness == Signedness.UNSIGNED:
             integer_type = ui32()
@@ -171,7 +177,7 @@ class QoalaArray(QoalaValue[QoalaExpression], Generic[_T]):
 
     def store(self, new_element: QoalaExpression | _T) -> QoalaStatement:
         if isinstance(new_element, self.base_type):
-            to_add = QoalaNumericValue.from_immediate(new_element)
+            to_add = QoalaNumericValue.from_immediate(new_element, is_index=True)
         else:
             to_add = new_element
         from qoala.ast.operations.arrays import SetItem
@@ -183,7 +189,7 @@ class QoalaArray(QoalaValue[QoalaExpression], Generic[_T]):
 
     def __getitem__(self, item: QoalaExpression | int) -> QoalaExpression:
         if isinstance(item, int):
-            to_add = QoalaNumericValue.from_immediate(item)
+            to_add = QoalaNumericValue.from_immediate(item, is_index=True)
         else:
             to_add = item
         from qoala.ast.operations.arrays import GetItem
