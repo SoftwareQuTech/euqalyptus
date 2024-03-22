@@ -5,13 +5,13 @@ from typing import Generic, TypeVar, Self, Optional, Type, List
 
 import qoalahir.dialects.arith as arith
 import qoalahir.dialects.tensor as tensor
-from qoalahir.extras.types import i32, ui32, f32, index
 from qoalahir.ir import Context
 
 from qoala import QoalaProgram
 from qoala.ast import QoalaExpression, QoalaStatement
 from qoala.ast.errors import UnknownTypeError, OperandMismatchError
 from qoala.ast.operations import QoalaOperation, with_arith_operators
+from qoala.utils.binding_types import i32, ui32, f32, index
 
 _T = TypeVar("_T")
 
