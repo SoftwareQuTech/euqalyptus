@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 
 import qoalahir.dialects.arith as arith
+import qoalahir.dialects.tensor as tensor
 from qoalahir.ir import Context
 
 from qoala import QoalaProgram
