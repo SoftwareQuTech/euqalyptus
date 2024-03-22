@@ -1,10 +1,17 @@
+from abc import ABC
 from dataclasses import dataclass
 from enum import Enum, auto
 from typing import Generic, TypeVar, Self, Optional, Type, List
 
+import qoalahir.dialects.arith as arith
+import qoalahir.dialects.tensor as tensor
+from qoalahir.ir import Context
+
 from qoala import QoalaProgram
-from qoala.ast import QoalaExpression, QoalaStatement, QoalaOperation
-from qoala.ast.errors import UnknownTypeError
+from qoala.ast import QoalaExpression, QoalaStatement
+from qoala.ast.errors import UnknownTypeError, OperandMismatchError
+from qoala.ast.operations import QoalaOperation, with_arith_operators
+from qoala.utils.binding_types import i32, ui32, f32, index
 
 _T = TypeVar("_T")
 
@@ -15,7 +22,7 @@ class Signedness(Enum):
     UNSIGNED = auto()
 
 
-class QoalaValue(QoalaExpression, Generic[_T]):
+class QoalaValue(QoalaExpression, Generic[_T], ABC):
     """
     Class used to represent a value in the AST. Nodes of this type (i.e.
     subclasses) are usually the leaves of the AST.
@@ -24,14 +31,16 @@ class QoalaValue(QoalaExpression, Generic[_T]):
 
 
 @dataclass(init=False)
-class QoalaNumericValue(QoalaValue[_T]):
+class QoalaNumericValue(QoalaValue[_T], ABC):
     signedness: Signedness
     width: int
     value: _T
 
     @classmethod
-    def from_immediate(cls, value: _T) -> Self:
-        if isinstance(value, int):
+    def from_immediate(cls, value: _T, is_index: bool = False) -> Self:
+        if is_index:
+            return QoalaInteger(value=value, width=32, signedness=Signedness.SIGNED, is_index_type=True)
+        elif isinstance(value, int):
             return QoalaInteger(value=value, width=32, signedness=Signedness.SIGNED)
         elif isinstance(value, float):
             return QoalaFloat(value=value, width=32)
@@ -40,14 +49,17 @@ class QoalaNumericValue(QoalaValue[_T]):
                                    f"Supported immediate types are 'int' and 'float'.")
 
 
+@with_arith_operators
 class QoalaInteger(QoalaNumericValue[int]):
     def __init__(
             self,
             value: _T,
             width: int,
             signedness: Signedness,
+            is_index_type: bool = False,
             other: Optional[Self] = None
     ):
+        super().__init__()
         if other is not None:
             self.width = other.width
             self.signedness = other.signedness
@@ -59,39 +71,29 @@ class QoalaInteger(QoalaNumericValue[int]):
             self.width = width
             self.signedness = signedness
             self.value = value
+        self.is_index_type = is_index_type
         QoalaProgram.add_to_body(self)
 
-    # Operations associated with all integer types:
-    def add(self, other: QoalaExpression) -> QoalaExpression:
-        from qoala.ast.operations.numeric import Add
-        return QoalaOperation._create_expression_for_op(Add, self, other)
+    def can_evaluate_to(self, cls):
+        if cls == QoalaInteger:
+            return True
+        else:
+            return False
 
-    def subtract(self, other: QoalaExpression) -> QoalaExpression:
-        from qoala.ast.operations.numeric import Subtract
-        return QoalaOperation._create_expression_for_op(Subtract, self, other)
-
-    def multiply(self, other: QoalaExpression) -> QoalaExpression:
-        from qoala.ast.operations.numeric import Multiply
-        return QoalaOperation._create_expression_for_op(Multiply, self, other)
-
-    def divide(self, other: QoalaExpression) -> QoalaExpression:
-        from qoala.ast.operations.numeric import Divide
-        return QoalaOperation._create_expression_for_op(Divide, self, other)
-
-    # Method used for operator overload
-    def __add__(self, other: Self) -> Self:
-        return self.add(other)
-
-    def __sub__(self, other: Self) -> Self:
-        return self.subtract(other)
-
-    def __mul__(self, other: Self) -> Self:
-        return self.multiply(other)
-
-    def __truediv__(self, other: Self) -> Self:
-        return self.divide(other)
+    def to_hir(self, ctx: Context):
+        if self.is_index_type:
+            integer_type = index()
+        elif self.signedness == Signedness.SIGNED:
+            integer_type = i32()
+        elif self.signedness == Signedness.UNSIGNED:
+            integer_type = ui32()
+        else:
+            integer_type = i32()
+        self.hir = arith.constant(value=self.value, result=integer_type)
+        return self.hir
 
 
+@with_arith_operators
 class QoalaFloat(QoalaNumericValue[float]):
     def __init__(
             self,
@@ -99,6 +101,7 @@ class QoalaFloat(QoalaNumericValue[float]):
             width: int,
             other: Optional[Self] = None
     ):
+        super().__init__()
         if other is not None:
             self.width = other.width
             self.signedness = Signedness.UNKNOWN
@@ -112,35 +115,16 @@ class QoalaFloat(QoalaNumericValue[float]):
             self.value = value
         QoalaProgram.add_to_body(self)
 
-    # Operations associated with all float types:
-    def add(self, other: QoalaExpression) -> QoalaExpression:
-        from qoala.ast.operations.numeric import Add
-        return QoalaOperation._create_expression_for_op(Add, self, other)
+    def to_hir(self, ctx: Context):
+        float_type = f32()
+        self.hir = arith.constant(value=self.value, result=float_type)
+        return self.hir
 
-    def subtract(self, other: QoalaExpression) -> QoalaExpression:
-        from qoala.ast.operations.numeric import Subtract
-        return QoalaOperation._create_expression_for_op(Subtract, self, other)
-
-    def multiply(self, other: QoalaExpression) -> QoalaExpression:
-        from qoala.ast.operations.numeric import Multiply
-        return QoalaOperation._create_expression_for_op(Multiply, self, other)
-
-    def divide(self, other: QoalaExpression) -> QoalaExpression:
-        from qoala.ast.operations.numeric import Divide
-        return QoalaOperation._create_expression_for_op(Divide, self, other)
-
-    # Method used for operator overload
-    def __add__(self, other: Self) -> Self:
-        return self.add(other)
-
-    def __sub__(self, other: Self) -> Self:
-        return self.subtract(other)
-
-    def __mul__(self, other: Self) -> Self:
-        return self.multiply(other)
-
-    def __truediv__(self, other: Self) -> Self:
-        return self.divide(other)
+    def can_evaluate_to(self, cls):
+        if cls == QoalaFloat:
+            return True
+        else:
+            return False
 
 
 QoalaFloatOrExpression = QoalaFloat | QoalaExpression
@@ -153,7 +137,7 @@ ImmediateQIntOrExpression = QoalaIntegerOrExpression | int
 # FIXME - In the meantime, we will model arrays as if they were
 #         values. We might want to reconsider this decision in
 #         the future.
-@dataclass
+@dataclass(init=False)
 class QoalaArray(QoalaValue[QoalaExpression], Generic[_T]):
     base_type: Type
     base_size: int
@@ -167,6 +151,7 @@ class QoalaArray(QoalaValue[QoalaExpression], Generic[_T]):
             base_size: int,
             length: int
     ):
+        super().__init__()
         self.members = []
         self.base_type = base_type
         self.base_size = base_size
@@ -206,13 +191,39 @@ class QoalaArray(QoalaValue[QoalaExpression], Generic[_T]):
         # TODO - Does this operation make sense?
         raise NotImplementedError("'len' operation for arrays not implemented")
 
-    def __getitem__(self, item: QoalaExpression | int) -> QoalaExpression:
-        if isinstance(item, int):
-            to_add = QoalaNumericValue.from_immediate(item)
+    def __getitem__(self, item_index: QoalaExpression | int) -> QoalaExpression:
+        if isinstance(item_index, int):
+            index_operand = QoalaNumericValue.from_immediate(item_index, is_index=True)
         else:
-            to_add = item
+            # The index is already a qoala expression, which can evaluate either to a float or int
+            # If it evaluates to an int, we need to cast it to an integer
+            if not item_index.can_evaluate_to(QoalaInteger):
+                raise OperandMismatchError(f"The index operand '{item_index}' cannot evaluate to an integer, "
+                                           f"hence it cannot be used index an array.")
+            from qoala.ast.operations.arrays import CastToIndex
+            casted_index = QoalaOperation._create_expression_for_op(CastToIndex, item_index)
+            index_operand = casted_index
         from qoala.ast.operations.arrays import GetItem
-        return QoalaOperation._create_expression_for_op(GetItem, self, to_add)
+        return QoalaOperation._create_expression_for_op(GetItem, self, index_operand)
+
+    def can_evaluate_to(self, cls):
+        if cls == QoalaArray:
+            return True
+        else:
+            return False
+
+    def to_hir(self, ctx: Context):
+        # TODO - Implement the HIR representation for arrays - tensor or vector?
+        elements = [element.hir for element in self.members]
+        if self.base_type is int:
+            hir_base_type = i32()
+        elif self.base_type is float:
+            hir_base_type = f32()
+        else:
+            raise UnknownTypeError(f"Base type '{self.base_type.__name__}' for arrays is not supported")
+        result_type = tensor.RankedTensorType.get([self.length], hir_base_type)
+        self.hir = tensor.from_elements(elements=elements, result=result_type)
+        return self.hir
 
 
 class QoalaBit(QoalaValue[int]):

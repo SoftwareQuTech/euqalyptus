@@ -1,30 +1,40 @@
-from typing import TypeVar, Type
+from abc import ABC, abstractmethod
+from dataclasses import dataclass
+from typing import List, TypeVar
+
+from qoalahir.ir import Context, Operation
 
 _T = TypeVar("_T")
 
 
-class QoalaASTElement:
+@dataclass(init=False)
+class QoalaASTElement(ABC):
+
+    @abstractmethod
+    def to_hir(self, ctx: Context):
+        pass
+
+
+class QoalaStatement(QoalaASTElement, ABC):
     pass
 
 
-class QoalaStatement(QoalaASTElement):
-    pass
+@dataclass(init=False)
+class QoalaExpression(QoalaASTElement, ABC):
+    _qoala_hir_vals: List[Operation]
 
+    def __init__(self):
+        self._qoala_hir_vals = []
 
-class QoalaExpression(QoalaASTElement):
-    pass
+    @property
+    def hir(self) -> Operation | List[Operation]:
+        # We return the "most recent" value for this expression
+        return self._qoala_hir_vals[-1]
 
+    @hir.setter
+    def hir(self, new_hir: Operation) -> None:
+        self._qoala_hir_vals.append(new_hir)
 
-_cls = TypeVar("_cls", bound=QoalaExpression)
-
-
-class QoalaOperation(QoalaExpression):
-    @staticmethod
-    def _create_expression_for_op(
-            op_class: Type[_cls],
-            *operands: QoalaExpression,
-            **kw_operands: QoalaExpression
-    ) -> _cls:
-        assert all(isinstance(operand, QoalaExpression) for operand in operands)
-        assert all(isinstance(kw_operands[kw_operand], QoalaExpression) for kw_operand in kw_operands)
-        return op_class(*operands, **kw_operands)
+    @abstractmethod
+    def can_evaluate_to(self, cls) -> bool:
+        pass

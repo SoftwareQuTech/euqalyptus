@@ -57,17 +57,17 @@ class TestNumbersSemantics:
             pytest.fail("Unknown numeric base type")
         assert int_b.value == val_b
 
-        assert int_c.operand_a == int_a
-        assert int_c.operand_b == int_b
+        assert int_c.operand_a is int_a
+        assert int_c.operand_b is int_b
 
-        assert int_d.operand_a == int_a
-        assert int_d.operand_b == int_b
+        assert int_d.operand_a is int_a
+        assert int_d.operand_b is int_b
 
-        assert int_e.operand_a == int_a
-        assert int_e.operand_b == int_b
+        assert int_e.operand_a is int_a
+        assert int_e.operand_b is int_b
 
-        assert int_f.operand_a == int_a
-        assert int_f.operand_b == int_b
+        assert int_f.operand_a is int_a
+        assert int_f.operand_b is int_b
 
     def test_wrong_numeric_initialization(self):
         with pytest.raises(InvalidArgumentError) as ex:

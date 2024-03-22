@@ -66,6 +66,8 @@ class Int32(SignedIntegerType[int]):
         pass
 
 
+# "SIGNLESS" version of an integer.
+# TODO - Implement this class as a real "signless" integer, to avoid confusion in the generated MLIR
 Int = Int32
 
 
