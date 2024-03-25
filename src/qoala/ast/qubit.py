@@ -146,9 +146,9 @@ class QoalaLocalQubit(QoalaQubit):
         else:
             return False
 
-    def to_hir(self, ctx: Context):
-        self.hir = qnet.new_qubit()
-        return self.hir
+    def to_ir(self, ctx: Context):
+        self.ir = qnet.new_qubit()
+        return self.ir
 
 
 # TODO - Implement remote qubits

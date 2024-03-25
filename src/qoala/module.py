@@ -53,7 +53,7 @@ class QoalaModule:
                 block = Block.create_at_start(function.body)
                 with InsertionPoint(block):
                     for operation in self._body:
-                        operation.to_hir(ctx)
+                        operation.to_ir(ctx)
                     func.ReturnOp([])
             # Before closing the context, we save the ASM we just created
             self._qir_module = qir_module

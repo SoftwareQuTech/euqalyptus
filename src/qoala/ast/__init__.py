@@ -11,7 +11,7 @@ _T = TypeVar("_T")
 class QoalaASTElement(ABC):
 
     @abstractmethod
-    def to_hir(self, ctx: Context):
+    def to_ir(self, ctx: Context):
         pass
 
 
@@ -21,19 +21,19 @@ class QoalaStatement(QoalaASTElement, ABC):
 
 @dataclass(init=False)
 class QoalaExpression(QoalaASTElement, ABC):
-    _qoala_hir_vals: List[Operation]
+    _ir_vals: List[Operation]
 
     def __init__(self):
-        self._qoala_hir_vals = []
+        self._ir_vals = []
 
     @property
-    def hir(self) -> Operation | List[Operation]:
+    def ir(self) -> Operation | List[Operation]:
         # We return the "most recent" value for this expression
-        return self._qoala_hir_vals[-1]
+        return self._ir_vals[-1]
 
-    @hir.setter
-    def hir(self, new_hir: Operation) -> None:
-        self._qoala_hir_vals.append(new_hir)
+    @ir.setter
+    def ir(self, new_hir: Operation) -> None:
+        self._ir_vals.append(new_hir)
 
     @abstractmethod
     def can_evaluate_to(self, cls) -> bool:
