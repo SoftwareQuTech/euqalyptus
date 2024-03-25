@@ -102,8 +102,8 @@ def array_with_mutation_program():
     float_array.store(Float(3.14))
 
 
-class TestQoalaHIRPythonBindingsClassical:
-    def test_empty_program_to_qoala_hir(self):
+class TestQoalaQnetPythonBindingsClassical:
+    def test_empty_program_to_qoala_qnet(self):
         with pytest.raises(NotYetCompiledError) as ex:
             _, _ = empty_program.module
         assert str(ex.value) == "The program has not been compiled yet. Did you invoke 'compile()' on it?"
@@ -117,7 +117,7 @@ class TestQoalaHIRPythonBindingsClassical:
 """
         assert str(module.asm) == expected_asm
 
-    def test_simple_arith_program_to_qoala_hir(self):
+    def test_simple_arith_program_to_qoala_qnet(self):
         with pytest.raises(NotYetCompiledError) as ex:
             _, _ = simple_arith_program.module
         assert str(ex.value) == "The program has not been compiled yet. Did you invoke 'compile()' on it?"
@@ -145,7 +145,7 @@ class TestQoalaHIRPythonBindingsClassical:
 """
         assert str(module.asm) == expected_asm
 
-    def test_composed_arith_program_to_qoala_hir(self):
+    def test_composed_arith_program_to_qoala_qnet(self):
         with pytest.raises(NotYetCompiledError) as ex:
             _, _ = simple_arith_program_composed.module
         assert str(ex.value) == "The program has not been compiled yet. Did you invoke 'compile()' on it?"
@@ -175,7 +175,7 @@ class TestQoalaHIRPythonBindingsClassical:
 """
         assert str(module.asm) == expected_asm
 
-    def test_arith_program_with_immediates_to_qoala_hir(self):
+    def test_arith_program_with_immediates_to_qoala_qnet(self):
         with pytest.raises(NotYetCompiledError) as ex:
             _, _ = simple_arith_program_immediates.module
         assert str(ex.value) == "The program has not been compiled yet. Did you invoke 'compile()' on it?"
@@ -205,7 +205,7 @@ class TestQoalaHIRPythonBindingsClassical:
 """
         assert str(module.asm) == expected_asm
 
-    def test_arrays_program_to_qoala_hir(self):
+    def test_arrays_program_to_qoala_qnet(self):
         with pytest.raises(NotYetCompiledError) as ex:
             _, _ = basic_arrays_program.module
         assert str(ex.value) == "The program has not been compiled yet. Did you invoke 'compile()' on it?"
@@ -261,7 +261,7 @@ class TestQoalaHIRPythonBindingsClassical:
         assert str(module.generic_asm) == expected_generic_asm
 
     @pytest.mark.skip(reason="Mutation of the size of the array is not yet implemented")
-    def test_arrays_with_mutation_program_to_qoala_hir(self):
+    def test_arrays_with_mutation_program_to_qoala_qnet(self):
         with pytest.raises(NotYetCompiledError) as ex:
             _, _ = array_with_mutation_program.module
         assert str(ex.value) == "The program has not been compiled yet. Did you invoke 'compile()' on it?"

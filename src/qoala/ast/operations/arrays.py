@@ -1,8 +1,8 @@
 from dataclasses import dataclass
 
-import qoalahir.dialects.arith as arith
-import qoalahir.dialects.tensor as tensor
-from qoalahir.ir import Context
+import qnet.dialects.arith as arith
+import qnet.dialects.tensor as tensor
+from qnet.ir import Context
 
 from qoala import QoalaProgram
 from qoala.ast.errors import OperationNotYetImplementedError

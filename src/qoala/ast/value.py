@@ -3,9 +3,9 @@ from dataclasses import dataclass
 from enum import Enum, auto
 from typing import Generic, TypeVar, Self, Optional, Type, List
 
-import qoalahir.dialects.arith as arith
-import qoalahir.dialects.tensor as tensor
-from qoalahir.ir import Context
+import qnet.dialects.arith as arith
+import qnet.dialects.tensor as tensor
+from qnet.ir import Context
 
 from qoala import QoalaProgram
 from qoala.ast import QoalaExpression, QoalaStatement

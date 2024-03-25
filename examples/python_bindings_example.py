@@ -1,11 +1,11 @@
-from qoalahir.ir import *
-from qoalahir.dialects import hir, func
+from qnet.ir import *
+from qnet.dialects import qnet, func
 
 
 if __name__ == '__main__':
     with Context() as ctx, Location.unknown():
-        # We first register the "hir" dialect
-        hir.register_dialect(ctx)
+        # We first register the "qnet" dialect
+        qnet.register_dialect(ctx)
         # We need to create a module to start appending thing on
         m = Module.create()
         # And we start inserting things on the body of the module
@@ -23,7 +23,7 @@ if __name__ == '__main__':
             # We insert the rest at the beginning of the created block
             with InsertionPoint(block):
                 # Here we create the operations we actually want ot insert
-                qubit = hir.NewQubitOp().qout
-                op = hir.HadamardOp(qubit)
+                qubit = qnet.NewQubitOp().qout
+                op = qnet.HadamardOp(qubit)
         # Before closing the context, we print the ASM we just created
         print(m)

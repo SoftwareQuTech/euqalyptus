@@ -2,8 +2,8 @@ from abc import ABC
 from dataclasses import dataclass
 from enum import Enum, auto
 
-import qoalahir.dialects.hir as hir
-from qoalahir.ir import Context
+import qnet.dialects.qnet as qnet
+from qnet.ir import Context
 
 from qoala import QoalaProgram
 from qoala.ast.errors import OperationNotYetImplementedError
@@ -30,7 +30,7 @@ class QubitMeasure(QoalaOperation):
             return False
 
     def to_hir(self, ctx: Context):
-        self.hir = hir.measure(qin0=self.qubit.hir)
+        self.hir = qnet.measure(qin0=self.qubit.hir)
         return self.hir
 
 
@@ -155,7 +155,7 @@ class HGate(QoalaOperation):
             return False
 
     def to_hir(self, ctx: Context):
-        self.hir = hir.hadamard(self.qubit)
+        self.hir = qnet.hadamard(self.qubit)
         return self.hir
 
 
@@ -251,7 +251,7 @@ class RotateX(Rotate):
 
     def to_hir(self, ctx: Context):
         # We first add this operation to the program
-        self.hir = hir.rot_x(qin=self.qubit.hir, angle=self.angle.hir)
+        self.hir = qnet.rot_x(qin=self.qubit.hir, angle=self.angle.hir)
         # We then register that the qubit has a "new" value
         self.qubit.hir = self.hir
         return self.hir
@@ -276,7 +276,7 @@ class RotateY(Rotate):
 
     def to_hir(self, ctx: Context):
         # We first add this operation to the program
-        self.hir = hir.rot_y(qin=self.qubit.hir, angle=self.angle.hir)
+        self.hir = qnet.rot_y(qin=self.qubit.hir, angle=self.angle.hir)
         # We then register that the qubit has a "new" value
         self.qubit.hir = self.hir
         return self.hir
@@ -302,7 +302,7 @@ class RotateZ(Rotate):
 
     def to_hir(self, ctx: Context):
         # We first add this operation to the program
-        self.hir = hir.rot_z(qin=self.qubit.hir, angle=self.angle.hir)
+        self.hir = qnet.rot_z(qin=self.qubit.hir, angle=self.angle.hir)
         # We then register that the qubit has a "new" value
         self.qubit.hir = self.hir
         return self.hir
@@ -330,7 +330,7 @@ class CNotGate(QoalaOperation):
 
     def to_hir(self, ctx: Context):
         # We first add this operation to the program
-        self.hir = hir.cnot(qin0=self.qubit.hir, qin1=self.target.hir)
+        self.hir = qnet.cnot(qin0=self.qubit.hir, qin1=self.target.hir)
         # We then register that the qubit has a "new" value
         self.qubit.hir = self.hir[0]
         self.target.hir = self.hir[1]

@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 
-import qoalahir.dialects.arith as arith
-from qoalahir.ir import Context
+import qnet.dialects.arith as arith
+from qnet.ir import Context
 
 from qoala import QoalaProgram
 from qoala.ast import QoalaExpression

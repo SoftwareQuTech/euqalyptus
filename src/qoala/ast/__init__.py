@@ -2,7 +2,7 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from typing import List, TypeVar
 
-from qoalahir.ir import Context, Operation
+from qnet.ir import Context, Operation
 
 _T = TypeVar("_T")
 

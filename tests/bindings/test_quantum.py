@@ -38,8 +38,8 @@ def complex_quantum_program():
     measurement_b = qubit_b.measure()
 
 
-class TestQoalaHIRPythonBindingsQuantum:
-    def test_complex_program_to_qoala_hir(self):
+class TestQoalaQnetPythonBindingsQuantum:
+    def test_complex_program_to_qoala_qnet(self):
         with pytest.raises(NotYetCompiledError) as ex:
             _, _ = complex_quantum_program.module
         assert str(ex.value) == "The program has not been compiled yet. Did you invoke 'compile()' on it?"
@@ -57,19 +57,19 @@ class TestQoalaHIRPythonBindingsQuantum:
     %c20_i32 = arith.constant 20 : i32
     %c30_i32 = arith.constant 30 : i32
     %cst = arith.constant 2.120000e+01 : f32
-    %0 = hir.new_qubit : !hir.qubit
-    %1 = hir.new_qubit : !hir.qubit
+    %0 = qnet.new_qubit : !qnet.qubit
+    %1 = qnet.new_qubit : !qnet.qubit
     %c10_i32 = arith.constant 10 : i32
     %c30_i32_0 = arith.constant 30 : i32
     %cst_1 = arith.constant 0.000000e+00 : f32
-    %2 = hir.rot_x %0, %cst_1 : !hir.qubit
+    %2 = qnet.rot_x %0, %cst_1 : !qnet.qubit
     %c10_i32_2 = arith.constant 10 : i32
     %cst_3 = arith.constant 1.050000e+01 : f32
-    %3 = hir.rot_y %2, %cst_3 : !hir.qubit
-    %4 = hir.rot_z %3, %cst : !hir.qubit
-    %qout0, %qout1 = hir.cnot %4, %1 : !hir.qubit, !hir.qubit
-    %5 = hir.measure %qout0 : i1
-    %6 = hir.measure %qout1 : i1
+    %3 = qnet.rot_y %2, %cst_3 : !qnet.qubit
+    %4 = qnet.rot_z %3, %cst : !qnet.qubit
+    %qout0, %qout1 = qnet.cnot %4, %1 : !qnet.qubit, !qnet.qubit
+    %5 = qnet.measure %qout0 : i1
+    %6 = qnet.measure %qout1 : i1
     return
   }
 }

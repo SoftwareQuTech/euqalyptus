@@ -4,7 +4,7 @@
 from functools import partial
 from typing import Optional, List
 
-from qoalahir.ir import (
+from qnet.ir import (
     Attribute,
     BF16Type,
     ComplexType,
