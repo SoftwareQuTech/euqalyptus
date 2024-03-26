@@ -1,6 +1,7 @@
-from abc import ABC, abstractmethod
+from abc import ABC
 from typing import Optional, Self
 
+from qoala.ast import QoalaExpression
 from qoala.ast.qubit import QoalaLocalQubit
 from qoala.ast.value import QoalaBit
 from qoala.types.classical.floats import Float
@@ -23,18 +24,16 @@ class Qubit(QoalaQuantumType, ABC):
     methods on a `Qubit` instance.
     """
 
-    @abstractmethod
-    def measure(self) -> Bit:
+    def measure(self) -> QoalaBit:
         """
         Measure the qubit in the standard basis and get the measurement outcome.
 
         Returns
         -------
-            The value of the measure, as a `Measure` object
+            The value of the measure, as a `Bit` object
         """
         ...
 
-    @abstractmethod
     def X(self):
         """
         Applies an X gate on the qubit.
@@ -45,7 +44,6 @@ class Qubit(QoalaQuantumType, ABC):
         """
         ...
 
-    @abstractmethod
     def Y(self):
         """
         Applies an Y gate on the qubit.
@@ -55,7 +53,6 @@ class Qubit(QoalaQuantumType, ABC):
         """
         ...
 
-    @abstractmethod
     def Z(self):
         """
         Applies a Z gate on the qubit.
@@ -65,7 +62,6 @@ class Qubit(QoalaQuantumType, ABC):
         """
         ...
 
-    @abstractmethod
     def T(self):
         """
         Applies a T gate on the qubit.
@@ -75,7 +71,6 @@ class Qubit(QoalaQuantumType, ABC):
         """
         ...
 
-    @abstractmethod
     def H(self):
         """
         Applies a Hadamard gate on the qubit.
@@ -85,7 +80,6 @@ class Qubit(QoalaQuantumType, ABC):
         """
         ...
 
-    @abstractmethod
     def K(self):
         """
         Applies a K gate on the qubit.
@@ -96,7 +90,6 @@ class Qubit(QoalaQuantumType, ABC):
         """
         ...
 
-    @abstractmethod
     def S(self):
         """
         Applies an S gate on the qubit.
@@ -107,7 +100,6 @@ class Qubit(QoalaQuantumType, ABC):
         """
         ...
 
-    @abstractmethod
     def rot_X(
             self,
             n: int | QoalaIntegerType = 0,
@@ -140,7 +132,6 @@ class Qubit(QoalaQuantumType, ABC):
         """
         ...
 
-    @abstractmethod
     def rot_Y(
             self,
             n: int | QoalaIntegerType = 0,
@@ -173,7 +164,6 @@ class Qubit(QoalaQuantumType, ABC):
         """
         ...
 
-    @abstractmethod
     def rot_Z(
             self,
             n: int | QoalaIntegerType = 0,
@@ -206,7 +196,6 @@ class Qubit(QoalaQuantumType, ABC):
         """
         ...
 
-    @abstractmethod
     def cnot(self, target: Self) -> None:
         """
         Apply a CNOT gate between this qubit (control) and a target qubit.
@@ -222,7 +211,6 @@ class Qubit(QoalaQuantumType, ABC):
         """
         ...
 
-    @abstractmethod
     def cphase(self, target: Self) -> None:
         """
         Apply a CPHASE (CZ) gate between this qubit (control) and a target qubit.
@@ -238,7 +226,6 @@ class Qubit(QoalaQuantumType, ABC):
         """
         ...
 
-    @abstractmethod
     def reset(self) -> None:
         r"""
         Reset the qubit to the state \|0>.
@@ -249,7 +236,6 @@ class Qubit(QoalaQuantumType, ABC):
         """
         ...
 
-    @abstractmethod
     def free(self) -> None:
         """
         Free the qubit and its virtual ID.
@@ -264,6 +250,9 @@ class Qubit(QoalaQuantumType, ABC):
 
 
 class LocalQubit(Qubit):
+    """
+    Represents a local qubit used for local quantum computation.
+    """
     def __new__(cls, *args, **kwargs):
         return QoalaLocalQubit()
 
@@ -271,77 +260,15 @@ class LocalQubit(Qubit):
         # Nothing to do here
         pass
 
-    def measure(self) -> QoalaBit:
+
+class Entangle(Qubit):
+    """
+    Represents a local qubit used for quantum entanglement with a remote host.
+    """
+    def __new__(cls, name: str, num: int | QoalaExpression):
+        # TODO - Implement the AST class
+        pass
+
+    def __init__(self, name: str, num: int | QoalaExpression):
         # Nothing to do here
-        pass
-
-    def X(self):
-        # Nothing to do here
-        pass
-
-    def Y(self):
-        # Nothing to do here
-        pass
-
-    def Z(self):
-        # Nothing to do here
-        pass
-
-    def T(self):
-        # Nothing to do here
-        pass
-
-    def H(self):
-        # Nothing to do here
-        pass
-
-    def K(self):
-        # Nothing to do here
-        pass
-
-    def S(self):
-        # Nothing to do here
-        pass
-
-    def rot_X(
-            self,
-            n: int | QoalaIntegerType = 0,
-            d: int | QoalaIntegerType = 0,
-            angle: float | Float | None = None
-    ):
-        # Nothing to do here
-        pass
-
-    def rot_Y(
-            self,
-            n: int | QoalaIntegerType = 0,
-            d: int | QoalaIntegerType = 0,
-            angle: float | Float | None = None
-    ):
-        # Nothing to do here
-        pass
-
-    def rot_Z(
-            self,
-            n: int | QoalaIntegerType = 0,
-            d: int | QoalaIntegerType = 0,
-            angle: float | Float | None = None
-    ):
-        # Nothing to do here
-        pass
-
-    def cnot(self, target: Self) -> None:
-        # Nothing to do here
-        pass
-
-    def cphase(self, target: Self) -> None:
-        # Nothing to do here
-        pass
-
-    def reset(self) -> None:
-        # TODO - Implement
-        pass
-
-    def free(self) -> None:
-        # TODO - Implement
         pass
