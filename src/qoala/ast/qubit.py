@@ -1,8 +1,8 @@
 from abc import ABC
 from typing import Self
 
-import qoalahir.dialects.hir as hir
-from qoalahir.ir import Context
+import qnet.dialects.qnet as qnet
+from qnet.ir import Context
 
 from qoala import QoalaProgram
 from qoala.ast import QoalaExpression
@@ -146,9 +146,9 @@ class QoalaLocalQubit(QoalaQubit):
         else:
             return False
 
-    def to_hir(self, ctx: Context):
-        self.hir = hir.new_qubit()
-        return self.hir
+    def to_ir(self, ctx: Context):
+        self.ir = qnet.new_qubit()
+        return self.ir
 
 
 # TODO - Implement remote qubits

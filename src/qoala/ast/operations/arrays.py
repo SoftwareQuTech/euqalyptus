@@ -1,8 +1,8 @@
 from dataclasses import dataclass
 
-import qoalahir.dialects.arith as arith
-import qoalahir.dialects.tensor as tensor
-from qoalahir.ir import Context
+import qnet.dialects.arith as arith
+import qnet.dialects.tensor as tensor
+from qnet.ir import Context
 
 from qoala import QoalaProgram
 from qoala.ast.errors import OperationNotYetImplementedError
@@ -27,9 +27,9 @@ class CastToIndex(QoalaExpression):
         else:
             return False
 
-    def to_hir(self, ctx: Context):
-        self.hir = arith.index_cast(in_=self.index_val.hir, out=index())
-        return self.hir
+    def to_ir(self, ctx: Context):
+        self.ir = arith.index_cast(in_=self.index_val.ir, out=index())
+        return self.ir
 
 
 @dataclass(init=False)
@@ -52,10 +52,10 @@ class GetItem(QoalaOperation):
         else:
             return False
 
-    def to_hir(self, ctx: Context):
-        # TODO - Implement the HIR representation fo arrays - tensor or vector?
-        self.hir = tensor.extract(tensor=self.base_array.hir, indices=[self.index.hir])
-        return self.hir
+    def to_ir(self, ctx: Context):
+        # TODO - Implement the IR representation fo arrays - tensor or vector?
+        self.ir = tensor.extract(tensor=self.base_array.ir, indices=[self.index.ir])
+        return self.ir
 
 
 @dataclass(init=False)
@@ -78,5 +78,5 @@ class SetItem(QoalaOperation):
         else:
             return False
 
-    def to_hir(self, ctx: Context):
+    def to_ir(self, ctx: Context):
         raise OperationNotYetImplementedError(SetItem.__name__)

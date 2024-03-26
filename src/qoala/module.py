@@ -1,8 +1,8 @@
 from dataclasses import dataclass
 from typing import List
 
-from qoalahir.dialects import hir, func
-from qoalahir.ir import *
+from qnet.dialects import qnet, func
+from qnet.ir import *
 
 from qoala.ast import QoalaASTElement
 
@@ -42,7 +42,7 @@ class QoalaModule:
 
     def _init_qir_module(self) -> None:
         with Context() as ctx, Location.unknown():
-            hir.register_dialect(ctx)
+            qnet.register_dialect(ctx)
             qir_module = Module.create()
             with InsertionPoint(qir_module.body):
                 func_type = FunctionType.get(inputs=[], results=[])
@@ -53,7 +53,7 @@ class QoalaModule:
                 block = Block.create_at_start(function.body)
                 with InsertionPoint(block):
                     for operation in self._body:
-                        operation.to_hir(ctx)
+                        operation.to_ir(ctx)
                     func.ReturnOp([])
             # Before closing the context, we save the ASM we just created
             self._qir_module = qir_module

@@ -2,8 +2,8 @@ from abc import ABC
 from dataclasses import dataclass
 from enum import Enum, auto
 
-import qoalahir.dialects.hir as hir
-from qoalahir.ir import Context
+import qnet.dialects.qnet as qnet
+from qnet.ir import Context
 
 from qoala import QoalaProgram
 from qoala.ast.errors import OperationNotYetImplementedError
@@ -29,9 +29,9 @@ class QubitMeasure(QoalaOperation):
         else:
             return False
 
-    def to_hir(self, ctx: Context):
-        self.hir = hir.measure(qin0=self.qubit.hir)
-        return self.hir
+    def to_ir(self, ctx: Context):
+        self.ir = qnet.measure(qin0=self.qubit.ir)
+        return self.ir
 
 
 @dataclass(init=False)
@@ -49,7 +49,7 @@ class QubitReset(QoalaOperation, ABC):
         # "void" operation; can always evaluate to anything
         return True
 
-    def to_hir(self, ctx: Context):
+    def to_ir(self, ctx: Context):
         raise OperationNotYetImplementedError(QubitReset.__name__)
 
 
@@ -70,7 +70,7 @@ class XGate(QoalaOperation):
         else:
             return False
 
-    def to_hir(self, ctx: Context):
+    def to_ir(self, ctx: Context):
         raise OperationNotYetImplementedError(XGate.__name__)
 
 
@@ -91,7 +91,7 @@ class YGate(QoalaOperation):
         else:
             return False
 
-    def to_hir(self, ctx: Context):
+    def to_ir(self, ctx: Context):
         raise OperationNotYetImplementedError(YGate.__name__)
 
 
@@ -112,7 +112,7 @@ class ZGate(QoalaOperation):
         else:
             return False
 
-    def to_hir(self, ctx: Context):
+    def to_ir(self, ctx: Context):
         raise OperationNotYetImplementedError(ZGate.__name__)
 
 
@@ -133,7 +133,7 @@ class TGate(QoalaOperation):
         else:
             return False
 
-    def to_hir(self, ctx: Context):
+    def to_ir(self, ctx: Context):
         raise OperationNotYetImplementedError(TGate.__name__)
 
 
@@ -154,9 +154,9 @@ class HGate(QoalaOperation):
         else:
             return False
 
-    def to_hir(self, ctx: Context):
-        self.hir = hir.hadamard(self.qubit)
-        return self.hir
+    def to_ir(self, ctx: Context):
+        self.ir = qnet.hadamard(self.qubit)
+        return self.ir
 
 
 @dataclass(init=False)
@@ -176,7 +176,7 @@ class KGate(QoalaOperation):
         else:
             return False
 
-    def to_hir(self, ctx: Context):
+    def to_ir(self, ctx: Context):
         raise OperationNotYetImplementedError(KGate.__name__)
 
 
@@ -197,7 +197,7 @@ class SGate(QoalaOperation):
         else:
             return False
 
-    def to_hir(self, ctx: Context):
+    def to_ir(self, ctx: Context):
         raise OperationNotYetImplementedError(SGate.__name__)
 
 
@@ -249,12 +249,12 @@ class RotateX(Rotate):
         else:
             return False
 
-    def to_hir(self, ctx: Context):
+    def to_ir(self, ctx: Context):
         # We first add this operation to the program
-        self.hir = hir.rot_x(qin=self.qubit.hir, angle=self.angle.hir)
+        self.ir = qnet.rot_x(qin=self.qubit.ir, angle=self.angle.ir)
         # We then register that the qubit has a "new" value
-        self.qubit.hir = self.hir
-        return self.hir
+        self.qubit.ir = self.ir
+        return self.ir
 
 
 @dataclass(init=False)
@@ -274,12 +274,12 @@ class RotateY(Rotate):
         else:
             return False
 
-    def to_hir(self, ctx: Context):
+    def to_ir(self, ctx: Context):
         # We first add this operation to the program
-        self.hir = hir.rot_y(qin=self.qubit.hir, angle=self.angle.hir)
+        self.ir = qnet.rot_y(qin=self.qubit.ir, angle=self.angle.ir)
         # We then register that the qubit has a "new" value
-        self.qubit.hir = self.hir
-        return self.hir
+        self.qubit.ir = self.ir
+        return self.ir
 
 
 
@@ -300,12 +300,12 @@ class RotateZ(Rotate):
         else:
             return False
 
-    def to_hir(self, ctx: Context):
+    def to_ir(self, ctx: Context):
         # We first add this operation to the program
-        self.hir = hir.rot_z(qin=self.qubit.hir, angle=self.angle.hir)
+        self.ir = qnet.rot_z(qin=self.qubit.ir, angle=self.angle.ir)
         # We then register that the qubit has a "new" value
-        self.qubit.hir = self.hir
-        return self.hir
+        self.qubit.ir = self.ir
+        return self.ir
 
 
 
@@ -328,13 +328,13 @@ class CNotGate(QoalaOperation):
         else:
             return False
 
-    def to_hir(self, ctx: Context):
+    def to_ir(self, ctx: Context):
         # We first add this operation to the program
-        self.hir = hir.cnot(qin0=self.qubit.hir, qin1=self.target.hir)
+        self.ir = qnet.cnot(qin0=self.qubit.ir, qin1=self.target.ir)
         # We then register that the qubit has a "new" value
-        self.qubit.hir = self.hir[0]
-        self.target.hir = self.hir[1]
-        return self.hir
+        self.qubit.ir = self.ir[0]
+        self.target.ir = self.ir[1]
+        return self.ir
 
 
 @dataclass(init=False)
@@ -353,5 +353,5 @@ class CPhaseGate(QoalaOperation):
         else:
             return False
 
-    def to_hir(self, ctx: Context):
+    def to_ir(self, ctx: Context):
         raise OperationNotYetImplementedError(CPhaseGate.__name__)
