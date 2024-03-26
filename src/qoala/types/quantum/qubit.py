@@ -4,7 +4,7 @@ from typing import Optional, Self
 from qoala.ast import QoalaExpression
 from qoala.ast.qubit import QoalaLocalQubit
 from qoala.ast.value import QoalaBit
-from qoala.types.classical.floats import Float
+from qoala.types.classical.floats import QoalaFloatingPointType
 from qoala.types.classical.integer import Bit, QoalaIntegerType
 from qoala.types.quantum import QoalaQuantumType
 
@@ -104,7 +104,7 @@ class Qubit(QoalaQuantumType, ABC):
             self,
             n: int | QoalaIntegerType = 0,
             d: int | QoalaIntegerType = 0,
-            angle: float | Float | None = None
+            angle: float | QoalaFloatingPointType | None = None
     ):
         """
         Do a rotation around the X-axis of the specified angle.
@@ -136,7 +136,7 @@ class Qubit(QoalaQuantumType, ABC):
             self,
             n: int | QoalaIntegerType = 0,
             d: int | QoalaIntegerType = 0,
-            angle: float | Float | None = None
+            angle: float | QoalaFloatingPointType | None = None
     ):
         """
         Do a rotation around the Y-axis of the specified angle.
@@ -168,7 +168,7 @@ class Qubit(QoalaQuantumType, ABC):
             self,
             n: int | QoalaIntegerType = 0,
             d: int | QoalaIntegerType = 0,
-            angle: float | Float | None = None
+            angle: float | QoalaFloatingPointType | None = None
     ):
         """
         Do a rotation around the Z-axis of the specified angle.

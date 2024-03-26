@@ -1,4 +1,8 @@
-class RecvInt:
+from qoala.types.classical.integer import QoalaIntegerType
+from qoala.types.classical.floats import QoalaFloatingPointType
+
+
+class RecvInt(QoalaIntegerType):
     def __new__(cls, remote_name: str, *args, **kwargs):
         # TODO
         pass
@@ -11,7 +15,7 @@ class RecvInt:
 recv_int = RecvInt
 
 
-class RecvFloat:
+class RecvFloat(QoalaFloatingPointType):
     def __new__(cls, remote_name: str, *args, **kwargs):
         # TODO
         pass
