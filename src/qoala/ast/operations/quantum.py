@@ -3,6 +3,7 @@ from dataclasses import dataclass
 from enum import Enum, auto
 
 import qnet.dialects.qnet as qnet
+import qnet.dialects.tensor as tensor
 from qnet.ir import Context
 
 from qoala import QoalaProgram
@@ -10,6 +11,7 @@ from qoala.ast.errors import OperationNotYetImplementedError
 from qoala.ast.operations import QoalaOperation
 from qoala.ast.qubit import QoalaQubit
 from qoala.ast.value import QoalaExpression, QoalaFloatOrExpression, QoalaIntegerOrExpression, QoalaBit, QoalaInteger
+from qoala.utils.binding_types import i32
 
 
 @dataclass(init=False)
@@ -211,15 +213,11 @@ class RotateBaseAxis(Enum):
 @dataclass(init=False)
 class Rotate(QoalaOperation, ABC):
     qubit: QoalaQubit
-    n: QoalaIntegerOrExpression
-    d: QoalaIntegerOrExpression
     angle: QoalaFloatOrExpression
 
     def __init__(
             self,
             qubit: QoalaExpression,
-            n: QoalaIntegerOrExpression,
-            d: QoalaIntegerOrExpression,
             angle: QoalaFloatOrExpression,
             axis: RotateBaseAxis
     ):
@@ -227,8 +225,6 @@ class Rotate(QoalaOperation, ABC):
         # We assume the users of this class will pass _at least_ default values for all operands
         assert isinstance(qubit, QoalaQubit)
         self.qubit = qubit
-        self.n = n
-        self.d = d
         self.angle = angle
         QoalaProgram.add_to_body(self)
 
@@ -238,11 +234,9 @@ class RotateX(Rotate):
     def __init__(
             self,
             qubit: QoalaExpression,
-            n: QoalaIntegerOrExpression,
-            d: QoalaIntegerOrExpression,
             angle: QoalaFloatOrExpression
     ):
-        super().__init__(qubit=qubit, n=n, d=d, angle=angle, axis=RotateBaseAxis.X)
+        super().__init__(qubit=qubit, angle=angle, axis=RotateBaseAxis.X)
 
     def can_evaluate_to(self, cls):
         if cls == QoalaQubit:
@@ -263,11 +257,9 @@ class RotateY(Rotate):
     def __init__(
             self,
             qubit: QoalaExpression,
-            n: QoalaIntegerOrExpression,
-            d: QoalaIntegerOrExpression,
             angle: QoalaFloatOrExpression
     ):
-        super().__init__(qubit=qubit, n=n, d=d, angle=angle, axis=RotateBaseAxis.Y)
+        super().__init__(qubit=qubit, angle=angle, axis=RotateBaseAxis.Y)
 
     def can_evaluate_to(self, cls):
         if cls == QoalaQubit:
@@ -283,17 +275,14 @@ class RotateY(Rotate):
         return self.ir
 
 
-
 @dataclass(init=False)
 class RotateZ(Rotate):
     def __init__(
             self,
             qubit: QoalaExpression,
-            n: QoalaIntegerOrExpression,
-            d: QoalaIntegerOrExpression,
             angle: QoalaFloatOrExpression
     ):
-        super().__init__(qubit=qubit, n=n, d=d, angle=angle, axis=RotateBaseAxis.Z)
+        super().__init__(qubit=qubit, angle=angle, axis=RotateBaseAxis.Z)
 
     def can_evaluate_to(self, cls):
         if cls == QoalaQubit:
@@ -307,7 +296,6 @@ class RotateZ(Rotate):
         # We then register that the qubit has a "new" value
         self.qubit.ir = self.ir
         return self.ir
-
 
 
 @dataclass(init=False)
@@ -372,8 +360,6 @@ class RecvIntOp(QoalaOperation):
         return cls == QoalaInteger
 
     def to_ir(self, ctx: Context):
-        import qnet.dialects.tensor as tensor
-        from qoala.utils.binding_types import i32
         tensor_shape = tensor.RankedTensorType.get([1], i32())
         self.ir = qnet.recv_ints(remote=self.remote, cout=tensor_shape)
         return self.ir
