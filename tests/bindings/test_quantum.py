@@ -103,13 +103,13 @@ class TestQoalaQnetPythonBindingsQuantum:
         expected_asm = """module {
   func.func @quantum_entanglement_program() {
     %0 = qnet.eprs {N = 1 : i32, remote = @Bob} : tensor<1x!qnet.qubit>
-    %1 = qnet.recv_float : f32
+    %1 = qnet.recv_ints {remote = @Bob} : i32
     %ci_0= arith.constant 0 : index
     %2 = tensor.extract %0[%ci_0] : tensor<1x!qnet.qubit>
     %3 = qnet.rot_x(%2, %1) : !qnet.qubit
-    %4 = qnet.recv_float : f32
+    %4 = qnet.recv_ints {remote = @Bob} : i32
     %5 = qnet.rot_y(%3, %4) : !qnet.qubit
-    %m = qnet.measure(%5)
+    %6 = qnet.measure(%5)
     return
   }
 }

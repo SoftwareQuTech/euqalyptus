@@ -1,11 +1,12 @@
+from qoala.ast.operations.quantum import RecvIntOp
+
 from qoala.types.classical.integer import QoalaIntegerType
 from qoala.types.classical.floats import QoalaFloatingPointType
 
 
 class RecvInt(QoalaIntegerType):
     def __new__(cls, remote_name: str, *args, **kwargs):
-        # TODO
-        pass
+        return RecvIntOp(remote_name=remote_name)
 
     def __init__(self, remote_name: str):
         # Nothing to do here

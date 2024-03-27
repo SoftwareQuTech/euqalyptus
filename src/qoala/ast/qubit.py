@@ -1,7 +1,9 @@
-from abc import ABC
-from typing import Self
+from abc import ABC, abstractmethod
+from typing import Self, Tuple
 
 import qnet.dialects.qnet as qnet
+import qnet.dialects.tensor as tensor
+from qnet.dialects.qnet import QubitType
 from qnet.ir import Context
 
 from qoala import QoalaProgram
@@ -11,7 +13,103 @@ from qoala.ast.value import QoalaNumericValue, ImmediateQIntOrExpression, Immedi
 
 
 class QoalaQubit(QoalaExpression, ABC):
-    pass
+    @abstractmethod
+    def measure(self) -> QoalaOperation:
+        pass
+
+    @abstractmethod
+    def X(self) -> QoalaOperation:
+        pass
+
+    @abstractmethod
+    def Y(self) -> QoalaOperation:
+        pass
+
+    @abstractmethod
+    def Z(self) -> QoalaOperation:
+        pass
+
+    @abstractmethod
+    def T(self) -> QoalaOperation:
+        pass
+
+    @abstractmethod
+    def H(self) -> QoalaOperation:
+        pass
+
+    @abstractmethod
+    def K(self) -> QoalaOperation:
+        pass
+
+    @abstractmethod
+    def S(self) -> QoalaOperation:
+        pass
+
+    @staticmethod
+    def _process_angles(
+            n: ImmediateQIntOrExpression = 0,
+            d: ImmediateQIntOrExpression = 0,
+            angle: ImmediateQFloatOrExpression | None = None
+    ) -> Tuple[ImmediateQIntOrExpression, ImmediateQIntOrExpression, ImmediateQFloatOrExpression]:
+        if isinstance(n, int):
+            n_val = QoalaNumericValue.from_immediate(n)
+        else:
+            n_val = n
+        if isinstance(d, int):
+            d_val = QoalaNumericValue.from_immediate(d)
+        else:
+            d_val = d
+        if angle is None:
+            angle_val = QoalaNumericValue.from_immediate(0.0)
+        elif isinstance(angle, float):
+            angle_val = QoalaNumericValue.from_immediate(angle)
+        else:
+            angle_val = angle
+        return n_val, d_val, angle_val
+
+    @abstractmethod
+    def rot_X(
+            self,
+            n: ImmediateQIntOrExpression = 0,
+            d: ImmediateQIntOrExpression = 0,
+            angle: ImmediateQFloatOrExpression | None = None
+    ) -> QoalaOperation:
+        pass
+
+    @abstractmethod
+    def rot_Y(
+            self,
+            n: ImmediateQIntOrExpression = 0,
+            d: ImmediateQIntOrExpression = 0,
+            angle: ImmediateQFloatOrExpression | None = None
+    ) -> QoalaOperation:
+        pass
+
+    @abstractmethod
+    def rot_Z(
+            self,
+            n: ImmediateQIntOrExpression = 0,
+            d: ImmediateQIntOrExpression = 0,
+            angle: ImmediateQFloatOrExpression | None = None
+    ) -> QoalaOperation:
+        pass
+
+    @abstractmethod
+    def cnot(self, target: Self) -> QoalaOperation:
+        pass
+
+    @abstractmethod
+    def cphase(self, target: Self) -> QoalaOperation:
+        pass
+
+    @abstractmethod
+    def reset(self) -> QoalaOperation:
+        pass
+
+    @abstractmethod
+    def free(self) -> QoalaOperation:
+        # TODO - Implement
+        pass
 
 
 class QoalaLocalQubit(QoalaQubit):
@@ -61,20 +159,7 @@ class QoalaLocalQubit(QoalaQubit):
             d: ImmediateQIntOrExpression = 0,
             angle: ImmediateQFloatOrExpression | None = None
     ) -> QoalaOperation:
-        if isinstance(n, int):
-            n_val = QoalaNumericValue.from_immediate(n)
-        else:
-            n_val = n
-        if isinstance(d, int):
-            d_val = QoalaNumericValue.from_immediate(d)
-        else:
-            d_val = d
-        if angle is None:
-            angle_val = QoalaNumericValue.from_immediate(0.0)
-        elif isinstance(angle, float):
-            angle_val = QoalaNumericValue.from_immediate(angle)
-        else:
-            angle_val = angle
+        n_val, d_val, angle_val = QoalaLocalQubit._process_angles(n, d, angle)
         from qoala.ast.operations.quantum import RotateX
         return QoalaOperation._create_expression_for_op(RotateX, qubit=self, n=n_val, d=d_val, angle=angle_val)
 
@@ -84,20 +169,7 @@ class QoalaLocalQubit(QoalaQubit):
             d: ImmediateQIntOrExpression = 0,
             angle: ImmediateQFloatOrExpression | None = None
     ) -> QoalaOperation:
-        if isinstance(n, int):
-            n_val = QoalaNumericValue.from_immediate(n)
-        else:
-            n_val = n
-        if isinstance(d, int):
-            d_val = QoalaNumericValue.from_immediate(d)
-        else:
-            d_val = d
-        if angle is None:
-            angle_val = QoalaNumericValue.from_immediate(0.0)
-        elif isinstance(angle, float):
-            angle_val = QoalaNumericValue.from_immediate(angle)
-        else:
-            angle_val = angle
+        n_val, d_val, angle_val = QoalaLocalQubit._process_angles(n, d, angle)
         from qoala.ast.operations.quantum import RotateY
         return QoalaOperation._create_expression_for_op(RotateY, qubit=self, n=n_val, d=d_val, angle=angle_val)
 
@@ -107,20 +179,7 @@ class QoalaLocalQubit(QoalaQubit):
             d: ImmediateQIntOrExpression = 0,
             angle: ImmediateQFloatOrExpression | None = None
     ) -> QoalaOperation:
-        if isinstance(n, int):
-            n_val = QoalaNumericValue.from_immediate(n)
-        else:
-            n_val = n
-        if isinstance(d, int):
-            d_val = QoalaNumericValue.from_immediate(d)
-        else:
-            d_val = d
-        if angle is None:
-            angle_val = QoalaNumericValue.from_immediate(0.0)
-        elif isinstance(angle, float):
-            angle_val = QoalaNumericValue.from_immediate(angle)
-        else:
-            angle_val = angle
+        n_val, d_val, angle_val = QoalaLocalQubit._process_angles(n, d, angle)
         from qoala.ast.operations.quantum import RotateZ
         return QoalaOperation._create_expression_for_op(RotateZ, qubit=self, n=n_val, d=d_val, angle=angle_val)
 
@@ -153,4 +212,105 @@ class QoalaLocalQubit(QoalaQubit):
 
 # TODO - Implement remote qubits
 class QoalaRemoteQubit(QoalaQubit):
-    pass
+    def __init__(self, name: str, n: int):
+        super().__init__()
+        self.name = name
+        self.n = n
+        QoalaProgram.add_to_body(self)
+
+    #  TODO - Do the remote qubits support the same operations and local?
+    def measure(self) -> QoalaOperation:
+        # When we measure, _at runtime_ we get a value of type Bit (or QoalaBit).
+        # However, here we need to model how the measure operation is compiled
+        # Being this said, we need to return a "QubitMeasure" operation
+        from qoala.ast.operations.quantum import QubitMeasure
+        # TODO - Do we need to specify the base?
+        return QubitMeasure(self)
+
+    def X(self) -> QoalaOperation:
+        from qoala.ast.operations.quantum import XGate
+        return QoalaOperation._create_expression_for_op(XGate, self)
+
+    def Y(self) -> QoalaOperation:
+        from qoala.ast.operations.quantum import YGate
+        return QoalaOperation._create_expression_for_op(YGate, self)
+
+    def Z(self) -> QoalaOperation:
+        from qoala.ast.operations.quantum import ZGate
+        return QoalaOperation._create_expression_for_op(ZGate, self)
+
+    def T(self) -> QoalaOperation:
+        from qoala.ast.operations.quantum import TGate
+        return QoalaOperation._create_expression_for_op(TGate, self)
+
+    def H(self) -> QoalaOperation:
+        from qoala.ast.operations.quantum import HGate
+        return QoalaOperation._create_expression_for_op(HGate, self)
+
+    def K(self) -> QoalaOperation:
+        from qoala.ast.operations.quantum import KGate
+        return QoalaOperation._create_expression_for_op(KGate, self)
+
+    def S(self) -> QoalaOperation:
+        from qoala.ast.operations.quantum import SGate
+        return QoalaOperation._create_expression_for_op(SGate, self)
+
+    def rot_X(
+            self,
+            n: ImmediateQIntOrExpression = 0,
+            d: ImmediateQIntOrExpression = 0,
+            angle: ImmediateQFloatOrExpression | None = None
+    ) -> QoalaOperation:
+        n_val, d_val, angle_val = QoalaLocalQubit._process_angles(n, d, angle)
+        from qoala.ast.operations.quantum import RotateX
+        return QoalaOperation._create_expression_for_op(RotateX, qubit=self, n=n_val, d=d_val, angle=angle_val)
+
+    def rot_Y(
+            self,
+            n: ImmediateQIntOrExpression = 0,
+            d: ImmediateQIntOrExpression = 0,
+            angle: ImmediateQFloatOrExpression | None = None
+    ) -> QoalaOperation:
+        n_val, d_val, angle_val = QoalaLocalQubit._process_angles(n, d, angle)
+        from qoala.ast.operations.quantum import RotateY
+        return QoalaOperation._create_expression_for_op(RotateY, qubit=self, n=n_val, d=d_val, angle=angle_val)
+
+    def rot_Z(
+            self,
+            n: ImmediateQIntOrExpression = 0,
+            d: ImmediateQIntOrExpression = 0,
+            angle: ImmediateQFloatOrExpression | None = None
+    ) -> QoalaOperation:
+        n_val, d_val, angle_val = QoalaLocalQubit._process_angles(n, d, angle)
+        from qoala.ast.operations.quantum import RotateZ
+        return QoalaOperation._create_expression_for_op(RotateZ, qubit=self, n=n_val, d=d_val, angle=angle_val)
+
+    def cnot(self, target: Self) -> QoalaOperation:
+        from qoala.ast.operations.quantum import CNotGate
+        return QoalaOperation._create_expression_for_op(CNotGate, qubit=self, target=target)
+
+    def cphase(self, target: Self) -> QoalaOperation:
+        from qoala.ast.operations.quantum import CPhaseGate
+        return QoalaOperation._create_expression_for_op(CPhaseGate, target=target)
+
+    def reset(self) -> QoalaOperation:
+        from qoala.ast.operations.quantum import QubitReset
+        return QoalaOperation._create_expression_for_op(QubitReset, self)
+
+    def free(self) -> QoalaOperation:
+        # TODO - Implement
+        pass
+
+    # Functions for generating IR
+    def can_evaluate_to(self, cls) -> bool:
+        if cls == QoalaQubit:
+            return True
+        else:
+            return False
+
+    def to_ir(self, ctx: Context):
+        # Creating a qubit type requires passing the mlir context object
+        ty = QubitType.get(ctx)
+        tensor_shape = tensor.RankedTensorType.get(shape=[1], element_type=ty)
+        self.ir = qnet.EprsOp(qout=tensor_shape, N=self.n, remote=self.name)
+        return self.ir

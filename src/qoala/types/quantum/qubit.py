@@ -2,10 +2,10 @@ from abc import ABC
 from typing import Optional, Self
 
 from qoala.ast import QoalaExpression
-from qoala.ast.qubit import QoalaLocalQubit
+from qoala.ast.qubit import QoalaLocalQubit, QoalaRemoteQubit
 from qoala.ast.value import QoalaBit
 from qoala.types.classical.floats import QoalaFloatingPointType
-from qoala.types.classical.integer import Bit, QoalaIntegerType
+from qoala.types.classical.integer import QoalaIntegerType
 from qoala.types.quantum import QoalaQuantumType
 
 
@@ -265,9 +265,8 @@ class Entangle(Qubit):
     """
     Represents a local qubit used for quantum entanglement with a remote host.
     """
-    def __new__(cls, name: str, num: int | QoalaExpression):
-        # TODO - Implement the AST class
-        pass
+    def __new__(cls, name: str, n: int | QoalaExpression):
+        return QoalaRemoteQubit(name, n)
 
     def __init__(self, name: str, num: int | QoalaExpression):
         # Nothing to do here

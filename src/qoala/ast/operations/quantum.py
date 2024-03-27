@@ -9,7 +9,7 @@ from qoala import QoalaProgram
 from qoala.ast.errors import OperationNotYetImplementedError
 from qoala.ast.operations import QoalaOperation
 from qoala.ast.qubit import QoalaQubit
-from qoala.ast.value import QoalaExpression, QoalaFloatOrExpression, QoalaIntegerOrExpression, QoalaBit
+from qoala.ast.value import QoalaExpression, QoalaFloatOrExpression, QoalaIntegerOrExpression, QoalaBit, QoalaInteger
 
 
 @dataclass(init=False)
@@ -30,6 +30,7 @@ class QubitMeasure(QoalaOperation):
             return False
 
     def to_ir(self, ctx: Context):
+        # TODO - Do we need tomake a difference between "qnet.measure" and "qnet.eprs_measure"??
         self.ir = qnet.measure(qin0=self.qubit.ir)
         return self.ir
 
@@ -355,3 +356,24 @@ class CPhaseGate(QoalaOperation):
 
     def to_ir(self, ctx: Context):
         raise OperationNotYetImplementedError(CPhaseGate.__name__)
+
+
+@dataclass(init=False)
+class RecvIntOp(QoalaOperation):
+    # Does this need to be a string? It seems to be just a "reference"
+    remote: str
+
+    def __init__(self, remote_name: str):
+        super().__init__()
+        self.remote = remote_name
+        QoalaProgram.add_to_body(self)
+
+    def can_evaluate_to(self, cls):
+        return cls == QoalaInteger
+
+    def to_ir(self, ctx: Context):
+        import qnet.dialects.tensor as tensor
+        from qoala.utils.binding_types import i32
+        tensor_shape = tensor.RankedTensorType.get([1], i32())
+        self.ir = qnet.recv_ints(remote=self.remote, cout=tensor_shape)
+        return self.ir
