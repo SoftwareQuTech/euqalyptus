@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 
 import qnet.dialects.arith as arith
+import qnet.dialects.math as math
 from qnet.ir import Context
 
 from qoala import QoalaProgram
@@ -24,10 +25,9 @@ class Add(QoalaOperation):
         QoalaProgram.add_to_body(self)
 
     def can_evaluate_to(self, cls):
-        if self.operand_a.can_evaluate_to(cls) and self.operand_b.can_evaluate_to(cls):
-            return True
-        else:
-            return False
+        return ((cls == QoalaInteger or cls == QoalaFloat) and
+                self.operand_a.can_evaluate_to(cls) and
+                self.operand_b.can_evaluate_to(cls))
 
     def to_ir(self, ctx: Context):
         # TODO - In the meantime we assume both operands are of the same type
@@ -57,10 +57,9 @@ class Subtract(QoalaOperation):
         QoalaProgram.add_to_body(self)
 
     def can_evaluate_to(self, cls):
-        if self.operand_a.can_evaluate_to(cls) and self.operand_b.can_evaluate_to(cls):
-            return True
-        else:
-            return False
+        return ((cls == QoalaInteger or cls == QoalaFloat) and
+                self.operand_a.can_evaluate_to(cls) and
+                self.operand_b.can_evaluate_to(cls))
 
     def to_ir(self, ctx: Context):
         # TODO - In the meantime we assume both operands are of the same type
@@ -90,10 +89,9 @@ class Multiply(QoalaExpression):
         QoalaProgram.add_to_body(self)
 
     def can_evaluate_to(self, cls):
-        if self.operand_a.can_evaluate_to(cls) and self.operand_b.can_evaluate_to(cls):
-            return True
-        else:
-            return False
+        return ((cls == QoalaInteger or cls == QoalaFloat) and
+                self.operand_a.can_evaluate_to(cls) and
+                self.operand_b.can_evaluate_to(cls))
 
     def to_ir(self, ctx: Context):
         # TODO - In the meantime we assume both operands are of the same type
@@ -123,10 +121,9 @@ class Divide(QoalaExpression):
         QoalaProgram.add_to_body(self)
 
     def can_evaluate_to(self, cls):
-        if self.operand_a.can_evaluate_to(cls) and self.operand_b.can_evaluate_to(cls):
-            return True
-        else:
-            return False
+        return ((cls == QoalaInteger or cls == QoalaFloat) and
+                self.operand_a.can_evaluate_to(cls) and
+                self.operand_b.can_evaluate_to(cls))
 
     def to_ir(self, ctx: Context):
         # TODO - In the meantime we assume both operands are of the same type
@@ -136,6 +133,67 @@ class Divide(QoalaExpression):
             self.ir = arith.divui(self.operand_a.ir, self.operand_b.ir)
         elif self.operand_a.can_evaluate_to(QoalaFloat):
             self.ir = arith.divf(self.operand_a.ir, self.operand_b.ir)
+        else:
+            raise WrongEvaluationTypeError(f"When creating an operation of type '{self.__class__.__name__}', "
+                                           f"the operands cannot be evaluated to any valid value.")
+        return self.ir
+
+
+@dataclass(init=False)
+@with_arith_operators
+class Pow(QoalaExpression):
+    base: QoalaExpression
+    exponent: QoalaExpression
+
+    def __init__(self, *operands: QoalaExpression):
+        super().__init__()
+        assert len(operands) == 2
+        self.base = operands[0]
+        self.exponent = operands[1]
+        QoalaProgram.add_to_body(self)
+
+    def can_evaluate_to(self, cls):
+        return ((cls == QoalaInteger or cls == QoalaFloat) and
+                self.base.can_evaluate_to(cls))  # The base of the exponentiation dictates the type of the result
+
+    def to_ir(self, ctx: Context):
+        # TODO - In the meantime we assume both operands are of the same type
+        #        In the future we could implement semantic checks to automatically cast one
+        #        type to another one
+        if self.base.can_evaluate_to(QoalaInteger) and self.exponent.can_evaluate_to(QoalaInteger):
+            # Both base and exponents can evaluate to integers
+            self.ir = math.powf(self.base.ir, self.exponent.ir)
+        elif self.base.can_evaluate_to(QoalaFloat) and self.exponent.can_evaluate_to(QoalaFloat):
+            # Both base and exponents can evaluate to floats
+            self.ir = math.ipowi(self.base.ir, self.exponent.ir)
+        elif self.base.can_evaluate_to(QoalaFloat) and self.exponent.can_evaluate_to(QoalaInteger):
+            # Both base and exponents can evaluate to floats
+            self.ir = math.fpowi(self.base.ir, self.exponent.ir)
+        else:
+            raise WrongEvaluationTypeError(f"When creating an operation of type '{self.__class__.__name__}', "
+                                           f"the operands cannot be evaluated to any valid value.")
+        return self.ir
+
+
+@dataclass(init=False)
+@with_arith_operators
+class Pow2(QoalaExpression):
+    exponent: QoalaExpression
+
+    def __init__(self, *operands: QoalaExpression):
+        super().__init__()
+        assert len(operands) == 1
+        self.exponent = operands[0]
+        QoalaProgram.add_to_body(self)
+
+    def can_evaluate_to(self, cls):
+        return ((cls == QoalaInteger or cls == QoalaFloat) and
+                self.base.can_evaluate_to(cls))  # The base of the exponentiation dictates the type of the result
+
+    def to_ir(self, ctx: Context):
+        if self.exponent.can_evaluate_to(QoalaInteger):
+            # Both base and exponents can evaluate to integers
+            self.ir = math.exp2(self.exponent.ir)
         else:
             raise WrongEvaluationTypeError(f"When creating an operation of type '{self.__class__.__name__}', "
                                            f"the operands cannot be evaluated to any valid value.")
