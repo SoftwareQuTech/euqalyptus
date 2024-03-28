@@ -263,7 +263,8 @@ class QoalaEprs(QoalaArray):
         super().__init__(base_type=int, base_size=1, length=n)
         self.remote_name = name
         self.num_pairs = n
-        QoalaProgram.add_to_body(self)
+        # We don't need to add this operation to the body, since it's already done by the
+        # call to the constructor on the parent class
 
     # Special case since EPRS qubits behave like arrays, we need a way to access the entangled qubits
     def __getitem__(self, item_index: ImmediateQIntOrExpression) -> QoalaExpression:
