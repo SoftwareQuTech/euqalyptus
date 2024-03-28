@@ -1,8 +1,7 @@
 from qoala.ast.operations.quantum import RecvIntsOp
-
-from qoala.types.classical.integer import QoalaIntegerType
-from qoala.types.classical.floats import QoalaFloatingPointType
 from qoala.types.classical.arrays import IntArray, FloatArray
+from qoala.types.classical.floats import QoalaFloatingPointType
+from qoala.types.classical.integer import QoalaIntegerType
 
 
 class RecvInts(IntArray):

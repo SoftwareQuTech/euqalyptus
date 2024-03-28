@@ -11,7 +11,8 @@ from qoala.ast.errors import OperationNotYetImplementedError
 from qoala.ast.operations import QoalaOperation
 from qoala.ast.operations.arrays import GetItem
 from qoala.ast.qubit import QoalaQubit
-from qoala.ast.value import QoalaExpression, QoalaFloatOrExpression, QoalaBit, QoalaInteger, QoalaArray, QoalaNumericValue
+from qoala.ast.value import QoalaExpression, QoalaFloatOrExpression, QoalaBit, QoalaInteger, QoalaArray, \
+    QoalaNumericValue
 from qoala.utils.binding_types import i32
 
 

@@ -1,12 +1,12 @@
 from dataclasses import dataclass
 
-from qnet.ir import Context
 from qnet.dialects import arith
+from qnet.ir import Context
 
 from qoala import QoalaProgram
-from qoala.utils.binding_types import f32, i32
-from qoala.ast.value import QoalaFloat, QoalaInteger
 from qoala.ast.operations import QoalaOperation, QoalaExpression
+from qoala.ast.value import QoalaFloat, QoalaInteger
+from qoala.utils.binding_types import f32, i32
 
 
 @dataclass(init=False)
