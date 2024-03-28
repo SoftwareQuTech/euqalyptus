@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from typing import Generic, TypeVar
 
 import qnet.dialects.arith as arith
 import qnet.dialects.tensor as tensor
@@ -8,6 +9,7 @@ from qoala import QoalaProgram
 from qoala.ast.errors import OperationNotYetImplementedError
 from qoala.ast.operations import QoalaOperation
 from qoala.ast.value import QoalaExpression, QoalaInteger, QoalaArray
+from qoala.ast.qubit import QbitBaseOperations
 from qoala.utils.binding_types import index
 
 
@@ -32,8 +34,10 @@ class CastToIndex(QoalaExpression):
         return self.ir
 
 
+_Qoala_Item_Type = TypeVar("_Qoala_Item_Type")
+
 @dataclass(init=False)
-class GetItem(QoalaOperation):
+class GetItem(QoalaOperation, Generic[_Qoala_Item_Type]):
     base_array: QoalaArray
     index: QoalaExpression
 
@@ -46,16 +50,17 @@ class GetItem(QoalaOperation):
         QoalaProgram.add_to_body(self)
 
     def can_evaluate_to(self, cls):
-        if self.index.can_evaluate_to(QoalaInteger) and self.base_array.can_evaluate_to(QoalaArray):
-            # TODO - We need to make sure that the base type of 'base_array' is cls
-            return True
-        else:
-            return False
+        return self.index.can_evaluate_to(_Qoala_Item_Type)
 
     def to_ir(self, ctx: Context):
         # TODO - Implement the IR representation fo arrays - tensor or vector?
         self.ir = tensor.extract(tensor=self.base_array.ir, indices=[self.index.ir])
         return self.ir
+
+
+@dataclass(init=False)
+class GetQItem(GetItem, QbitBaseOperations):
+    pass
 
 
 @dataclass(init=False)

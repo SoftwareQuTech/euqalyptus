@@ -12,7 +12,7 @@ _Native_Base_Type = TypeVar("_Native_Base_Type", int, float)
 
 class _Array(Generic[_Qoala_Base_Type, _Native_Base_Type], Sized):
     def __new__(cls, *elements, **kwargs):
-        return QoalaArray[_Native_Base_Type](*elements, **kwargs)
+        return QoalaArray[_Qoala_Base_Type, _Native_Base_Type](*elements, **kwargs)
 
     @staticmethod
     def _assert_elements(
@@ -55,7 +55,7 @@ class IntArray(_Array[Int, int]):
     def __init__(
             self,
             *elements: Union[_Qoala_Base_Type, int],
-            other_array: Optional[QoalaArray[int]] = None
+            other_array: Optional[QoalaArray[_Qoala_Base_Type, int]] = None
     ):
         # Nothing to do here
         pass
@@ -73,7 +73,7 @@ class FloatArray(_Array[Float, float]):
     def __init__(
             self,
             *elements: Union[_Qoala_Base_Type, float],
-            other_array: Optional[QoalaArray[float]] = None
+            other_array: Optional[QoalaArray[_Qoala_Base_Type, float]] = None
     ):
         # Nothing to do here
         pass

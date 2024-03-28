@@ -43,9 +43,9 @@ def complex_quantum_program():
 def quantum_entanglement_program():
     q = Entangle("Bob", 1)
     t1 = recv_int("Bob")
-    q.rot_X(t1)
+    q[0].rot_X(t1)
     t2 = recv_int("Bob")
-    q.rot_Y(t2)
+    q[0].rot_Y(t2)
     m = q.measure()
 
 
@@ -104,7 +104,7 @@ class TestQoalaQnetPythonBindingsQuantum:
   func.func @quantum_entanglement_program() {
     %0 = qnet.eprs {N = 1 : i32, remote = @Bob} : tensor<1x!qnet.qubit>
     %1 = qnet.recv_ints {remote = @Bob} : i32
-    %ci_0= arith.constant 0 : index
+    %ci_0 = arith.constant 0 : index
     %2 = tensor.extract %0[%ci_0] : tensor<1x!qnet.qubit>
     %3 = qnet.rot_x(%2, %1) : !qnet.qubit
     %4 = qnet.recv_ints {remote = @Bob} : i32
