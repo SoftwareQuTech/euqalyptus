@@ -4,6 +4,7 @@ from typing import Optional, Self
 from qoala.ast import QoalaExpression
 from qoala.ast.qubit import QoalaLocalQubit, QoalaEprs
 from qoala.ast.value import QoalaBit
+from qoala.types.classical.arrays import _Array
 from qoala.types.classical.floats import QoalaFloatingPointType
 from qoala.types.classical.integer import QoalaIntegerType
 from qoala.types.quantum import QoalaQuantumType
@@ -261,7 +262,11 @@ class LocalQubit(Qubit):
         pass
 
 
-class Entangle(Qubit):
+class _QubitArray(_Array[Qubit, int]):
+    pass
+
+
+class Entangle(_QubitArray):
     """
     Represents a local set of qubits used for quantum entanglement with a remote host.
     """
@@ -272,6 +277,6 @@ class Entangle(Qubit):
         # Nothing to do here
         pass
 
-    def __getitem__(self, item: int | QoalaExpression):
+    def __getitem__(self, item: int | QoalaExpression) -> Qubit:
         # Nothing to do here
         pass

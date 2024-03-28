@@ -12,7 +12,6 @@ from qoala import QoalaProgram
 from qoala.ast import QoalaExpression
 from qoala.ast.errors import OperandMismatchError
 from qoala.ast.operations import QoalaOperation
-from qoala.ast.operations.casts import IntToFloat
 from qoala.ast.operations.numeric import Pow2, Divide, Multiply
 from qoala.ast.value import (
     QoalaInteger,
@@ -255,7 +254,7 @@ class QoalaRemoteQubit(QoalaLocalQubit):
 
 
 @dataclass(init=False)
-class QoalaEprs(QoalaArray):
+class QoalaEprs(QoalaArray[QoalaQubit, int]):
     num_pairs: int
     remote_name: str
 
