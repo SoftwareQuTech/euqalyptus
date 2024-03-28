@@ -41,11 +41,11 @@ def complex_quantum_program():
 
 @QoalaProgram
 def quantum_entanglement_program():
-    q = Entangle("Bob", 1)
+    q = Entangle("Bob", 1)[0]
     t1 = recv_int("Bob")
-    q[0].rot_X(t1)
+    q.rot_X(t1)
     t2 = recv_int("Bob")
-    q[0].rot_Y(t2)
+    q.rot_Y(t2)
     m = q.measure()
 
 
