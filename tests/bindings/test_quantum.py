@@ -70,17 +70,25 @@ class TestQoalaQnetPythonBindingsQuantum:
     %cst = arith.constant 2.120000e+01 : f32
     %0 = qnet.new_qubit : !qnet.qubit
     %1 = qnet.new_qubit : !qnet.qubit
-    %c10_i32 = arith.constant 10 : i32
-    %c30_i32_0 = arith.constant 30 : i32
-    %cst_1 = arith.constant 0.000000e+00 : f32
-    %2 = qnet.rot_x %0, %cst_1 : !qnet.qubit
-    %c10_i32_2 = arith.constant 10 : i32
-    %cst_3 = arith.constant 1.050000e+01 : f32
-    %3 = qnet.rot_y %2, %cst_3 : !qnet.qubit
-    %4 = qnet.rot_z %3, %cst : !qnet.qubit
-    %qout0, %qout1 = qnet.cnot %4, %1 : !qnet.qubit, !qnet.qubit
-    %5 = qnet.measure %qout0 : i1
-    %6 = qnet.measure %qout1 : i1
+    %cst_0 = arith.constant 0.0306796152 : f32
+    %2 = qnet.rot_x %0, %cst_0 : !qnet.qubit
+    %cst_1 = arith.constant 1.000000e+01 : f32
+    %cst_2 = arith.constant 3.14159274 : f32
+    %3 = arith.mulf %cst_1, %cst_2 : f32
+    %4 = arith.uitofp %c30_i32 : i32 to f32
+    %5 = math.exp2 %4 : f32
+    %6 = arith.divf %3, %5 : f32
+    %7 = qnet.rot_y %2, %6 : !qnet.qubit
+    %cst_3 = arith.constant 3.14159274 : f32
+    %8 = arith.uitofp %c20_i32 : i32 to f32
+    %9 = arith.mulf %8, %cst_3 : f32
+    %10 = arith.uitofp %c30_i32 : i32 to f32
+    %11 = math.exp2 %10 : f32
+    %12 = arith.divf %9, %11 : f32
+    %13 = qnet.rot_z %7, %12 : !qnet.qubit
+    %qout0, %qout1 = qnet.cnot %13, %1 : !qnet.qubit, !qnet.qubit
+    %14 = qnet.measure %qout0 : i1
+    %15 = qnet.measure %qout1 : i1
     return
   }
 }
@@ -114,4 +122,5 @@ class TestQoalaQnetPythonBindingsQuantum:
   }
 }
 """
+        print(module.asm)
         assert str(module.asm) == expected_asm

@@ -118,21 +118,20 @@ class QbitBaseOperations(QoalaQubit, ABC):
                 angle_val = QoalaNumericValue.from_immediate(angle_result)
             else:
                 # n and d are given, but, at least, one of them is not an immediate -> angle is known at runtime
+                # moreover, if we encounter an immediate, we need to make it a float for simplicity of the later ops
                 if isinstance(n, int):
-                    n_val = QoalaNumericValue.from_immediate(n)
+                    n_val = QoalaNumericValue.from_immediate(float(n))
                 else:
                     n_val = n
                 if isinstance(d, int):
-                    d_val = QoalaNumericValue.from_immediate(d)
+                    d_val = QoalaNumericValue.from_immediate(float(d))
                 else:
                     d_val = d
                 # angle_val = (n * \pi) / 2 ** d, this means:
                 # $pi = arith.const 3.14 : f32
                 pi = QoalaNumericValue.from_immediate(math.pi)
-                # $n_f32 = arith.uitofp $n : f32
-                n_cast = IntToFloat(n_val)
                 # $up = arith.mulf $n_f32, $pi : f32
-                up = Multiply(pi, n_cast)
+                up = Multiply(n_val, pi)
                 # $down = math.exp2 $d : f32 ;; convenient base-2 exponentiation operation
                 down = Pow2(d_val)
                 # $angle_val = arith.divf $up, $down : f32

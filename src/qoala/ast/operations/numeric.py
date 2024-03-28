@@ -1,3 +1,4 @@
+from abc import ABC
 from dataclasses import dataclass
 
 import qnet.dialects.arith as arith
@@ -9,30 +10,49 @@ from qoala.ast import QoalaExpression
 from qoala.ast.errors import WrongEvaluationTypeError
 from qoala.ast.operations import QoalaOperation, with_arith_operators
 from qoala.ast.value import QoalaInteger, QoalaFloat
+from qoala.ast.operations.casts import IntToFloat
 
 
 @dataclass(init=False)
-@with_arith_operators
-class Add(QoalaOperation):
+class BaseBinaryArithOp(QoalaExpression, ABC):
     operand_a: QoalaExpression
     operand_b: QoalaExpression
 
     def __init__(self, *operands: QoalaExpression):
         super().__init__()
+        # We "normalize" the operands, upcasting an integer to a float if needed
         assert len(operands) == 2
-        self.operand_a = operands[0]
-        self.operand_b = operands[1]
+        if operands[0].can_evaluate_to(QoalaFloat) and operands[1].can_evaluate_to(QoalaInteger):
+            # We need to add a cast of operand[1]
+            casted_operand_1 = IntToFloat(operands[1])
+            self.operand_a = operands[0]
+            self.operand_b = casted_operand_1
+        elif operands[1].can_evaluate_to(QoalaFloat) and operands[0].can_evaluate_to(QoalaInteger):
+            # We need to add a cast of operand a
+            casted_operand_0 = IntToFloat(operands[0])
+            self.operand_a = casted_operand_0
+            self.operand_b = operands[1]
+        else:
+            self.operand_a = operands[0]
+            self.operand_b = operands[1]
+
+
+@with_arith_operators
+class Add(BaseBinaryArithOp):
+    def __init__(self, *operands: QoalaExpression):
+        super().__init__(*operands)
         QoalaProgram.add_to_body(self)
 
     def can_evaluate_to(self, cls):
+        # We can assume that both operands evaluate to the same type, since the constructor
+        # in the super class will insert an upcast if needed
         return ((cls == QoalaInteger or cls == QoalaFloat) and
                 self.operand_a.can_evaluate_to(cls) and
                 self.operand_b.can_evaluate_to(cls))
 
     def to_ir(self, ctx: Context):
-        # TODO - In the meantime we assume both operands are of the same type
-        #        In the future we could implement semantic checks to automatically cast one
-        #        type to another one
+        # We can assume that both operands evaluate to the same type, since the constructor
+        # in the super class will insert an upcast if needed
         if self.operand_a.can_evaluate_to(QoalaInteger):
             self.ir = arith.addi(self.operand_a.ir, self.operand_b.ir)
         elif self.operand_a.can_evaluate_to(QoalaFloat):
@@ -43,28 +63,22 @@ class Add(QoalaOperation):
         return self.ir
 
 
-@dataclass(init=False)
 @with_arith_operators
-class Subtract(QoalaOperation):
-    operand_a: QoalaExpression
-    operand_b: QoalaExpression
-
+class Subtract(BaseBinaryArithOp):
     def __init__(self, *operands: QoalaExpression):
-        super().__init__()
-        assert len(operands) == 2
-        self.operand_a = operands[0]
-        self.operand_b = operands[1]
+        super().__init__(*operands)
         QoalaProgram.add_to_body(self)
 
     def can_evaluate_to(self, cls):
+        # We can assume that both operands evaluate to the same type, since the constructor
+        # in the super class will insert an upcast if needed
         return ((cls == QoalaInteger or cls == QoalaFloat) and
                 self.operand_a.can_evaluate_to(cls) and
                 self.operand_b.can_evaluate_to(cls))
 
     def to_ir(self, ctx: Context):
-        # TODO - In the meantime we assume both operands are of the same type
-        #        In the future we could implement semantic checks to automatically cast one
-        #        type to another one
+        # We can assume that both operands evaluate to the same type, since the constructor
+        # in the super class will insert an upcast if needed
         if self.operand_a.can_evaluate_to(QoalaInteger):
             self.ir = arith.subi(self.operand_a.ir, self.operand_b.ir)
         elif self.operand_a.can_evaluate_to(QoalaFloat):
@@ -77,26 +91,21 @@ class Subtract(QoalaOperation):
 
 @dataclass(init=False)
 @with_arith_operators
-class Multiply(QoalaExpression):
-    operand_a: QoalaExpression
-    operand_b: QoalaExpression
-
+class Multiply(BaseBinaryArithOp):
     def __init__(self, *operands: QoalaExpression):
-        super().__init__()
-        assert len(operands) == 2
-        self.operand_a = operands[0]
-        self.operand_b = operands[1]
+        super().__init__(*operands)
         QoalaProgram.add_to_body(self)
 
     def can_evaluate_to(self, cls):
+        # We can assume that both operands evaluate to the same type, since the constructor
+        # in the super class will insert an upcast if needed
         return ((cls == QoalaInteger or cls == QoalaFloat) and
                 self.operand_a.can_evaluate_to(cls) and
                 self.operand_b.can_evaluate_to(cls))
 
     def to_ir(self, ctx: Context):
-        # TODO - In the meantime we assume both operands are of the same type
-        #        In the future we could implement semantic checks to automatically cast one
-        #        type to another one
+        # We can assume that both operands evaluate to the same type, since the constructor
+        # in the super class will insert an upcast if needed
         if self.operand_a.can_evaluate_to(QoalaInteger):
             self.ir = arith.muli(self.operand_a.ir, self.operand_b.ir)
         elif self.operand_a.can_evaluate_to(QoalaFloat):
@@ -109,26 +118,21 @@ class Multiply(QoalaExpression):
 
 @dataclass(init=False)
 @with_arith_operators
-class Divide(QoalaExpression):
-    operand_a: QoalaExpression
-    operand_b: QoalaExpression
-
+class Divide(BaseBinaryArithOp):
     def __init__(self, *operands: QoalaExpression):
-        super().__init__()
-        assert len(operands) == 2
-        self.operand_a = operands[0]
-        self.operand_b = operands[1]
+        super().__init__(*operands)
         QoalaProgram.add_to_body(self)
 
     def can_evaluate_to(self, cls):
+        # We can assume that both operands evaluate to the same type, since the constructor
+        # in the super class will insert an upcast if needed
         return ((cls == QoalaInteger or cls == QoalaFloat) and
                 self.operand_a.can_evaluate_to(cls) and
                 self.operand_b.can_evaluate_to(cls))
 
     def to_ir(self, ctx: Context):
-        # TODO - In the meantime we assume both operands are of the same type
-        #        In the future we could implement semantic checks to automatically cast one
-        #        type to another one
+        # We can assume that both operands evaluate to the same type, since the constructor
+        # in the super class will insert an upcast if needed
         if self.operand_a.can_evaluate_to(QoalaInteger):
             self.ir = arith.divui(self.operand_a.ir, self.operand_b.ir)
         elif self.operand_a.can_evaluate_to(QoalaFloat):
@@ -183,16 +187,18 @@ class Pow2(QoalaExpression):
     def __init__(self, *operands: QoalaExpression):
         super().__init__()
         assert len(operands) == 1
-        self.exponent = operands[0]
+        if operands[0].can_evaluate_to(QoalaInteger):
+            # The operand must be casted to float
+            self.exponent = IntToFloat(operands[0])
+        else:
+            self.exponent = operands[0]
         QoalaProgram.add_to_body(self)
 
     def can_evaluate_to(self, cls):
-        return ((cls == QoalaInteger or cls == QoalaFloat) and
-                self.base.can_evaluate_to(cls))  # The base of the exponentiation dictates the type of the result
+        return cls == QoalaFloat
 
     def to_ir(self, ctx: Context):
-        if self.exponent.can_evaluate_to(QoalaInteger):
-            # Both base and exponents can evaluate to integers
+        if self.exponent.can_evaluate_to(QoalaInteger) or self.exponent.can_evaluate_to(QoalaFloat):
             self.ir = math.exp2(self.exponent.ir)
         else:
             raise WrongEvaluationTypeError(f"When creating an operation of type '{self.__class__.__name__}', "
