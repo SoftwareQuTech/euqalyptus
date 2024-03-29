@@ -257,11 +257,15 @@ class QoalaRemoteQubit(QoalaLocalQubit):
 class QoalaEprs(QoalaArray[QoalaQubit, int]):
     num_pairs: int
     remote_name: str
+    remote: QoalaOperation
 
     def __init__(self, name: str, n: int):
-        super().__init__(base_type=int, base_size=1, length=n)
         self.remote_name = name
         self.num_pairs = n
+        # Before using the remote, it needs to be declared
+        from qoala.ast.operations.quantum import DeclareRemote
+        self.remote = DeclareRemote(self.remote_name)
+        super().__init__(base_type=int, base_size=1, length=n)
         # We don't need to add this operation to the body, since it's already done by the
         # call to the constructor on the parent class
 

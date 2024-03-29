@@ -349,6 +349,23 @@ class CPhaseGate(QoalaOperation):
 
 
 @dataclass(init=False)
+class DeclareRemote(QoalaOperation):
+    remote_name: str
+
+    def __init__(self, remote_name: str):
+        super().__init__()
+        self.remote_name = remote_name
+        QoalaProgram.add_to_body(self)
+
+    def can_evaluate_to(self, cls):
+        return False
+
+    def to_ir(self, ctx: Context):
+        self.ir = qnet.remote(self.remote_name)
+        return self.ir
+
+
+@dataclass(init=False)
 class RecvIntsOp(QoalaArray[QoalaInteger, int]):
     # Does this need to be a string? It seems to be just a "reference"
     remote: str
