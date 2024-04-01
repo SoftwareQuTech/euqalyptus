@@ -110,17 +110,33 @@ class TestQoalaQnetPythonBindingsQuantum:
         #        code tested in this case) _MUST_ operate on the "updated" value of the qubit.
         expected_asm = """module {
   qnet.func @quantum_entanglement_program() {
-    %0 = qnet.eprs {N = 1 : i32, remote = @Bob} : tensor<1x!qnet.qubit>
-    %1 = qnet.recv_ints {remote = @Bob} : i32
-    %ci_0 = arith.constant 0 : index
-    %2 = tensor.extract %0[%ci_0] : tensor<1x!qnet.qubit>
-    %3 = qnet.rot_x(%2, %1) : !qnet.qubit
-    %4 = qnet.recv_ints {remote = @Bob} : i32
-    %5 = qnet.rot_y(%3, %4) : !qnet.qubit
-    %6 = qnet.measure(%5)
+    qnet.remote @Bob
+    %0 = qnet.eprs  {N = 1 : i32, remote = @Bob} : tensor<1x!qnet.qubit>
+    %c0 = arith.constant 0 : index
+    %extracted = tensor.extract %0[%c0] : tensor<1x!qnet.qubit>
+    %1 = qnet.recv_ints  {remote = @Bob} : tensor<1xi32>
+    %c0_0 = arith.constant 0 : index
+    %extracted_1 = tensor.extract %1[%c0_0] : tensor<1xi32>
+    %cst = arith.constant 0.000000e+00 : f32
+    %cst_2 = arith.constant 3.14159274 : f32
+    %2 = arith.uitofp %extracted_1 : i32 to f32
+    %3 = arith.mulf %2, %cst_2 : f32
+    %4 = math.exp2 %cst : f32
+    %5 = arith.divf %3, %4 : f32
+    %6 = qnet.rot_x %extracted, %5 : !qnet.qubit
+    %7 = qnet.recv_ints  {remote = @Bob} : tensor<1xi32>
+    %c0_3 = arith.constant 0 : index
+    %extracted_4 = tensor.extract %7[%c0_3] : tensor<1xi32>
+    %cst_5 = arith.constant 0.000000e+00 : f32
+    %cst_6 = arith.constant 3.14159274 : f32
+    %8 = arith.uitofp %extracted_4 : i32 to f32
+    %9 = arith.mulf %8, %cst_6 : f32
+    %10 = math.exp2 %cst_5 : f32
+    %11 = arith.divf %9, %10 : f32
+    %12 = qnet.rot_y %6, %11 : !qnet.qubit
+    %13 = qnet.measure %12 : i1
     qnet.return
   }
 }
 """
-        print(module.asm)
         assert str(module.asm) == expected_asm
