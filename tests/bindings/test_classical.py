@@ -110,8 +110,8 @@ class TestQoalaQnetPythonBindingsClassical:
         _, module = empty_program.compile()
         assert isinstance(module, QoalaModule)
         expected_asm = """module {
-  func.func @empty_program() {
-    return
+  qnet.func @empty_program() {
+    qnet.return
   }
 }
 """
@@ -126,7 +126,7 @@ class TestQoalaQnetPythonBindingsClassical:
         # Note 1 - The qoala type "Int", creates a _signed_ integer of 32 bits width. We use this information
         #          (the signedness) to create the MLIR arith builtin type using IntegerType.get_(un)signed(width).
         expected_asm = """module {
-  func.func @simple_arith_program() {
+  qnet.func @simple_arith_program() {
     %c10_i32 = arith.constant 10 : i32
     %c20_i32 = arith.constant 20 : i32
     %0 = arith.addi %c10_i32, %c20_i32 : i32
@@ -139,7 +139,7 @@ class TestQoalaQnetPythonBindingsClassical:
     %5 = arith.subf %cst, %cst_0 : f32
     %6 = arith.mulf %cst, %cst_0 : f32
     %7 = arith.divf %cst, %cst_0 : f32
-    return
+    qnet.return
   }
 }
 """
@@ -154,7 +154,7 @@ class TestQoalaQnetPythonBindingsClassical:
         # Note 1 - The qoala type "Int", creates a _signed_ integer of 32 bits width. We use this information
         #          (the signedness) to create the MLIR arith builtin type using IntegerType.get_(un)signed(width).
         expected_asm = """module {
-  func.func @simple_arith_program_composed() {
+  qnet.func @simple_arith_program_composed() {
     %c10_i32 = arith.constant 10 : i32
     %c20_i32 = arith.constant 20 : i32
     %0 = arith.addi %c10_i32, %c20_i32 : i32
@@ -169,7 +169,7 @@ class TestQoalaQnetPythonBindingsClassical:
     %cst_3 = arith.constant 4.000000e+00 : f32
     %4 = arith.mulf %1, %cst_2 : f32
     %5 = arith.divf %4, %cst_3 : f32
-    return
+    qnet.return
   }
 }
 """
@@ -184,7 +184,7 @@ class TestQoalaQnetPythonBindingsClassical:
         # Note 1 - The qoala type "Int", creates a _signed_ integer of 32 bits width. We use this information
         #          (the signedness) to create the MLIR arith builtin type using IntegerType.get_(un)signed(width).
         expected_asm = """module {
-  func.func @simple_arith_program_immediates() {
+  qnet.func @simple_arith_program_immediates() {
     %c10_i32 = arith.constant 10 : i32
     %c20_i32 = arith.constant 20 : i32
     %0 = arith.addi %c10_i32, %c20_i32 : i32
@@ -199,7 +199,7 @@ class TestQoalaQnetPythonBindingsClassical:
     %4 = arith.mulf %1, %cst_2 : f32
     %cst_3 = arith.constant 4.000000e+00 : f32
     %5 = arith.divf %4, %cst_3 : f32
-    return
+    qnet.return
   }
 }
 """
@@ -222,7 +222,7 @@ class TestQoalaQnetPythonBindingsClassical:
         #        (see below). Maybe this limitation is due to the fact that from the "extract" operation asmFormat
         #        property you cannot access the "$elementType" attribute of the tensor uses as an operand
         expected_asm = """module {
-  func.func @basic_arrays_program() {
+  qnet.func @basic_arrays_program() {
     %c10_i32 = arith.constant 10 : i32
     %c20_i32 = arith.constant 20 : i32
     %from_elements = tensor.from_elements %c10_i32, %c20_i32 : tensor<2xi32>
@@ -234,7 +234,7 @@ class TestQoalaQnetPythonBindingsClassical:
     %c1_i32 = arith.constant 1 : i32
     %0 = arith.index_cast %c1_i32 : i32 to index
     %extracted_2 = tensor.extract %from_elements_1[%0] : tensor<2xf32>
-    return
+    qnet.return
   }
 }
 """
@@ -242,7 +242,7 @@ class TestQoalaQnetPythonBindingsClassical:
 
         # See the returned valued of the operations on registers %7 and %10
         expected_generic_asm = """"builtin.module"() ({
-  "func.func"() <{function_type = () -> (), sym_name = "basic_arrays_program"}> ({
+  "qnet.func"() <{function_type = () -> (), sym_name = "basic_arrays_program"}> ({
     %0 = "arith.constant"() <{value = 10 : i32}> : () -> i32
     %1 = "arith.constant"() <{value = 20 : i32}> : () -> i32
     %2 = "tensor.from_elements"(%0, %1) : (i32, i32) -> tensor<2xi32>
@@ -254,7 +254,7 @@ class TestQoalaQnetPythonBindingsClassical:
     %8 = "arith.constant"() <{value = 1 : i32}> : () -> i32
     %9 = "arith.index_cast"(%8) : (i32) -> index
     %10 = "tensor.extract"(%5, %9) : (tensor<2xf32>, index) -> f32
-    "func.return"() : () -> ()
+    "qnet.return"() : () -> ()
   }) : () -> ()
 }) : () -> ()
 """
@@ -268,7 +268,7 @@ class TestQoalaQnetPythonBindingsClassical:
         _, module = array_with_mutation_program.compile()
         assert isinstance(module, QoalaModule)
         expected_asm = """module {
-  func.func @array_with_mutation_program() {
+  qnet.func @array_with_mutation_program() {
     %c10_i32 = arith.constant 10 : i32
     %c20_i32 = arith.constant 20 : i32
     %from_elements = tensor.from_elements %c10_i32, %c20_i32 : tensor<2xi32>
@@ -276,7 +276,7 @@ class TestQoalaQnetPythonBindingsClassical:
     %cst_0 = arith.constant 1.400000e+00 : f32
     %from_elements_1 = tensor.from_elements %cst, %cst_0 : tensor<2xf32>
     ;; TODO - Mutation not supported yet
-    return
+    qnet.return
   }
 }
 """
