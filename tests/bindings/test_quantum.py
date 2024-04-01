@@ -64,7 +64,7 @@ class TestQoalaQnetPythonBindingsQuantum:
         #        Being this said, successive operations applied on the same qubit (as depicted in the
         #        code tested in this case) _MUST_ operate on the "updated" value of the qubit.
         expected_asm = """module {
-  func.func @complex_quantum_program() {
+  qnet.func @complex_quantum_program() {
     %c20_i32 = arith.constant 20 : i32
     %c30_i32 = arith.constant 30 : i32
     %cst = arith.constant 2.120000e+01 : f32
@@ -89,7 +89,7 @@ class TestQoalaQnetPythonBindingsQuantum:
     %qout0, %qout1 = qnet.cnot %13, %1 : !qnet.qubit, !qnet.qubit
     %14 = qnet.measure %qout0 : i1
     %15 = qnet.measure %qout1 : i1
-    return
+    qnet.return
   }
 }
 """
@@ -109,7 +109,7 @@ class TestQoalaQnetPythonBindingsQuantum:
         #        Being this said, successive operations applied on the same qubit (as depicted in the
         #        code tested in this case) _MUST_ operate on the "updated" value of the qubit.
         expected_asm = """module {
-  func.func @quantum_entanglement_program() {
+  qnet.func @quantum_entanglement_program() {
     %0 = qnet.eprs {N = 1 : i32, remote = @Bob} : tensor<1x!qnet.qubit>
     %1 = qnet.recv_ints {remote = @Bob} : i32
     %ci_0 = arith.constant 0 : index
@@ -118,7 +118,7 @@ class TestQoalaQnetPythonBindingsQuantum:
     %4 = qnet.recv_ints {remote = @Bob} : i32
     %5 = qnet.rot_y(%3, %4) : !qnet.qubit
     %6 = qnet.measure(%5)
-    return
+    qnet.return
   }
 }
 """
