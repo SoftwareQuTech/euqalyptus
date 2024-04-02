@@ -1,14 +1,14 @@
 from abc import ABC
 from dataclasses import dataclass
 from enum import Enum, auto
-from typing import List
+from typing import List,Type, TypeVar
 
 import qnet.dialects.qnet as qnet
 import qnet.dialects.tensor as tensor
 from qnet.ir import Context
 
 from qoala import QoalaProgram
-from qoala.ast.errors import OperationNotYetImplementedError
+from qoala.ast.errors import OperationNotYetImplementedError, UnknownTypeError
 from qoala.ast.operations import QoalaOperation
 from qoala.ast.operations.arrays import GetItem
 from qoala.ast.qubit import QoalaQubit
@@ -359,30 +359,47 @@ class DeclareRemote(QoalaOperation):
         return self.ir
 
 
+_Qoala_Base_Type = TypeVar("_Qoala_Base_Type")
+_Native_Base_Type = TypeVar("_Native_Base_Type")
+
+
 @dataclass(init=False)
-class RecvIntsOp(QoalaArray[QoalaInteger, int]):
+class BaseRecvOp(QoalaArray[_Qoala_Base_Type, _Native_Base_Type]):
     # Does this need to be a string? It seems to be just a "reference"
     remote: DeclareRemote | str
+    base_type: Type
 
-    def __init__(self, remote_name: DeclareRemote | str, length: int):
-        super().__init__(base_size=32, base_type=int, length=length)
+    def __init__(self, remote_name: DeclareRemote | str, length: int, base_type: Type):
+        super().__init__(base_size=32, base_type=base_type, length=length)
         self.remote = remote_name
+        self.base_type = base_type
         # We don't need to add this operation to the body, since it will be done
         # by the constructor of the parent class.
 
     def can_evaluate_to(self, cls):
         if self.length == 1:
-            return cls == QoalaInteger
+            if self.base_type == int:
+                return cls == QoalaInteger
+            elif self.base_type == float:
+                return cls == QoalaFloat
+            else:
+                raise UnknownTypeError(f"Recv with base type '{self.base_type} cannot evaluate to '{cls}")
         else:
             return cls == QoalaArray
 
     def to_ir(self, ctx: Context):
-        tensor_shape = tensor.RankedTensorType.get(shape=[self.length], element_type=i32())
+        base_tensor_type = i32() if self.base_type == int else f32()
+        tensor_shape = tensor.RankedTensorType.get(shape=[self.length], element_type=base_tensor_type)
         if isinstance(self.remote, DeclareRemote):
             remote_name = self.remote.remote_name
         else:
             remote_name = self.remote
-        self.ir = qnet.recv_ints(remote=remote_name, cout=tensor_shape)
+        if self.base_type == int:
+            self.ir = qnet.recv_ints(remote=remote_name, cout=tensor_shape)
+        elif self.base_type == float:
+            self.ir = qnet.recv_floats(remote=remote_name, cout=tensor_shape)
+        else:
+            raise UnknownTypeError(f"Cannot create recv operation for base type '{self.base_type}'")
         if self.length == 1:
             # A tricky case. We need to insert operations to manually get the only
             # qubit of this entanglement pair
@@ -398,34 +415,45 @@ class RecvIntsOp(QoalaArray[QoalaInteger, int]):
 
 
 @dataclass(init=False)
-class RecvFloatsOp(QoalaArray[QoalaFloat, float]):
-    # Does this need to be a string? It seems to be just a "reference"
-    remote: str
+class RecvIntsOp(BaseRecvOp[QoalaInteger, int]):
+    def __init__(self, remote_name: DeclareRemote | str, length: int):
+        super().__init__(remote_name=remote_name, length=length, base_type=int)
 
-    def __init__(self, remote_name: str, length: int):
-        super().__init__(base_size=32, base_type=int, length=length)
+
+@dataclass(init=False)
+class RecvFloatsOp(BaseRecvOp[QoalaFloat, float]):
+    def __init__(self, remote_name: DeclareRemote | str, length: int):
+        super().__init__(remote_name=remote_name, length=length, base_type=float)
+
+
+@dataclass(init=False)
+class BaseSendOp(QoalaOperation):
+    remote: DeclareRemote | str
+    values: List[int]
+    base_type: Type
+
+    def __init__(self, remote_name: str, *vals: int, base_type: Type):
+        super().__init__()
         self.remote = remote_name
+        self.base_type = base_type
+        self.values = list(*vals)
         # We don't need to add this operation to the body, since it will be done
         # by the constructor of the parent class.
 
-    def can_evaluate_to(self, cls):
-        if self.length == 1:
-            return cls == QoalaFloat
-        else:
-            return cls == QoalaArray
+    def can_evaluate_to(self, cls) -> bool:
+        return False
 
     def to_ir(self, ctx: Context):
-        tensor_shape = tensor.RankedTensorType.get(shape=[self.length], element_type=f32())
-        self.ir = qnet.recv_floats(remote=self.remote, cout=tensor_shape)
-        if self.length == 1:
-            # A tricky case. We need to insert operations to manually get the only
-            # qubit of this entanglement pair
-            # We need the index 0
-            index = QoalaNumericValue.from_immediate(0, True)
-            # We generate the IR of this index.
-            index.to_ir(ctx)
-            # We insert the GetItem operation
-            extract = GetItem(self, index)
-            # The IR of that operation is the "value of this operation"
-            self.ir = extract.to_ir(ctx)
+        base_tensor_type = i32() if self.base_type == int else f32()
+        if isinstance(self.remote, DeclareRemote):
+            remote_name = self.remote.remote_name
+        else:
+            remote_name = self.remote
+        tensor_shape = tensor.RankedTensorType.get(shape=[len(self.values)], element_type=base_tensor_type)
+        if self.base_type == int:
+            self.ir = qnet.send_ints(cin=tensor_shape, remote=remote_name)
+        elif self.base_type == float:
+            self.ir = qnet.send_floats(cin=tensor_shape, remote=remote_name)
+        else:
+            raise UnknownTypeError(f"Cannot create send operation for base type '{self.base_type}'")
         return self.ir
