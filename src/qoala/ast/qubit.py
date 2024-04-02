@@ -108,8 +108,16 @@ class QbitBaseOperations(QoalaQubit, ABC):
             d: ImmediateQIntOrExpression | None = None,
             angle: ImmediateQFloatOrExpression | None = None
     ) -> QoalaExpression:
+        # First, we check if the angle was given
+        if angle is not None:
+            if isinstance(angle, float):
+                # Angle was given as an immediate
+                angle_val = QoalaNumericValue.from_immediate(angle)
+            elif isinstance(angle, QoalaFloatOrExpression):
+                # Angle can be evaluated at runtime
+                angle_val = angle
         # if n and d are immediates, then we can directly compute the value of angle
-        if n is not None and d is not None:
+        elif n is not None and d is not None:
             # In this case, we know that n and d are given
             if isinstance(n, int) and isinstance(d, int):
                 # angle can be computed at compile time
@@ -136,16 +144,8 @@ class QbitBaseOperations(QoalaQubit, ABC):
                 # $angle_val = arith.divf $up, $down : f32
                 angle_val = Divide(up, down)
         else:
-            # In this case, either n and/or d were not given; we rely on the angle
-            if isinstance(angle, float):
-                # Angle was given as an immediate
-                angle_val = QoalaNumericValue.from_immediate(angle)
-            elif isinstance(angle, QoalaFloatOrExpression):
-                # Angle can be evaluated at runtime
-                angle_val = angle
-            else:
-                # Worst-worst case... we have nothing
-                angle_val = QoalaNumericValue.from_immediate(0.0)
+            # Worst-worst case... we have nothing
+            angle_val = QoalaNumericValue.from_immediate(0.0)
         return angle_val
 
     def measure(self) -> QoalaOperation:

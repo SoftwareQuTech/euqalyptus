@@ -1,4 +1,4 @@
-from qoala.ast.operations.quantum import RecvIntsOp
+from qoala.ast.operations.quantum import RecvIntsOp, RecvFloatsOp
 from qoala.types.classical.arrays import IntArray, FloatArray
 from qoala.types.classical.floats import QoalaFloatingPointType
 from qoala.types.classical.integer import QoalaIntegerType
@@ -25,8 +25,7 @@ class RecvInt(RecvInts, QoalaIntegerType):
 
 class RecvFloats(FloatArray):
     def __new__(cls, remote_name: str, length: int, *args, **kwargs):
-        # TODO
-        pass
+        return RecvFloatsOp(remote_name=remote_name, length=length)
 
     def __init__(self, remote_name: str, length: int):
         # Nothing to do here
@@ -35,8 +34,7 @@ class RecvFloats(FloatArray):
 
 class RecvFloat(RecvFloats, QoalaFloatingPointType):
     def __new__(cls, remote_name: str, *args, **kwargs):
-        # TODO
-        pass
+        return RecvFloatsOp(remote_name=remote_name, length=1)
 
     def __init__(self, remote_name: str):
         # Nothing to do here
@@ -66,6 +64,8 @@ class SendFloats:
 
 
 recv_int = RecvInt
+recv_ints = RecvInts
 recv_float = RecvFloat
+recv_floats = RecvFloats
 send_int = RecvInt
 send_float = RecvFloat

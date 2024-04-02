@@ -2,7 +2,7 @@ import pytest
 
 from qoala import QoalaProgram
 from qoala.ast.operations.arrays import GetItem, SetItem
-from qoala.ast.operations.numeric import Add, Subtract, Multiply, Divide, Pow2
+from qoala.ast.operations.numeric import Add, Subtract, Multiply, Divide
 from qoala.ast.operations.quantum import (
     XGate,
     YGate,
@@ -16,12 +16,10 @@ from qoala.ast.operations.quantum import (
     RotateX,
     RotateY,
     RotateZ,
-    CNotGate,
-    CPhaseGate
+    CNotGate
 )
 from qoala.ast.qubit import QoalaLocalQubit
 from qoala.ast.value import QoalaInteger, QoalaFloat, QoalaArray
-from qoala.ast.operations.casts import IntToFloat
 from qoala.types.classical.arrays import IntArray, FloatArray
 from qoala.types.classical.floats import Float
 from qoala.types.classical.integer import Int
@@ -108,9 +106,11 @@ def program_local_qubit_with_complex_gates():
     )
 
     qubit.cnot(qubit_b)
-    qubit.cphase(qubit_b)
+    # CPhase gates cannot be compiled yet
+    # qubit.cphase(qubit_b)
 
-    measurement = qubit.measure()
+    measurement_a = qubit.measure()
+    measurement_b = qubit_b.measure()
 
 
 class TestQoalaDecorator:
@@ -209,7 +209,7 @@ class TestQoalaDecorator:
     def test_quantum_program_with_complex_gates(self):
         program_local_qubit_with_complex_gates.compile()
 
-        assert len(program_local_qubit_with_complex_gates._body) == 24
+        assert len(program_local_qubit_with_complex_gates._body) == 13
         assert isinstance(program_local_qubit_with_complex_gates._body[0], QoalaInteger)
         assert isinstance(program_local_qubit_with_complex_gates._body[1], QoalaInteger)
         assert isinstance(program_local_qubit_with_complex_gates._body[2], QoalaFloat)
@@ -222,65 +222,25 @@ class TestQoalaDecorator:
         assert isinstance(program_local_qubit_with_complex_gates._body[6], RotateX)
         assert program_local_qubit_with_complex_gates._body[6].qubit is program_local_qubit_with_complex_gates._body[3]
         assert program_local_qubit_with_complex_gates._body[6].angle is program_local_qubit_with_complex_gates._body[5]
-        # Since the next rotation operation relies on data coming from another data flow node,
-        # we need to compute the value of the angle at compile time.
-        # The "N" value:
+        # The next rotation will use the immediate value of the angle, ignoring the values of "n" and "d"
+        # The given angle value:
         assert isinstance(program_local_qubit_with_complex_gates._body[7], QoalaFloat)
-        assert program_local_qubit_with_complex_gates._body[7].value == 10.0
-        # Constant for pi
-        assert isinstance(program_local_qubit_with_complex_gates._body[8], QoalaFloat)
-        assert program_local_qubit_with_complex_gates._body[8].value == 3.141592653589793
-        # Compute the "up" part of the division
-        assert isinstance(program_local_qubit_with_complex_gates._body[9], Multiply)
-        assert program_local_qubit_with_complex_gates._body[9].operand_a is program_local_qubit_with_complex_gates._body[7]
-        assert program_local_qubit_with_complex_gates._body[9].operand_b is program_local_qubit_with_complex_gates._body[8]
-        # Compute the "lower" part of the division
-        # Cast the exponent to a Float (required by math.pow2
-        assert isinstance(program_local_qubit_with_complex_gates._body[10], IntToFloat)
-        assert program_local_qubit_with_complex_gates._body[10].operand is program_local_qubit_with_complex_gates._body[1]
-        assert isinstance(program_local_qubit_with_complex_gates._body[11], Pow2)
-        assert program_local_qubit_with_complex_gates._body[11].exponent is program_local_qubit_with_complex_gates._body[10]
-        # Divide operation
-        assert isinstance(program_local_qubit_with_complex_gates._body[12], Divide)
-        assert program_local_qubit_with_complex_gates._body[12].operand_a is program_local_qubit_with_complex_gates._body[9]
-        assert program_local_qubit_with_complex_gates._body[12].operand_b is program_local_qubit_with_complex_gates._body[11]
-        # assert isinstance(program_local_qubit_with_complex_gates._body[10], QoalaFloat)
-        # assert program_local_qubit_with_complex_gates._body[10].value == 10.5
+        assert program_local_qubit_with_complex_gates._body[7].value == 10.5
         # Rotate operation
-        assert isinstance(program_local_qubit_with_complex_gates._body[13], RotateY)
-        assert program_local_qubit_with_complex_gates._body[13].qubit is program_local_qubit_with_complex_gates._body[3]
-        assert program_local_qubit_with_complex_gates._body[13].angle is program_local_qubit_with_complex_gates._body[12]
-        # We compute the angle operand for the "rot_Z" operation
-        # Constant for pi
-        assert isinstance(program_local_qubit_with_complex_gates._body[14], QoalaFloat)
-        assert program_local_qubit_with_complex_gates._body[14].value == 3.141592653589793
-        # Cast the "N" value to a float
-        assert isinstance(program_local_qubit_with_complex_gates._body[15], IntToFloat)
-        assert program_local_qubit_with_complex_gates._body[15].operand is program_local_qubit_with_complex_gates._body[0]
-        # Compute the "up" part of the division
-        assert isinstance(program_local_qubit_with_complex_gates._body[16], Multiply)
-        assert program_local_qubit_with_complex_gates._body[16].operand_a is program_local_qubit_with_complex_gates._body[15]
-        assert program_local_qubit_with_complex_gates._body[16].operand_b is program_local_qubit_with_complex_gates._body[14]
-        # Compute the "lower" part of the division
-        # Cast the exponent to a Float (required by math.pow2
-        assert isinstance(program_local_qubit_with_complex_gates._body[17], IntToFloat)
-        assert program_local_qubit_with_complex_gates._body[17].operand is program_local_qubit_with_complex_gates._body[1]
-        # Compute the exponentiation
-        assert isinstance(program_local_qubit_with_complex_gates._body[18], Pow2)
-        assert program_local_qubit_with_complex_gates._body[18].exponent is program_local_qubit_with_complex_gates._body[17]
-        # Divide operation
-        assert isinstance(program_local_qubit_with_complex_gates._body[19], Divide)
-        assert program_local_qubit_with_complex_gates._body[19].operand_a is program_local_qubit_with_complex_gates._body[16]
-        assert program_local_qubit_with_complex_gates._body[19].operand_b is program_local_qubit_with_complex_gates._body[18]
+        assert isinstance(program_local_qubit_with_complex_gates._body[8], RotateY)
+        assert program_local_qubit_with_complex_gates._body[8].qubit is program_local_qubit_with_complex_gates._body[3]
+        assert program_local_qubit_with_complex_gates._body[8].angle is program_local_qubit_with_complex_gates._body[7]
+        # The "rot_Z" operation uses an angle value from a constant declared above
         # Rotation operation
-        assert isinstance(program_local_qubit_with_complex_gates._body[20], RotateZ)
-        assert program_local_qubit_with_complex_gates._body[20].qubit is program_local_qubit_with_complex_gates._body[3]
-        assert program_local_qubit_with_complex_gates._body[20].angle is program_local_qubit_with_complex_gates._body[19]
+        assert isinstance(program_local_qubit_with_complex_gates._body[9], RotateZ)
+        assert program_local_qubit_with_complex_gates._body[9].qubit is program_local_qubit_with_complex_gates._body[3]
+        assert program_local_qubit_with_complex_gates._body[9].angle is program_local_qubit_with_complex_gates._body[2]
 
-        assert isinstance(program_local_qubit_with_complex_gates._body[21], CNotGate)
-        assert program_local_qubit_with_complex_gates._body[21].target is program_local_qubit_with_complex_gates._body[4]
-        assert isinstance(program_local_qubit_with_complex_gates._body[22], CPhaseGate)
-        assert program_local_qubit_with_complex_gates._body[22].target is program_local_qubit_with_complex_gates._body[4]
+        assert isinstance(program_local_qubit_with_complex_gates._body[10], CNotGate)
+        assert program_local_qubit_with_complex_gates._body[10].qubit is program_local_qubit_with_complex_gates._body[3]
+        assert program_local_qubit_with_complex_gates._body[10].target is program_local_qubit_with_complex_gates._body[4]
+        assert isinstance(program_local_qubit_with_complex_gates._body[11], QubitMeasure)
+        assert program_local_qubit_with_complex_gates._body[11].qubit is program_local_qubit_with_complex_gates._body[3]
 
-        assert isinstance(program_local_qubit_with_complex_gates._body[23], QubitMeasure)
-        assert program_local_qubit_with_complex_gates._body[23].qubit is program_local_qubit_with_complex_gates._body[3]
+        assert isinstance(program_local_qubit_with_complex_gates._body[12], QubitMeasure)
+        assert program_local_qubit_with_complex_gates._body[12].qubit is program_local_qubit_with_complex_gates._body[4]

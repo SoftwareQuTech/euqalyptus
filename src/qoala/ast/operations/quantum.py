@@ -11,9 +11,11 @@ from qoala.ast.errors import OperationNotYetImplementedError
 from qoala.ast.operations import QoalaOperation
 from qoala.ast.operations.arrays import GetItem
 from qoala.ast.qubit import QoalaQubit
-from qoala.ast.value import QoalaExpression, QoalaFloatOrExpression, QoalaBit, QoalaInteger, QoalaArray, \
-    QoalaNumericValue
-from qoala.utils.binding_types import i32
+from qoala.ast.value import (
+    QoalaExpression, QoalaFloatOrExpression, QoalaBit,
+    QoalaInteger, QoalaFloat, QoalaArray, QoalaNumericValue
+)
+from qoala.utils.binding_types import i32, f32
 
 
 @dataclass(init=False)
@@ -241,10 +243,7 @@ class RotateX(Rotate):
         super().__init__(qubit=qubit, angle=angle, axis=RotateBaseAxis.X)
 
     def can_evaluate_to(self, cls):
-        if cls == QoalaQubit:
-            return True
-        else:
-            return False
+        return cls == QoalaQubit
 
     def to_ir(self, ctx: Context):
         # We first add this operation to the program
@@ -264,10 +263,7 @@ class RotateY(Rotate):
         super().__init__(qubit=qubit, angle=angle, axis=RotateBaseAxis.Y)
 
     def can_evaluate_to(self, cls):
-        if cls == QoalaQubit:
-            return True
-        else:
-            return False
+        return cls == QoalaQubit
 
     def to_ir(self, ctx: Context):
         # We first add this operation to the program
@@ -287,10 +283,7 @@ class RotateZ(Rotate):
         super().__init__(qubit=qubit, angle=angle, axis=RotateBaseAxis.Z)
 
     def can_evaluate_to(self, cls):
-        if cls == QoalaQubit:
-            return True
-        else:
-            return False
+        return cls == QoalaQubit
 
     def to_ir(self, ctx: Context):
         # We first add this operation to the program
@@ -373,13 +366,14 @@ class RecvIntsOp(QoalaArray[QoalaInteger, int]):
     def __init__(self, remote_name: str, length: int):
         super().__init__(base_size=32, base_type=int, length=length)
         self.remote = remote_name
-        if length == 1:
-            pass
         # We don't need to add this operation to the body, since it will be done
         # by the constructor of the parent class.
 
     def can_evaluate_to(self, cls):
-        return cls == QoalaInteger
+        if self.length == 1:
+            return cls == QoalaInteger
+        else:
+            return cls == QoalaArray
 
     def to_ir(self, ctx: Context):
         tensor_shape = tensor.RankedTensorType.get(shape=[self.length], element_type=i32())
@@ -395,5 +389,38 @@ class RecvIntsOp(QoalaArray[QoalaInteger, int]):
             extract = GetItem(self, index)
             # The IR of that operation is the "value of this operation"
             self.ir = extract.to_ir(ctx)
+        return self.ir
 
+
+@dataclass(init=False)
+class RecvFloatsOp(QoalaArray[QoalaFloat, float]):
+    # Does this need to be a string? It seems to be just a "reference"
+    remote: str
+
+    def __init__(self, remote_name: str, length: int):
+        super().__init__(base_size=32, base_type=int, length=length)
+        self.remote = remote_name
+        # We don't need to add this operation to the body, since it will be done
+        # by the constructor of the parent class.
+
+    def can_evaluate_to(self, cls):
+        if self.length == 1:
+            return cls == QoalaFloat
+        else:
+            return cls == QoalaArray
+
+    def to_ir(self, ctx: Context):
+        tensor_shape = tensor.RankedTensorType.get(shape=[self.length], element_type=f32())
+        self.ir = qnet.recv_floats(remote=self.remote, cout=tensor_shape)
+        if self.length == 1:
+            # A tricky case. We need to insert operations to manually get the only
+            # qubit of this entanglement pair
+            # We need the index 0
+            index = QoalaNumericValue.from_immediate(0, True)
+            # We generate the IR of this index.
+            index.to_ir(ctx)
+            # We insert the GetItem operation
+            extract = GetItem(self, index)
+            # The IR of that operation is the "value of this operation"
+            self.ir = extract.to_ir(ctx)
         return self.ir
