@@ -22,7 +22,15 @@ class BaseBinaryArithOp(QoalaExpression, ABC):
         super().__init__()
         # We "normalize" the operands, upcasting an integer to a float if needed
         assert len(operands) == 2
-        if operands[0].can_evaluate_to(QoalaFloat) and operands[1].can_evaluate_to(QoalaInteger):
+        if not (operands[0].can_evaluate_to(QoalaFloat) or operands[0].can_evaluate_to(QoalaInteger)):
+            raise WrongEvaluationTypeError(f"When constructing operation '{self.__class__.__name__}': "
+                                           f"One of the operands '{operands[0]}' cannot evaluate to "
+                                           f"either Integer or Float")
+        elif not (operands[1].can_evaluate_to(QoalaFloat) or operands[1].can_evaluate_to(QoalaInteger)):
+            raise WrongEvaluationTypeError(f"When constructing operation '{self.__class__.__name__}': "
+                                           f"One of the operands '{operands[1]}' cannot evaluate to "
+                                           f"either Integer or Float")
+        elif operands[0].can_evaluate_to(QoalaFloat) and operands[1].can_evaluate_to(QoalaInteger):
             # We need to add a cast of operand[1]
             casted_operand_1 = IntToFloat(operands[1])
             self.operand_a = operands[0]

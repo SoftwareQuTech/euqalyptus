@@ -4,7 +4,8 @@ from qoala import QoalaProgram, QoalaModule, NotYetCompiledError
 from qoala.types.classical.floats import Float
 from qoala.types.classical.integer import Int
 from qoala.types.quantum.qubit import LocalQubit, Entangle
-from qoala.operations.quantum import recv_int, recv_floats
+from qoala.operations import Remote
+from qoala.operations.quantum import recv_int, recv_ints, recv_floats
 
 
 @QoalaProgram
@@ -37,6 +38,13 @@ def complex_quantum_program():
 
     measurement_a = qubit.measure()
     measurement_b = qubit_b.measure()
+
+
+@QoalaProgram
+def classical_remote_communication():
+    remote = Remote("Bob")
+    ints = recv_ints(remote, 10)
+    int_b = ints[0] + ints[5]
 
 
 @QoalaProgram
@@ -88,6 +96,34 @@ class TestQoalaQnetPythonBindingsQuantum:
     %qout0, %qout1 = qnet.cnot %4, %1 : !qnet.qubit, !qnet.qubit
     %5 = qnet.measure %qout0 : i1
     %6 = qnet.measure %qout1 : i1
+    qnet.return
+  }
+}
+"""
+        assert str(module.asm) == expected_asm
+
+    def test_classical_remote_communication(self):
+        with pytest.raises(NotYetCompiledError) as ex:
+            _, _ = classical_remote_communication.module
+        assert str(ex.value) == "The program has not been compiled yet. Did you invoke 'compile()' on it?"
+        _, module = classical_remote_communication.compile()
+        assert isinstance(module, QoalaModule)
+        # NOTE - All the qubit operations performed on a qubit modify the internal state of the qubit,
+        #        as seen from the SDK side of the compiler. However, the semantics of the generated MLIR
+        #        is a bit different. Since MLIR follows a Single Static Assignment (SSA) approach, an
+        #        operation _cannot_ modify the state of a registry, but rather _returns_ the modified
+        #        value, so it can be assigned to a new registry.
+        #        Being this said, successive operations applied on the same qubit (as depicted in the
+        #        code tested in this case) _MUST_ operate on the "updated" value of the qubit.
+        expected_asm = """module {
+  qnet.func @classical_remote_communication() {
+    qnet.remote @Bob
+    %0 = qnet.recv_ints  {remote = @Bob} : tensor<10xi32>
+    %c0 = arith.constant 0 : index
+    %extracted = tensor.extract %0[%c0] : tensor<10xi32>
+    %c5 = arith.constant 5 : index
+    %extracted_0 = tensor.extract %0[%c5] : tensor<10xi32>
+    %1 = arith.addi %extracted, %extracted_0 : i32
     qnet.return
   }
 }

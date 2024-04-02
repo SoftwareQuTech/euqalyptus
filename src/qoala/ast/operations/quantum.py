@@ -1,6 +1,7 @@
 from abc import ABC
 from dataclasses import dataclass
 from enum import Enum, auto
+from typing import List
 
 import qnet.dialects.qnet as qnet
 import qnet.dialects.tensor as tensor
@@ -361,9 +362,9 @@ class DeclareRemote(QoalaOperation):
 @dataclass(init=False)
 class RecvIntsOp(QoalaArray[QoalaInteger, int]):
     # Does this need to be a string? It seems to be just a "reference"
-    remote: str
+    remote: DeclareRemote | str
 
-    def __init__(self, remote_name: str, length: int):
+    def __init__(self, remote_name: DeclareRemote | str, length: int):
         super().__init__(base_size=32, base_type=int, length=length)
         self.remote = remote_name
         # We don't need to add this operation to the body, since it will be done
@@ -377,7 +378,11 @@ class RecvIntsOp(QoalaArray[QoalaInteger, int]):
 
     def to_ir(self, ctx: Context):
         tensor_shape = tensor.RankedTensorType.get(shape=[self.length], element_type=i32())
-        self.ir = qnet.recv_ints(remote=self.remote, cout=tensor_shape)
+        if isinstance(self.remote, DeclareRemote):
+            remote_name = self.remote.remote_name
+        else:
+            remote_name = self.remote
+        self.ir = qnet.recv_ints(remote=remote_name, cout=tensor_shape)
         if self.length == 1:
             # A tricky case. We need to insert operations to manually get the only
             # qubit of this entanglement pair

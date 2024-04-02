@@ -7,9 +7,9 @@ from qnet.ir import Context
 
 from qoala import QoalaProgram
 from qoala.ast.errors import OperationNotYetImplementedError
-from qoala.ast.operations import QoalaOperation
+from qoala.ast.operations import QoalaOperation, with_arith_operators
 from qoala.ast.qubit import QbitBaseOperations
-from qoala.ast.value import QoalaExpression, QoalaInteger, QoalaArray
+from qoala.ast.value import QoalaExpression, QoalaInteger, QoalaFloat, QoalaArray
 from qoala.utils.binding_types import index
 
 
@@ -34,10 +34,9 @@ class CastToIndex(QoalaExpression):
         return self.ir
 
 
-_Qoala_Item_Type = TypeVar("_Qoala_Item_Type")
-
 @dataclass(init=False)
-class GetItem(QoalaOperation, Generic[_Qoala_Item_Type]):
+@with_arith_operators
+class GetItem(QoalaOperation):
     base_array: QoalaArray
     index: QoalaExpression
 
@@ -50,10 +49,9 @@ class GetItem(QoalaOperation, Generic[_Qoala_Item_Type]):
         QoalaProgram.add_to_body(self)
 
     def can_evaluate_to(self, cls):
-        return self.index.can_evaluate_to(_Qoala_Item_Type)
+        return self.base_array.members_can_evaluate_to(cls)
 
     def to_ir(self, ctx: Context):
-        # TODO - Implement the IR representation fo arrays - tensor or vector?
         self.ir = tensor.extract(tensor=self.base_array.ir, indices=[self.index.ir])
         return self.ir
 

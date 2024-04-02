@@ -7,6 +7,9 @@ _cls = TypeVar("_cls", bound=QoalaExpression)
 
 
 class QoalaOperation(QoalaExpression, ABC):
+    def __init__(self):
+        super().__init__()
+
     @staticmethod
     def _create_expression_for_op(
             op_class: Type[_cls],

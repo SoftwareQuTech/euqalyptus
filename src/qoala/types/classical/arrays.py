@@ -72,7 +72,7 @@ class FloatArray(_Array[Float, float]):
 
     def __init__(
             self,
-            *elements: Union[_Qoala_Base_Type, float],
+            *elements: _Qoala_Base_Type | float,
             other_array: Optional[QoalaArray[_Qoala_Base_Type, float]] = None
     ):
         # Nothing to do here
