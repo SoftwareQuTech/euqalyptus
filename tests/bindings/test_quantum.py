@@ -3,6 +3,7 @@ import pytest
 from qoala import QoalaProgram, QoalaModule, NotYetCompiledError
 from qoala.types.classical.floats import Float
 from qoala.types.classical.integer import Int
+from qoala.types.classical.arrays import IntArray, FloatArray
 from qoala.types.quantum.qubit import LocalQubit, Entangle
 from qoala.operations import Remote
 from qoala.operations.quantum import recv_int, recv_ints, recv_floats, send_floats, send_ints
@@ -51,8 +52,29 @@ def classical_remote_communication():
 def classical_send_immediate_values():
     remote = Remote("Alice")
     send_ints("Alice", 10, 20)
-
     send_floats(remote, 3.14, 2.71)
+
+
+@QoalaProgram
+def classical_send_array_of_values():
+    remote = Remote("Alice")
+    # We're not interested on testing how an array can be created from values and immediates
+    # For that, see the corresponding test on the "test_classical.py" file
+    int_vals = IntArray(10, 20)
+    float_vals = FloatArray(3.14, 2.71)
+    send_ints("Alice", int_vals)
+    send_floats(remote, float_vals)
+
+
+@QoalaProgram
+def classical_send_immediates_and_array_of_values():
+    remote = Remote("Alice")
+    # We're not interested on testing how an array can be created from values and immediates
+    # For that, see the corresponding test on the "test_classical.py" file
+    int_vals = IntArray(10, 20)
+    float_vals = FloatArray(3.14, 2.71)
+    send_ints("Alice", int_vals, 30)
+    send_floats(remote, float_vals, 15.65)
 
 
 @QoalaProgram
@@ -82,13 +104,6 @@ class TestQoalaQnetPythonBindingsQuantum:
         assert str(ex.value) == "The program has not been compiled yet. Did you invoke 'compile()' on it?"
         _, module = complex_quantum_program.compile()
         assert isinstance(module, QoalaModule)
-        # NOTE - All the qubit operations performed on a qubit modify the internal state of the qubit,
-        #        as seen from the SDK side of the compiler. However, the semantics of the generated MLIR
-        #        is a bit different. Since MLIR follows a Single Static Assignment (SSA) approach, an
-        #        operation _cannot_ modify the state of a registry, but rather _returns_ the modified
-        #        value, so it can be assigned to a new registry.
-        #        Being this said, successive operations applied on the same qubit (as depicted in the
-        #        code tested in this case) _MUST_ operate on the "updated" value of the qubit.
         expected_asm = """module {
   qnet.func @complex_quantum_program() {
     %c20_i32 = arith.constant 20 : i32
@@ -116,13 +131,6 @@ class TestQoalaQnetPythonBindingsQuantum:
         assert str(ex.value) == "The program has not been compiled yet. Did you invoke 'compile()' on it?"
         _, module = classical_remote_communication.compile()
         assert isinstance(module, QoalaModule)
-        # NOTE - All the qubit operations performed on a qubit modify the internal state of the qubit,
-        #        as seen from the SDK side of the compiler. However, the semantics of the generated MLIR
-        #        is a bit different. Since MLIR follows a Single Static Assignment (SSA) approach, an
-        #        operation _cannot_ modify the state of a registry, but rather _returns_ the modified
-        #        value, so it can be assigned to a new registry.
-        #        Being this said, successive operations applied on the same qubit (as depicted in the
-        #        code tested in this case) _MUST_ operate on the "updated" value of the qubit.
         expected_asm = """module {
   qnet.func @classical_remote_communication() {
     qnet.remote @Bob
@@ -144,15 +152,57 @@ class TestQoalaQnetPythonBindingsQuantum:
         assert str(ex.value) == "The program has not been compiled yet. Did you invoke 'compile()' on it?"
         _, module = classical_send_immediate_values.compile()
         assert isinstance(module, QoalaModule)
-        # NOTE - All the qubit operations performed on a qubit modify the internal state of the qubit,
-        #        as seen from the SDK side of the compiler. However, the semantics of the generated MLIR
-        #        is a bit different. Since MLIR follows a Single Static Assignment (SSA) approach, an
-        #        operation _cannot_ modify the state of a registry, but rather _returns_ the modified
-        #        value, so it can be assigned to a new registry.
-        #        Being this said, successive operations applied on the same qubit (as depicted in the
-        #        code tested in this case) _MUST_ operate on the "updated" value of the qubit.
         expected_asm = """module {
   qnet.func @classical_send_immediate_values() {
+    qnet.remote @Alice
+    %c10_i32 = arith.constant 10 : i32
+    %c20_i32 = arith.constant 20 : i32
+    %from_elements = tensor.from_elements %c10_i32, %c20_i32 : tensor<2xi32>
+    qnet.send_ints %from_elements {remote = @Alice} : tensor<2xi32>
+    %cst = arith.constant 3.140000e+00 : f32
+    %cst_0 = arith.constant 2.710000e+00 : f32
+    %from_elements_1 = tensor.from_elements %cst, %cst_0 : tensor<2xf32>
+    qnet.send_floats %from_elements_1 {remote = @Alice} : tensor<2xf32>
+    qnet.return
+  }
+}
+"""
+        assert str(module.asm) == expected_asm
+
+    @pytest.mark.skip(reason="Send an array of values is not supported yet")
+    def test_classical_send_array_of_values(self):
+        with pytest.raises(NotYetCompiledError) as ex:
+            _, _ = classical_send_array_of_values.module
+        assert str(ex.value) == "The program has not been compiled yet. Did you invoke 'compile()' on it?"
+        _, module = classical_send_array_of_values.compile()
+        assert isinstance(module, QoalaModule)
+        expected_asm = """module {
+  qnet.func @classical_send_array_of_values() {
+    qnet.remote @Alice
+    %c10_i32 = arith.constant 10 : i32
+    %c20_i32 = arith.constant 20 : i32
+    %from_elements = tensor.from_elements %c10_i32, %c20_i32 : tensor<2xi32>
+    %cst = arith.constant 3.140000e+00 : f32
+    %cst_0 = arith.constant 2.710000e+00 : f32
+    %from_elements_1 = tensor.from_elements %cst, %cst_0 : tensor<2xf32>
+    qnet.send_ints %from_elements {remote = @Alice} : tensor<2xi32>
+    qnet.send_floats %from_elements_1 {remote = @Alice} : tensor<2xf32>
+    qnet.return
+  }
+}
+"""
+        assert str(module.asm) == expected_asm
+
+    @pytest.mark.skip(reason="Send immediates and array of values is not supported yet")
+    def test_classical_send_immediates_and_array_of_values(self):
+        with pytest.raises(NotYetCompiledError) as ex:
+            _, _ = classical_send_immediates_and_array_of_values.module
+        assert str(ex.value) == "The program has not been compiled yet. Did you invoke 'compile()' on it?"
+        _, module = classical_send_immediates_and_array_of_values.compile()
+        assert isinstance(module, QoalaModule)
+        # TODO - Update the HIR we get from this test case
+        expected_asm = """module {
+  qnet.func @classical_send_immediates_and_array_of_values() {
     qnet.remote @Alice
     %c10_i32 = arith.constant 10 : i32
     %c20_i32 = arith.constant 20 : i32
