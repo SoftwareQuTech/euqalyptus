@@ -1,5 +1,4 @@
 from dataclasses import dataclass
-from typing import Generic, TypeVar
 
 import qnet.dialects.arith as arith
 import qnet.dialects.tensor as tensor
@@ -9,7 +8,7 @@ from qoala import QoalaProgram
 from qoala.ast.errors import OperationNotYetImplementedError
 from qoala.ast.operations import QoalaOperation, with_arith_operators
 from qoala.ast.qubit import QbitBaseOperations
-from qoala.ast.value import QoalaExpression, QoalaInteger, QoalaFloat, QoalaArray
+from qoala.ast.value import QoalaExpression, QoalaInteger, QoalaArray
 from qoala.utils.binding_types import index
 
 

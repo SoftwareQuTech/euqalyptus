@@ -228,7 +228,6 @@ class QoalaArray(QoalaValue[QoalaExpression], Generic[_Qoala_Base_Type, _Native_
         return cls == self.qoala_type
 
     def to_ir(self, ctx: Context):
-        # TODO - Implement the HIR representation for arrays - tensor or vector?
         elements = [element.ir for element in self.members]
         if self.base_type is int:
             hir_base_type = i32()

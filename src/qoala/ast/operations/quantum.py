@@ -448,23 +448,30 @@ class BaseSendOp(QoalaOperation):
             else:
                 raise UnknownTypeError(f"Send operation: value '{val}' cannot be converted to '{self.base_type}'")
             self.values.append(val_to_add)
-        # We don't need to add this operation to the body, since it will be done
-        # by the constructor of the parent class.
+        QoalaProgram.add_to_body(self)
 
     def can_evaluate_to(self, cls) -> bool:
         return False
 
     def to_ir(self, ctx: Context):
-        base_tensor_type = i32() if self.base_type == int else f32()
+        elements = [value.ir for value in self.values]
+        if self.base_type is int:
+            hir_base_type = i32()
+        elif self.base_type is float:
+            hir_base_type = f32()
+        else:
+            raise UnknownTypeError(f"Base type '{self.base_type.__name__}' for arrays is not supported")
+        tensor_shape = tensor.RankedTensorType.get(shape=[len(elements)], element_type=hir_base_type)
+        tensor_values = tensor.from_elements(elements=elements, result=tensor_shape)
+
         if isinstance(self.remote, DeclareRemote):
             remote_name = self.remote.remote_name
         else:
             remote_name = self.remote
-        tensor_shape = tensor.RankedTensorType.get(shape=[len(self.values)], element_type=base_tensor_type)
         if self.base_type == int:
-            self.ir = qnet.send_ints(cin=tensor_shape, remote=remote_name)
+            self.ir = qnet.send_ints(cin=tensor_values, remote=remote_name)
         elif self.base_type == float:
-            self.ir = qnet.send_floats(cin=tensor_shape, remote=remote_name)
+            self.ir = qnet.send_floats(cin=tensor_values, remote=remote_name)
         else:
             raise UnknownTypeError(f"Cannot create send operation for base type '{self.base_type}'")
         return self.ir
