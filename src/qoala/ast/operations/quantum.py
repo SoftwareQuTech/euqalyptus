@@ -1,7 +1,7 @@
 from abc import ABC
 from dataclasses import dataclass
 from enum import Enum, auto
-from typing import List,Type, TypeVar
+from typing import List, Type, TypeVar
 
 import qnet.dialects.qnet as qnet
 import qnet.dialects.tensor as tensor
@@ -429,14 +429,25 @@ class RecvFloatsOp(BaseRecvOp[QoalaFloat, float]):
 @dataclass(init=False)
 class BaseSendOp(QoalaOperation):
     remote: DeclareRemote | str
-    values: List[int]
+    values: List[QoalaExpression]
     base_type: Type
+    qoala_type: Type
 
-    def __init__(self, remote_name: str, *vals: int, base_type: Type):
+    def __init__(self, *vals: QoalaExpression, remote_name: str, base_type: Type, qoala_type: Type):
         super().__init__()
         self.remote = remote_name
         self.base_type = base_type
-        self.values = list(*vals)
+        self.values = []
+        for val in vals:
+            # TODO - Check if the value can evaluate to an array (tensor is already defined)
+            # TODO - Think what happens if we mix single values and an array... flatmap?
+            if isinstance(val, base_type):
+                val_to_add = QoalaNumericValue.from_immediate(val)
+            elif val.can_evaluate_to(qoala_type):
+                val_to_add = val
+            else:
+                raise UnknownTypeError(f"Send operation: value '{val}' cannot be converted to '{self.base_type}'")
+            self.values.append(val_to_add)
         # We don't need to add this operation to the body, since it will be done
         # by the constructor of the parent class.
 
@@ -457,3 +468,15 @@ class BaseSendOp(QoalaOperation):
         else:
             raise UnknownTypeError(f"Cannot create send operation for base type '{self.base_type}'")
         return self.ir
+
+
+@dataclass(init=False)
+class SendIntsOp(BaseSendOp):
+    def __init__(self, *vals: QoalaExpression, remote_name: DeclareRemote | str):
+        super().__init__(*vals, remote_name=remote_name, qoala_type=QoalaInteger, base_type=int)
+
+
+@dataclass(init=False)
+class SendFloatsOp(BaseSendOp):
+    def __init__(self, *vals: QoalaExpression, remote_name: DeclareRemote | str):
+        super().__init__(*vals, remote_name=remote_name, qoala_type=QoalaFloat, base_type=float)
