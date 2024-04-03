@@ -5,7 +5,7 @@ from qoala.types.classical.floats import Float
 from qoala.types.classical.integer import Int
 from qoala.types.quantum.qubit import LocalQubit, Entangle
 from qoala.operations import Remote
-from qoala.operations.quantum import recv_int, recv_ints, recv_floats
+from qoala.operations.quantum import recv_int, recv_ints, recv_floats, send_floats, send_ints
 
 
 @QoalaProgram
@@ -45,6 +45,14 @@ def classical_remote_communication():
     remote = Remote("Bob")
     ints = recv_ints(remote, 10)
     int_b = ints[0] + ints[5]
+
+
+@QoalaProgram
+def classical_send_immediate_values():
+    remote = Remote("Alice")
+    send_ints("Alice", 10, 20)
+
+    send_floats(remote, 3.14, 2.71)
 
 
 @QoalaProgram
@@ -124,6 +132,36 @@ class TestQoalaQnetPythonBindingsQuantum:
     %c5 = arith.constant 5 : index
     %extracted_0 = tensor.extract %0[%c5] : tensor<10xi32>
     %1 = arith.addi %extracted, %extracted_0 : i32
+    qnet.return
+  }
+}
+"""
+        assert str(module.asm) == expected_asm
+
+    def test_send_immediate_values(self):
+        with pytest.raises(NotYetCompiledError) as ex:
+            _, _ = classical_send_immediate_values.module
+        assert str(ex.value) == "The program has not been compiled yet. Did you invoke 'compile()' on it?"
+        _, module = classical_send_immediate_values.compile()
+        assert isinstance(module, QoalaModule)
+        # NOTE - All the qubit operations performed on a qubit modify the internal state of the qubit,
+        #        as seen from the SDK side of the compiler. However, the semantics of the generated MLIR
+        #        is a bit different. Since MLIR follows a Single Static Assignment (SSA) approach, an
+        #        operation _cannot_ modify the state of a registry, but rather _returns_ the modified
+        #        value, so it can be assigned to a new registry.
+        #        Being this said, successive operations applied on the same qubit (as depicted in the
+        #        code tested in this case) _MUST_ operate on the "updated" value of the qubit.
+        expected_asm = """module {
+  qnet.func @classical_send_immediate_values() {
+    qnet.remote @Alice
+    %c10_i32 = arith.constant 10 : i32
+    %c20_i32 = arith.constant 20 : i32
+    %from_elements = tensor.from_elements %c10_i32, %c20_i32 : tensor<2xi32>
+    qnet.send_ints %from_elements {remote = @Alice}
+    %cst = arith.constant 3.140000e+00 : f32
+    %cst_0 = arith.constant 2.710000e+00 : f32
+    %from_elements_0 = tensor.from_elements %cst, %cst_0 : tensor<2xi32>
+    qnet.send_floats %from_elements_0 {remote = @Alice}
     qnet.return
   }
 }
