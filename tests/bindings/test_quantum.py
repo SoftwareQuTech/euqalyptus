@@ -169,7 +169,6 @@ class TestQoalaQnetPythonBindingsQuantum:
 """
         assert str(module.asm) == expected_asm
 
-    @pytest.mark.skip(reason="Send an array of values is not supported yet")
     def test_classical_send_array_of_values(self):
         with pytest.raises(NotYetCompiledError) as ex:
             _, _ = classical_send_array_of_values.module
@@ -185,37 +184,42 @@ class TestQoalaQnetPythonBindingsQuantum:
     %cst = arith.constant 3.140000e+00 : f32
     %cst_0 = arith.constant 2.710000e+00 : f32
     %from_elements_1 = tensor.from_elements %cst, %cst_0 : tensor<2xf32>
-    qnet.send_ints %from_elements {remote = @Alice} : tensor<2xi32>
-    qnet.send_floats %from_elements_1 {remote = @Alice} : tensor<2xf32>
+    %from_elements_2 = tensor.from_elements %c10_i32, %c20_i32 : tensor<2xi32>
+    qnet.send_ints %from_elements_2 {remote = @Alice} : tensor<2xi32>
+    %from_elements_3 = tensor.from_elements %cst, %cst_0 : tensor<2xf32>
+    qnet.send_floats %from_elements_3 {remote = @Alice} : tensor<2xf32>
     qnet.return
   }
 }
 """
         assert str(module.asm) == expected_asm
 
-    @pytest.mark.skip(reason="Send immediates and array of values is not supported yet")
     def test_classical_send_immediates_and_array_of_values(self):
         with pytest.raises(NotYetCompiledError) as ex:
             _, _ = classical_send_immediates_and_array_of_values.module
         assert str(ex.value) == "The program has not been compiled yet. Did you invoke 'compile()' on it?"
         _, module = classical_send_immediates_and_array_of_values.compile()
         assert isinstance(module, QoalaModule)
-        # TODO - Update the HIR we get from this test case
         expected_asm = """module {
   qnet.func @classical_send_immediates_and_array_of_values() {
     qnet.remote @Alice
     %c10_i32 = arith.constant 10 : i32
     %c20_i32 = arith.constant 20 : i32
     %from_elements = tensor.from_elements %c10_i32, %c20_i32 : tensor<2xi32>
-    qnet.send_ints %from_elements {remote = @Alice} : tensor<2xi32>
     %cst = arith.constant 3.140000e+00 : f32
     %cst_0 = arith.constant 2.710000e+00 : f32
     %from_elements_1 = tensor.from_elements %cst, %cst_0 : tensor<2xf32>
-    qnet.send_floats %from_elements_1 {remote = @Alice} : tensor<2xf32>
+    %c30_i32 = arith.constant 30 : i32
+    %from_elements_2 = tensor.from_elements %c10_i32, %c20_i32, %c30_i32 : tensor<3xi32>
+    qnet.send_ints %from_elements_2 {remote = @Alice} : tensor<3xi32>
+    %cst_3 = arith.constant 1.565000e+01 : f32
+    %from_elements_4 = tensor.from_elements %cst, %cst_0, %cst_3 : tensor<3xf32>
+    qnet.send_floats %from_elements_4 {remote = @Alice} : tensor<3xf32>
     qnet.return
   }
 }
 """
+        print(module.asm)
         assert str(module.asm) == expected_asm
 
     def test_entanglement_program_to_qoala_qnet(self):

@@ -441,7 +441,13 @@ class BaseSendOp(QoalaOperation):
         for val in vals:
             # TODO - Check if the value can evaluate to an array (tensor is already defined)
             # TODO - Think what happens if we mix single values and an array... flatmap?
-            if isinstance(val, base_type):
+            if isinstance(val, QoalaArray):
+                # If the argument is an array, we will simply "open" the array...
+                # If an already-packed array is the ONLY argument, this wastefully creates a new tensor
+                # This is generic enough to support mixed arrays and other values, but it's the bes we can do so far
+                [self.values.append(array_val) for array_val in val.members]
+                continue
+            elif isinstance(val, base_type):
                 val_to_add = QoalaNumericValue.from_immediate(val)
             elif val.can_evaluate_to(qoala_type):
                 val_to_add = val

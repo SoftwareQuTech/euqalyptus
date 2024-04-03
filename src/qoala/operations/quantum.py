@@ -43,20 +43,20 @@ class RecvFloat(RecvFloats, QoalaFloatingPointType):
 
 # TODO - Inherit from what?
 class SendInts:
-    def __new__(cls,  remote_name: Remote | str, *args: QoalaIntegerType | int):
+    def __new__(cls,  remote_name: Remote | str, *args: IntArray | QoalaIntegerType | int):
         return SendIntsOp(*args, remote_name=remote_name)
 
-    def __init__(self,  remote_name: Remote | str, *args: QoalaIntegerType | int):
+    def __init__(self,  remote_name: Remote | str, *args: IntArray | QoalaIntegerType | int):
         # Nothing to do here
         pass
 
 
 # TODO - Inherit from what?
 class SendFloats:
-    def __new__(cls,  remote_name: Remote | str, *args: QoalaFloatingPointType | float):
+    def __new__(cls,  remote_name: Remote | str, *args: FloatArray | QoalaFloatingPointType | float):
         return SendFloatsOp(*args, remote_name=remote_name)
 
-    def __init__(self,  remote_name: Remote | str, *args: QoalaFloatingPointType | float):
+    def __init__(self,  remote_name: Remote | str, *args: FloatArray | QoalaFloatingPointType | float):
         # Nothing to do here
         pass
 
