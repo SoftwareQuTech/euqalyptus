@@ -157,11 +157,11 @@ class TestQoalaQnetPythonBindingsQuantum:
     %c10_i32 = arith.constant 10 : i32
     %c20_i32 = arith.constant 20 : i32
     %from_elements = tensor.from_elements %c10_i32, %c20_i32 : tensor<2xi32>
-    qnet.send_ints %from_elements {remote = @Alice}
+    qnet.send_ints %from_elements {remote = @Alice} : tensor<2xi32>
     %cst = arith.constant 3.140000e+00 : f32
     %cst_0 = arith.constant 2.710000e+00 : f32
-    %from_elements_0 = tensor.from_elements %cst, %cst_0 : tensor<2xi32>
-    qnet.send_floats %from_elements_0 {remote = @Alice}
+    %from_elements_1 = tensor.from_elements %cst, %cst_0 : tensor<2xf32>
+    qnet.send_floats %from_elements_1 {remote = @Alice} : tensor<2xf32>
     qnet.return
   }
 }
