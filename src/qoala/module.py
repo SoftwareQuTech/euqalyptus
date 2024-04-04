@@ -46,7 +46,7 @@ class QoalaModule:
             qir_module = Module.create()
             with InsertionPoint(qir_module.body):
                 func_type = FunctionType.get(inputs=[], results=[])
-                function = func.FuncOp(
+                function = qnet.FuncOp(
                     name=f"{self._function_name}",
                     type=func_type,
                 )
@@ -54,7 +54,7 @@ class QoalaModule:
                 with InsertionPoint(block):
                     for operation in self._body:
                         operation.to_ir(ctx)
-                    func.ReturnOp([])
+                    qnet.ReturnOp([])
             # Before closing the context, we save the ASM we just created
             self._qir_module = qir_module
         self._is_initialized = True

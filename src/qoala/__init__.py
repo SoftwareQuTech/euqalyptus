@@ -85,13 +85,15 @@ class QoalaProgram:
         # keep a reference to the current instance of the QoalaProgram we are compiling.
         # This does not allow parallel compilation, since instructions of different programs
         # would end in the same body, of a single function.
-        QoalaProgram._compiler_lock.acquire()
-        QoalaProgram._instance = self
-        # We clear the body of this qoala program.
-        self._module.clear_body()
-        ret_val = self._entry_fun(*args, **kwargs)
-        self._is_compiled = True
-        # We delete the reference to the QoalaProgram under compilation
-        del QoalaProgram._instance
-        QoalaProgram._compiler_lock.release()
-        return ret_val, self._module
+        try:
+            QoalaProgram._compiler_lock.acquire()
+            QoalaProgram._instance = self
+            # We clear the body of this qoala program.
+            self._module.clear_body()
+            ret_val = self._entry_fun(*args, **kwargs)
+            self._is_compiled = True
+            # We delete the reference to the QoalaProgram under compilation
+            del QoalaProgram._instance
+            return ret_val, self._module
+        finally:
+            QoalaProgram._compiler_lock.release()

@@ -1,5 +1,5 @@
 from qnet.ir import *
-from qnet.dialects import qnet, func
+from qnet.dialects import qnet
 
 
 if __name__ == '__main__':
@@ -11,10 +11,9 @@ if __name__ == '__main__':
         # And we start inserting things on the body of the module
         with InsertionPoint(m.body):
             # We create the type of the function to append: void -> void
-            none_type = NoneType.get(ctx)
-            func_type = FunctionType.get(inputs=[none_type], results=[none_type])
+            func_type = FunctionType.get(inputs=[], results=[])
             # And we create it with a name and the type
-            function = func.FuncOp(
+            function = qnet.QoalaFunc(
                 name="test",
                 type=func_type,
             )
@@ -25,5 +24,6 @@ if __name__ == '__main__':
                 # Here we create the operations we actually want ot insert
                 qubit = qnet.NewQubitOp().qout
                 op = qnet.HadamardOp(qubit)
+                qnet.QoalaReturn([])
         # Before closing the context, we print the ASM we just created
         print(m)

@@ -137,8 +137,13 @@ ImmediateQIntOrExpression = QoalaIntegerOrExpression | int
 # FIXME - In the meantime, we will model arrays as if they were
 #         values. We might want to reconsider this decision in
 #         the future.
+_Qoala_Base_Type = TypeVar("_Qoala_Base_Type")
+_Native_Base_Type = TypeVar("_Native_Base_Type")
+
+
 @dataclass(init=False)
-class QoalaArray(QoalaValue[QoalaExpression], Generic[_T]):
+class QoalaArray(QoalaValue[QoalaExpression], Generic[_Qoala_Base_Type, _Native_Base_Type]):
+    qoala_type: Type
     base_type: Type
     base_size: int
     length: int
@@ -154,13 +159,18 @@ class QoalaArray(QoalaValue[QoalaExpression], Generic[_T]):
         super().__init__()
         self.members = []
         self.base_type = base_type
+        self.qoala_type = QoalaInteger if base_type == int else QoalaFloat
         self.base_size = base_size
         if len(elements) > 0:
             self.length = 0
             for element in elements:
                 assert isinstance(element, base_type) or isinstance(element, QoalaExpression)
                 if isinstance(element, QoalaExpression):
-                    self.members.append(element)
+                    if not element.can_evaluate_to(self.qoala_type):
+                        raise UnknownTypeError(f"The element '{element}' cannot "
+                                               f"evaluate to type '{self.qoala_type}'")
+                    else:
+                        self.members.append(element)
                 elif isinstance(element, base_type):
                     match self.base_type.__name__:
                         case "int":
@@ -179,7 +189,7 @@ class QoalaArray(QoalaValue[QoalaExpression], Generic[_T]):
             self.length = length
         QoalaProgram.add_to_body(self)
 
-    def store(self, new_element: QoalaExpression | _T) -> QoalaStatement:
+    def store(self, new_element: QoalaExpression | _Native_Base_Type) -> QoalaStatement:
         if isinstance(new_element, self.base_type):
             to_add = QoalaNumericValue.from_immediate(new_element)
         else:
@@ -203,17 +213,21 @@ class QoalaArray(QoalaValue[QoalaExpression], Generic[_T]):
             from qoala.ast.operations.arrays import CastToIndex
             casted_index = QoalaOperation._create_expression_for_op(CastToIndex, item_index)
             index_operand = casted_index
-        from qoala.ast.operations.arrays import GetItem
-        return QoalaOperation._create_expression_for_op(GetItem, self, index_operand)
+        from qoala.ast.qubit import QoalaRemoteQubit
+        if _Qoala_Base_Type == QoalaRemoteQubit:
+            from qoala.ast.operations.arrays import GetQItem
+            return QoalaOperation._create_expression_for_op(GetQItem, self, index_operand)
+        else:
+            from qoala.ast.operations.arrays import GetItem
+            return QoalaOperation._create_expression_for_op(GetItem, self, index_operand)
 
     def can_evaluate_to(self, cls):
-        if cls == QoalaArray:
-            return True
-        else:
-            return False
+        return cls == QoalaArray
+
+    def members_can_evaluate_to(self, cls):
+        return cls == self.qoala_type
 
     def to_ir(self, ctx: Context):
-        # TODO - Implement the HIR representation for arrays - tensor or vector?
         elements = [element.ir for element in self.members]
         if self.base_type is int:
             hir_base_type = i32()
@@ -221,7 +235,7 @@ class QoalaArray(QoalaValue[QoalaExpression], Generic[_T]):
             hir_base_type = f32()
         else:
             raise UnknownTypeError(f"Base type '{self.base_type.__name__}' for arrays is not supported")
-        result_type = tensor.RankedTensorType.get([self.length], hir_base_type)
+        result_type = tensor.RankedTensorType.get(shape=[self.length], element_type=hir_base_type)
         self.ir = tensor.from_elements(elements=elements, result=result_type)
         return self.ir
 
