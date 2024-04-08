@@ -282,6 +282,6 @@ class Entangle(_QubitArray, Qubit):
         # Nothing to do here
         pass
 
-    def __getitem__(self, item: int | QoalaExpression) -> Qubit:
+    def __getitem__(self, item: int | QoalaIntegerType | QoalaExpression) -> Qubit:
         # Nothing to do here
         pass

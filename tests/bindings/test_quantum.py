@@ -282,18 +282,21 @@ class TestQoalaQnetPythonBindingsQuantum:
         expected_asm = """module {
   qnet.func @quantum_entanglement_program_b() {
     qnet.remote @Bob
-    %0 = qnet.eprs  {N = 3 : i32, remote = @Bob} : tensor<3x!qnet.qubit>
+    %0 = qnet.eprs  {remote = @Bob} : !qnet.qubit
+    %1 = qnet.eprs  {remote = @Bob} : !qnet.qubit
+    %2 = qnet.eprs  {remote = @Bob} : !qnet.qubit
+    %from_elements = tensor.from_elements %0, %1, %2 : tensor<3x!qnet.qubit>
     %c2 = arith.constant 2 : index
-    %extracted = tensor.extract %0[%c2] : tensor<3x!qnet.qubit>
-    %1 = qnet.recv_floats  {remote = @Bob} : tensor<2xf32>
-    %c0 = arith.constant 0 : index
-    %extracted_0 = tensor.extract %1[%c0] : tensor<2xf32>
-    %2 = qnet.rot_x %extracted, %extracted_0 : !qnet.qubit
+    %extracted = tensor.extract %from_elements[%c2] : tensor<3x!qnet.qubit>
     %3 = qnet.recv_floats  {remote = @Bob} : tensor<2xf32>
+    %c0 = arith.constant 0 : index
+    %extracted_0 = tensor.extract %3[%c0] : tensor<2xf32>
+    %4 = qnet.rot_x %extracted, %extracted_0 : !qnet.qubit
+    %5 = qnet.recv_floats  {remote = @Bob} : tensor<2xf32>
     %c1 = arith.constant 1 : index
-    %extracted_1 = tensor.extract %3[%c1] : tensor<2xf32>
-    %4 = qnet.rot_y %2, %extracted_1 : !qnet.qubit
-    %5 = qnet.measure %4 : i1
+    %extracted_1 = tensor.extract %5[%c1] : tensor<2xf32>
+    %6 = qnet.rot_y %4, %extracted_1 : !qnet.qubit
+    %7 = qnet.measure %6 : i1
     qnet.return
   }
 }
