@@ -97,6 +97,17 @@ def quantum_entanglement_program_b():
     m = q.measure()
 
 
+@QoalaProgram
+def quantum_entanglement_program_c():
+    q = Entangle("Bob", 3)
+    t1 = recv_floats("Bob", 2)
+    q[2].rot_X(angle=t1[0])
+    q[2].rot_Y(angle=t1[1])
+    m = q[2].measure()
+    t2 = recv_ints("Bob", 5)
+    q[t2[4]].H()
+
+
 class TestQoalaQnetPythonBindingsQuantum:
     def test_complex_program_to_qoala_qnet(self):
         with pytest.raises(NotYetCompiledError) as ex:
@@ -301,4 +312,51 @@ class TestQoalaQnetPythonBindingsQuantum:
   }
 }
 """
+        assert str(module.asm) == expected_asm
+
+    def test_entanglement_program_c_to_qoala_qnet(self):
+        with pytest.raises(NotYetCompiledError) as ex:
+            _, _ = quantum_entanglement_program_c.module
+        assert str(ex.value) == "The program has not been compiled yet. Did you invoke 'compile()' on it?"
+        _, module = quantum_entanglement_program_c.compile()
+        assert isinstance(module, QoalaModule)
+        # NOTE - All the qubit operations performed on a qubit modify the internal state of the qubit,
+        #        as seen from the SDK side of the compiler. However, the semantics of the generated MLIR
+        #        is a bit different. Since MLIR follows a Single Static Assignment (SSA) approach, an
+        #        operation _cannot_ modify the state of a registry, but rather _returns_ the modified
+        #        value, so it can be assigned to a new registry.
+        #        Being this said, successive operations applied on the same qubit (as depicted in the
+        #        code tested in this case) _MUST_ operate on the "updated" value of the qubit.
+        expected_asm = """module {
+  qnet.func @quantum_entanglement_program_c() {
+    qnet.remote @Bob
+    %0 = qnet.eprs  {remote = @Bob} : !qnet.qubit
+    %1 = qnet.eprs  {remote = @Bob} : !qnet.qubit
+    %2 = qnet.eprs  {remote = @Bob} : !qnet.qubit
+    %from_elements = tensor.from_elements %0, %1, %2 : tensor<3x!qnet.qubit>
+    %3 = qnet.recv_floats  {remote = @Bob} : tensor<2xf32>
+    %c2 = arith.constant 2 : index
+    %extracted = tensor.extract %from_elements[%c2] : tensor<3x!qnet.qubit>
+    %c0 = arith.constant 0 : index
+    %extracted_0 = tensor.extract %3[%c0] : tensor<2xf32>
+    %4 = qnet.rot_x %extracted, %extracted_0 : !qnet.qubit
+    %c2_1 = arith.constant 2 : index
+    %extracted_2 = tensor.extract %from_elements[%c2_1] : tensor<3x!qnet.qubit>
+    %c1 = arith.constant 1 : index
+    %extracted_3 = tensor.extract %3[%c1] : tensor<2xf32>
+    %5 = qnet.rot_y %extracted_2, %extracted_3 : !qnet.qubit
+    %c2_4 = arith.constant 2 : index
+    %extracted_5 = tensor.extract %from_elements[%c2_4] : tensor<3x!qnet.qubit>
+    %6 = qnet.measure %extracted_5 : i1
+    %7 = qnet.recv_ints  {remote = @Bob} : tensor<5xi32>
+    %c4 = arith.constant 4 : index
+    %extracted_6 = tensor.extract %7[%c4] : tensor<5xi32>
+    %8 = arith.index_cast %extracted_6 : i32 to index
+    %extracted_7 = tensor.extract %from_elements[%8] : tensor<3x!qnet.qubit>
+    %9 = qnet.hadamard %extracted_7 : !qnet.qubit
+    qnet.return
+  }
+}
+"""
+        print(module.asm)
         assert str(module.asm) == expected_asm

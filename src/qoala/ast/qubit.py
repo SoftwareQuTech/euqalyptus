@@ -302,7 +302,8 @@ class QoalaMultiEprs(QoalaExpression):
         if isinstance(item_index, int):
             index_operand = QoalaNumericValue.from_immediate(item_index, is_index=True)
         else:
-            # The index is already a qoala expression, which can evaluate either to a float or int
+            # The index is already a qoala expression, whose value can ONLY be known at runtime
+            # This expression can evaluate either to a float or int
             # If it evaluates to an int, we need to cast it to an integer
             if not item_index.can_evaluate_to(QoalaInteger):
                 raise OperandMismatchError(f"The index operand '{item_index}' cannot evaluate to an integer, "

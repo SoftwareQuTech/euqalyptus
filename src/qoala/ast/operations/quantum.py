@@ -163,7 +163,7 @@ class HGate(QoalaOperation):
             return False
 
     def to_ir(self, ctx: Context):
-        self.ir = qnet.hadamard(self.qubit)
+        self.ir = qnet.hadamard(self.qubit.ir)
         return self.ir
 
 
