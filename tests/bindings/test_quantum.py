@@ -79,7 +79,7 @@ def classical_send_immediates_and_array_of_values():
 
 @QoalaProgram
 def quantum_entanglement_program():
-    q = Entangle("Bob", 1)[0]
+    q = Entangle("Bob")
     t1 = recv_int("Bob")
     q.rot_X(t1)
     t2 = recv_int("Bob")
@@ -238,27 +238,25 @@ class TestQoalaQnetPythonBindingsQuantum:
         expected_asm = """module {
   qnet.func @quantum_entanglement_program() {
     qnet.remote @Bob
-    %0 = qnet.eprs  {N = 1 : i32, remote = @Bob} : tensor<1x!qnet.qubit>
-    %c0 = arith.constant 0 : index
-    %extracted = tensor.extract %0[%c0] : tensor<1x!qnet.qubit>
+    %0 = qnet.eprs  {remote = @Bob} : !qnet.qubit
     %1 = qnet.recv_ints  {remote = @Bob} : tensor<1xi32>
-    %c0_0 = arith.constant 0 : index
-    %extracted_1 = tensor.extract %1[%c0_0] : tensor<1xi32>
+    %c0 = arith.constant 0 : index
+    %extracted = tensor.extract %1[%c0] : tensor<1xi32>
     %cst = arith.constant 0.000000e+00 : f32
-    %cst_2 = arith.constant 3.14159274 : f32
-    %2 = arith.uitofp %extracted_1 : i32 to f32
-    %3 = arith.mulf %2, %cst_2 : f32
+    %cst_0 = arith.constant 3.14159274 : f32
+    %2 = arith.uitofp %extracted : i32 to f32
+    %3 = arith.mulf %2, %cst_0 : f32
     %4 = math.exp2 %cst : f32
     %5 = arith.divf %3, %4 : f32
-    %6 = qnet.rot_x %extracted, %5 : !qnet.qubit
+    %6 = qnet.rot_x %0, %5 : !qnet.qubit
     %7 = qnet.recv_ints  {remote = @Bob} : tensor<1xi32>
-    %c0_3 = arith.constant 0 : index
-    %extracted_4 = tensor.extract %7[%c0_3] : tensor<1xi32>
-    %cst_5 = arith.constant 0.000000e+00 : f32
-    %cst_6 = arith.constant 3.14159274 : f32
-    %8 = arith.uitofp %extracted_4 : i32 to f32
-    %9 = arith.mulf %8, %cst_6 : f32
-    %10 = math.exp2 %cst_5 : f32
+    %c0_1 = arith.constant 0 : index
+    %extracted_2 = tensor.extract %7[%c0_1] : tensor<1xi32>
+    %cst_3 = arith.constant 0.000000e+00 : f32
+    %cst_4 = arith.constant 3.14159274 : f32
+    %8 = arith.uitofp %extracted_2 : i32 to f32
+    %9 = arith.mulf %8, %cst_4 : f32
+    %10 = math.exp2 %cst_3 : f32
     %11 = arith.divf %9, %10 : f32
     %12 = qnet.rot_y %6, %11 : !qnet.qubit
     %13 = qnet.measure %12 : i1

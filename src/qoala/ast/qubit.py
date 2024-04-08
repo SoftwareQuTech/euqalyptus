@@ -237,24 +237,42 @@ class QoalaLocalQubit(QbitBaseOperations):
         QoalaProgram.add_to_body(self)
 
     def can_evaluate_to(self, cls):
-        if cls == QoalaQubit:
-            return True
-        else:
-            return False
+        return cls == QoalaQubit
 
     def to_ir(self, ctx: Context):
         self.ir = qnet.new_qubit()
         return self.ir
 
 
+# This class represents a "remote" qubit, i.e. an entangled qubit
+# It behaves like a single qubit, so you can perform any "traditional"
+# operations on this qubit
 @dataclass(init=False)
-class QoalaRemoteQubit(QoalaLocalQubit):
-    # Is there any difference between a local and an "entangled" local qubit?
-    pass
+class QoalaSingleEprs(QbitBaseOperations):
+    remote_name: str
+    remote: QoalaOperation
+
+    def __init__(self, name: str):
+        super().__init__()
+        self.remote_name = name
+        # Before using the remote, it needs to be declared
+        from qoala.ast.operations.quantum import DeclareRemote
+        self.remote = DeclareRemote(self.remote_name)
+        QoalaProgram.add_to_body(self)
+
+    def can_evaluate_to(self, cls):
+        return cls == QoalaQubit
+
+    def to_ir(self, ctx: Context):
+        self.ir = qnet.eprs(remote=self.remote_name)
+        return self.ir
 
 
+# This class represents a SET of "remote" qubits, i.e. a set of
+# entangled qubit. This class behaves like an array of qubits, so
+# you can perform any "traditional" array operations on this structure
 @dataclass(init=False)
-class QoalaEprs(QoalaArray[QoalaQubit, int]):
+class QoalaMultiEprs(QoalaArray[QoalaQubit, int]):
     num_pairs: int
     remote_name: str
     remote: QoalaOperation
@@ -292,4 +310,3 @@ class QoalaEprs(QoalaArray[QoalaQubit, int]):
     def to_ir(self, ctx: Context):
         self.ir = qnet.EprsOp(remote=self.remote_name)
         return self.ir
-

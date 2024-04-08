@@ -213,8 +213,8 @@ class QoalaArray(QoalaValue[QoalaExpression], Generic[_Qoala_Base_Type, _Native_
             from qoala.ast.operations.arrays import CastToIndex
             casted_index = QoalaOperation._create_expression_for_op(CastToIndex, item_index)
             index_operand = casted_index
-        from qoala.ast.qubit import QoalaRemoteQubit
-        if _Qoala_Base_Type == QoalaRemoteQubit:
+        # TODO - How to differentiate this case?
+        if False:
             from qoala.ast.operations.arrays import GetQItem
             return QoalaOperation._create_expression_for_op(GetQItem, self, index_operand)
         else:

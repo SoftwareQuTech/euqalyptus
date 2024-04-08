@@ -2,7 +2,7 @@ from abc import ABC
 from typing import Optional, Self
 
 from qoala.ast import QoalaExpression
-from qoala.ast.qubit import QoalaLocalQubit, QoalaEprs
+from qoala.ast.qubit import QoalaLocalQubit, QoalaSingleEprs, QoalaMultiEprs
 from qoala.ast.value import QoalaBit
 from qoala.types.classical.arrays import _Array
 from qoala.types.classical.floats import QoalaFloatingPointType
@@ -266,14 +266,19 @@ class _QubitArray(_Array[Qubit, int]):
     pass
 
 
-class Entangle(_QubitArray):
+# Depending on the number of entangled qubits ("n" argument), this
+# class behaves like
+class Entangle(_QubitArray, Qubit):
     """
     Represents a local set of qubits used for quantum entanglement with a remote host.
     """
-    def __new__(cls, name: str, n: int | QoalaExpression):
-        return QoalaEprs(name, n)
+    def __new__(cls, name: str, n: int | QoalaExpression = 1):
+        if n == 1:
+            return QoalaSingleEprs(name)
+        else:
+            return QoalaMultiEprs(name, n)
 
-    def __init__(self, name: str, num: int | QoalaExpression):
+    def __init__(self, name: str, num: int | QoalaExpression = 1):
         # Nothing to do here
         pass
 
