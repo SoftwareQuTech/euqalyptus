@@ -38,7 +38,7 @@ class QubitMeasure(QoalaOperation):
 
     def to_ir(self, ctx: Context):
         # TODO - Do we need tomake a difference between "qnet.measure" and "qnet.eprs_measure"??
-        self.ir = qnet.measure(qin0=self.qubit.ir)
+        self.ir = qnet.measure(qin=self.qubit.ir)
         return self.ir
 
 

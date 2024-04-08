@@ -290,9 +290,6 @@ class QoalaEprs(QoalaArray[QoalaQubit, int]):
         return cls == QoalaQubit
 
     def to_ir(self, ctx: Context):
-        # Creating a qubit type requires passing the mlir context object
-        ty = QubitType.get(ctx)
-        tensor_shape = tensor.RankedTensorType.get(shape=[self.num_pairs], element_type=ty)
-        self.ir = qnet.EprsOp(qout=tensor_shape, N=self.num_pairs, remote=self.remote_name)
+        self.ir = qnet.EprsOp(remote=self.remote_name)
         return self.ir
 
