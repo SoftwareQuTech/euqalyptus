@@ -7,10 +7,10 @@ from qnet.ir import Context
 
 from qoala import QoalaProgram
 from qoala.ast import QoalaExpression
-from qoala.ast.errors import WrongEvaluationTypeError
 from qoala.ast.operations import with_arith_operators
 from qoala.ast.operations.casts import IntToFloat
 from qoala.ast.value import QoalaInteger, QoalaFloat
+from qoala.errors import WrongEvaluationTypeError
 
 
 @dataclass(init=False)

@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from typing import List
 
-from qnet.dialects import qnet, func
+from qnet.dialects import qnet
 from qnet.ir import *
 
 from qoala.ast import QoalaASTElement

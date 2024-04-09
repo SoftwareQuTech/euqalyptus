@@ -1,10 +1,10 @@
 from abc import ABC
-from typing import Optional, Self
+from typing import Optional, Self, Tuple
 
-from qoala.ast import QoalaExpression
-from qoala.ast.qubit import QoalaLocalQubit, QoalaSingleEprs, QoalaMultiEprs
+from qoala import QoalaProgram
+from qoala.ast.qubit import QoalaLocalQubit, QoalaEprs
 from qoala.ast.value import QoalaBit
-from qoala.types.classical.arrays import _Array
+from qoala.errors import UnknownRemoteError
 from qoala.types.classical.floats import QoalaFloatingPointType
 from qoala.types.classical.integer import QoalaIntegerType
 from qoala.types.quantum import QoalaQuantumType
@@ -262,26 +262,25 @@ class LocalQubit(Qubit):
         pass
 
 
-class _QubitArray(_Array[Qubit, int]):
-    pass
-
-
 # Depending on the number of entangled qubits ("n" argument), this
 # class behaves like
-class Entangle(_QubitArray, Qubit):
+class EntangledQubit(Qubit):
     """
-    Represents a local set of qubits used for quantum entanglement with a remote host.
+    Represents a local qubit use for quantum entanglement with a remote host.
     """
-    def __new__(cls, name: str, n: int | QoalaExpression = 1):
-        if n == 1:
-            return QoalaSingleEprs(name)
-        else:
-            return QoalaMultiEprs(name, n)
+    def __new__(cls, name: str):
+        return QoalaEprs(name)
 
-    def __init__(self, name: str, num: int | QoalaExpression = 1):
+    def __init__(self, name: str):
         # Nothing to do here
         pass
 
-    def __getitem__(self, item: int | QoalaIntegerType | QoalaExpression) -> Qubit:
-        # Nothing to do here
-        pass
+
+def Entangle(name: str, n: int = 1) -> EntangledQubit | Tuple[EntangledQubit, ...]:
+    if QoalaProgram.get_declared_remote(name) is None:
+        raise UnknownRemoteError(name)
+    if n == 1:
+        return EntangledQubit(name)
+    else:
+        # We return a tuple of EntangledQubits, declaring the remote ONLY for the first
+        return tuple(EntangledQubit(name) for i in range(0, n))

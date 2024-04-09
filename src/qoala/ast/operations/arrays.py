@@ -5,10 +5,9 @@ import qnet.dialects.tensor as tensor
 from qnet.ir import Context
 
 from qoala import QoalaProgram
-from qoala.ast.errors import OperationNotYetImplementedError
 from qoala.ast.operations import QoalaOperation, with_arith_operators
-from qoala.ast.qubit import QoalaQubit, QoalaMultiEprs, QoalaSingleEprs
 from qoala.ast.value import QoalaExpression, QoalaInteger, QoalaArray
+from qoala.errors import OperationNotYetImplementedError
 from qoala.utils.binding_types import index
 
 
@@ -52,29 +51,6 @@ class GetItem(QoalaOperation):
 
     def to_ir(self, ctx: Context):
         self.ir = tensor.extract(tensor=self.base_array.ir, indices=[self.index.ir])
-        return self.ir
-
-
-@dataclass(init=False)
-class GetQItem(QoalaSingleEprs):
-    eprs_set: QoalaMultiEprs
-    index: QoalaExpression
-
-    def __init__(self, *operands: QoalaExpression):
-        assert len(operands) == 2
-        assert isinstance(operands[0], QoalaMultiEprs)
-        self.eprs_set: QoalaMultiEprs = operands[0]
-        self.index: QoalaExpression = operands[1]
-        # This operation does not need to be added to the body of the program, since
-        # it is only useful for the internals of the frontend to identify the
-        # specific remote qubit on the
-        super().__init__(self.eprs_set.remote_name, declare_remote=False)
-
-    def can_evaluate_to(self, cls):
-        return cls == QoalaQubit
-
-    def to_ir(self, ctx: Context):
-        self.ir = tensor.extract(tensor=self.eprs_set.ir, indices=[self.index.ir])
         return self.ir
 
 

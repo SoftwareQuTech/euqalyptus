@@ -1,3 +1,8 @@
+class UnknownRemoteError(RuntimeError):
+    def __init__(self, name: str):
+        super().__init__(f"Unkown remote with name '{name}'. "
+                         f"Please make sure it was declared using 'Remote'")
+
 class QoalaCompilerError(RuntimeError):
     pass
 

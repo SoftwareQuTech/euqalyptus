@@ -4,7 +4,7 @@ from qoala import QoalaProgram, QoalaModule, NotYetCompiledError
 from qoala.types.classical.floats import Float
 from qoala.types.classical.integer import Int
 from qoala.types.classical.arrays import IntArray, FloatArray
-from qoala.types.quantum.qubit import LocalQubit, Entangle
+from qoala.types.quantum.qubit import LocalQubit, Entangle, EntangledQubit
 from qoala.operations import Remote
 from qoala.operations.quantum import recv_int, recv_ints, recv_floats, send_floats, send_ints
 
@@ -79,6 +79,7 @@ def classical_send_immediates_and_array_of_values():
 
 @QoalaProgram
 def quantum_entanglement_program():
+    Remote("Bob")
     q = Entangle("Bob")
     t1 = recv_int("Bob")
     q.rot_X(t1)
@@ -89,6 +90,7 @@ def quantum_entanglement_program():
 
 @QoalaProgram
 def quantum_entanglement_program_b():
+    Remote("Bob")
     q0, q1, q2 = Entangle("Bob", 3)
     t1 = recv_floats("Bob", 2)
     q2.rot_X(angle=t1[0])
@@ -99,6 +101,7 @@ def quantum_entanglement_program_b():
 
 @QoalaProgram
 def quantum_entanglement_program_c():
+    Remote("Bob")
     q = Entangle("Bob", 3)
     t1 = recv_floats("Bob", 2)
     # We access the entangled qubits as if they were an array
@@ -358,5 +361,4 @@ class TestQoalaQnetPythonBindingsQuantum:
   }
 }
 """
-        print(module.asm)
         assert str(module.asm) == expected_asm

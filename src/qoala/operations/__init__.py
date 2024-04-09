@@ -1,9 +1,14 @@
-from qoala.ast.operations.quantum import DeclareRemote
+from qoala import QoalaProgram
+from qoala.ast.operations.quantum import DeclaredRemote
 
 
 class Remote:
     def __new__(cls, name: str, *args, **kwargs):
-        return DeclareRemote(remote_name=name)
+        remote = QoalaProgram.get_declared_remote(name)
+        if remote is not None:
+            return remote
+        else:
+            return DeclaredRemote(remote_name=name)
 
     def __init__(self, name: str):
         # Nothing to do here

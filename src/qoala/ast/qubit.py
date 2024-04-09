@@ -1,20 +1,16 @@
 import math
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
-from typing import List, Self
+from typing import Self
 
 import qnet.dialects.qnet as qnet
-import qnet.dialects.tensor as tensor
-from qnet.dialects.qnet import QubitType
 from qnet.ir import Context
 
 from qoala import QoalaProgram
 from qoala.ast import QoalaExpression
-from qoala.ast.errors import OperandMismatchError
 from qoala.ast.operations import QoalaOperation
 from qoala.ast.operations.numeric import Pow2, Divide, Multiply
 from qoala.ast.value import (
-    QoalaInteger,
     QoalaNumericValue,
     ImmediateQIntOrExpression,
     ImmediateQFloatOrExpression,
@@ -247,17 +243,13 @@ class QoalaLocalQubit(QbitBaseOperations):
 # It behaves like a single qubit, so you can perform any "traditional"
 # operations on this qubit
 @dataclass(init=False)
-class QoalaSingleEprs(QbitBaseOperations):
+class QoalaEprs(QbitBaseOperations):
     remote_name: str
-    remote: QoalaOperation
 
-    def __init__(self, name: str, declare_remote: bool = True):
+    def __init__(self, name: str):
         super().__init__()
+        # We assume the remote was declared before using the name (symbol)
         self.remote_name = name
-        if declare_remote:
-            # Before using the remote, it needs to be declared
-            from qoala.ast.operations.quantum import DeclareRemote
-            self.remote = DeclareRemote(self.remote_name)
         QoalaProgram.add_to_body(self)
 
     def can_evaluate_to(self, cls):
@@ -265,62 +257,4 @@ class QoalaSingleEprs(QbitBaseOperations):
 
     def to_ir(self, ctx: Context):
         self.ir = qnet.eprs(remote=self.remote_name)
-        return self.ir
-
-
-# This class represents a SET of "remote" qubits, i.e. a set of
-# entangled qubit. This class behaves like an array of qubits, so
-# you can perform any "traditional" array operations on this structure
-@dataclass(init=False)
-class QoalaMultiEprs(QoalaExpression):
-    num_pairs: int
-    remote_name: str
-    remote_qubits: List[QoalaSingleEprs]
-    remote: QoalaOperation
-
-    def __init__(self, name: str, n: int):
-        super().__init__()
-        self.remote_name = name
-        self.num_pairs = n
-        self.remote_qubits = []
-        # Before using the remote, it needs to be declared
-        from qoala.ast.operations.quantum import DeclareRemote
-        self.remote = DeclareRemote(self.remote_name)
-        for i in range(0, n):
-            remote_qubit = QoalaSingleEprs(name, declare_remote=False)
-            self.remote_qubits.append(remote_qubit)
-        QoalaProgram.add_to_body(self)
-
-    # Special case since EPRS qubits behave like arrays, we need a way to access the entangled qubits
-    # WARNING - The value of the index might no tbe known until runtime! This is the main reason why
-    # we let this operation create a tensor with the allocated qubits.
-    # This is due to the fact that the index can either be an immediate (pyton immediate or qoala immediate)
-    # OR an expression. In the latter case, we cannot evaluate at compile time the value, so we need
-    # to defer this to runtime. To cope with this issue, we place all the values in a tensor, and
-    # access the right element only at runtime (see "to_ir" of GetQItem)
-    def __getitem__(self, item_index: ImmediateQIntOrExpression) -> QoalaExpression:
-        if isinstance(item_index, int):
-            index_operand = QoalaNumericValue.from_immediate(item_index, is_index=True)
-        else:
-            # The index is already a qoala expression, whose value can ONLY be known at runtime
-            # This expression can evaluate either to a float or int
-            # If it evaluates to an int, we need to cast it to an integer
-            if not item_index.can_evaluate_to(QoalaInteger):
-                raise OperandMismatchError(f"The index operand '{item_index}' cannot evaluate to an integer, "
-                                           f"hence it cannot be used index an array.")
-            from qoala.ast.operations.arrays import CastToIndex
-            casted_index = QoalaOperation._create_expression_for_op(CastToIndex, item_index)
-            index_operand = casted_index
-        from qoala.ast.operations.arrays import GetQItem
-        return QoalaOperation._create_expression_for_op(GetQItem, self, index_operand)
-
-    # Functions for generating IR
-    def can_evaluate_to(self, cls) -> bool:
-        raise RuntimeError("QoalaMultiEprs cannot be evaluated - Should never happen")
-
-    def to_ir(self, ctx: Context):
-        elements = [value.ir for value in self.remote_qubits]
-        ty = QubitType.get(ctx)
-        tensor_shape = tensor.RankedTensorType.get(shape=[self.num_pairs], element_type=ty)
-        self.ir = tensor.from_elements(elements=elements, result=tensor_shape)
         return self.ir
