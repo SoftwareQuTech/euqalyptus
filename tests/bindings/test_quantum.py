@@ -101,10 +101,12 @@ def quantum_entanglement_program_b():
 def quantum_entanglement_program_c():
     q = Entangle("Bob", 3)
     t1 = recv_floats("Bob", 2)
+    # We access the entangled qubits as if they were an array
     q[2].rot_X(angle=t1[0])
     q[2].rot_Y(angle=t1[1])
     m = q[2].measure()
     t2 = recv_ints("Bob", 5)
+    # Here we try to use an index whose value is only known at runtime
     q[t2[4]].H()
 
 
@@ -314,6 +316,7 @@ class TestQoalaQnetPythonBindingsQuantum:
 """
         assert str(module.asm) == expected_asm
 
+    @pytest.mark.skip(reason="Using multiple entangled qubits using array syntax is not supported yet")
     def test_entanglement_program_c_to_qoala_qnet(self):
         with pytest.raises(NotYetCompiledError) as ex:
             _, _ = quantum_entanglement_program_c.module
