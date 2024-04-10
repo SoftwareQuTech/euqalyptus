@@ -9,10 +9,8 @@ from qoala.ast.operations.quantum import (
     ZGate,
     TGate,
     HGate,
-    KGate,
     SGate,
     QubitMeasure,
-    QubitReset,
     RotateX,
     RotateY,
     RotateZ,
@@ -74,11 +72,9 @@ def program_local_qubit_with_simple_gates():
     qubit.Z()
     qubit.T()
     qubit.H()
-    qubit.K()
     qubit.S()
 
     measurement = qubit.measure()
-    qubit.reset()
 
 
 @QoalaProgram
@@ -187,7 +183,7 @@ class TestQoalaDecorator:
     def test_quantum_program_with_simple_gates(self):
         program_local_qubit_with_simple_gates.compile()
 
-        assert len(program_local_qubit_with_simple_gates._body) == 10
+        assert len(program_local_qubit_with_simple_gates._body) == 8
         assert isinstance(program_local_qubit_with_simple_gates._body[0], QoalaLocalQubit)
         assert isinstance(program_local_qubit_with_simple_gates._body[1], XGate)
         assert program_local_qubit_with_simple_gates._body[1].qubit is program_local_qubit_with_simple_gates._body[0]
@@ -199,12 +195,9 @@ class TestQoalaDecorator:
         assert program_local_qubit_with_simple_gates._body[4].qubit is program_local_qubit_with_simple_gates._body[0]
         assert isinstance(program_local_qubit_with_simple_gates._body[5], HGate)
         assert program_local_qubit_with_simple_gates._body[5].qubit is program_local_qubit_with_simple_gates._body[0]
-        assert isinstance(program_local_qubit_with_simple_gates._body[6], KGate)
+        assert isinstance(program_local_qubit_with_simple_gates._body[6], SGate)
         assert program_local_qubit_with_simple_gates._body[6].qubit is program_local_qubit_with_simple_gates._body[0]
-        assert isinstance(program_local_qubit_with_simple_gates._body[7], SGate)
-        assert program_local_qubit_with_simple_gates._body[7].qubit is program_local_qubit_with_simple_gates._body[0]
-        assert isinstance(program_local_qubit_with_simple_gates._body[8], QubitMeasure)
-        assert isinstance(program_local_qubit_with_simple_gates._body[9], QubitReset)
+        assert isinstance(program_local_qubit_with_simple_gates._body[7], QubitMeasure)
 
     def test_quantum_program_with_complex_gates(self):
         program_local_qubit_with_complex_gates.compile()

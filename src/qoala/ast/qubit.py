@@ -44,10 +44,6 @@ class QoalaQubit(QoalaExpression, ABC):
         pass
 
     @abstractmethod
-    def K(self) -> QoalaOperation:
-        pass
-
-    @abstractmethod
     def S(self) -> QoalaOperation:
         pass
 
@@ -84,10 +80,6 @@ class QoalaQubit(QoalaExpression, ABC):
 
     @abstractmethod
     def cphase(self, target: Self) -> QoalaOperation:
-        pass
-
-    @abstractmethod
-    def reset(self) -> QoalaOperation:
         pass
 
     @abstractmethod
@@ -171,10 +163,6 @@ class QbitBaseOperations(QoalaQubit, ABC):
         from qoala.ast.operations.quantum import HGate
         return QoalaOperation._create_expression_for_op(HGate, self)
 
-    def K(self) -> QoalaOperation:
-        from qoala.ast.operations.quantum import KGate
-        return QoalaOperation._create_expression_for_op(KGate, self)
-
     def S(self) -> QoalaOperation:
         from qoala.ast.operations.quantum import SGate
         return QoalaOperation._create_expression_for_op(SGate, self)
@@ -216,10 +204,6 @@ class QbitBaseOperations(QoalaQubit, ABC):
     def cphase(self, target: Self) -> QoalaOperation:
         from qoala.ast.operations.quantum import CPhaseGate
         return QoalaOperation._create_expression_for_op(CPhaseGate, target=target)
-
-    def reset(self) -> QoalaOperation:
-        from qoala.ast.operations.quantum import QubitReset
-        return QoalaOperation._create_expression_for_op(QubitReset, self)
 
     def free(self) -> QoalaOperation:
         # TODO - Implement

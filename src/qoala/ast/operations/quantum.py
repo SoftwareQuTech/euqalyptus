@@ -43,25 +43,6 @@ class QubitMeasure(QoalaOperation):
 
 
 @dataclass(init=False)
-class QubitReset(QoalaOperation, ABC):
-    qubit: QoalaQubit
-
-    def __init__(self, *operands: QoalaExpression):
-        super().__init__()
-        assert len(operands) == 1
-        assert isinstance(operands[0], QoalaQubit)
-        self.qubit = operands[0]
-        QoalaProgram.add_to_body(self)
-
-    def can_evaluate_to(self, cls):
-        # "void" operation; can always evaluate to anything
-        return True
-
-    def to_ir(self, ctx: Context):
-        raise OperationNotYetImplementedError(QubitReset.__name__)
-
-
-@dataclass(init=False)
 class XGate(QoalaOperation):
     qubit: QoalaQubit
 
@@ -165,27 +146,6 @@ class HGate(QoalaOperation):
     def to_ir(self, ctx: Context):
         self.ir = qnet.hadamard(self.qubit.ir)
         return self.ir
-
-
-@dataclass(init=False)
-class KGate(QoalaOperation):
-    qubit: QoalaQubit
-
-    def __init__(self, *operands: QoalaExpression):
-        super().__init__()
-        assert len(operands) == 1
-        assert isinstance(operands[0], QoalaQubit)
-        self.qubit = operands[0]
-        QoalaProgram.add_to_body(self)
-
-    def can_evaluate_to(self, cls):
-        if cls == QoalaQubit:
-            return True
-        else:
-            return False
-
-    def to_ir(self, ctx: Context):
-        raise OperationNotYetImplementedError(KGate.__name__)
 
 
 @dataclass(init=False)

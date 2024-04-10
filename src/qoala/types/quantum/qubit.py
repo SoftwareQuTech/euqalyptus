@@ -227,16 +227,6 @@ class Qubit(QoalaQuantumType, ABC):
         """
         ...
 
-    def reset(self) -> None:
-        r"""
-        Reset the qubit to the state \|0>.
-
-        Returns
-        -------
-        None
-        """
-        ...
-
     def free(self) -> None:
         """
         Free the qubit and its virtual ID.
