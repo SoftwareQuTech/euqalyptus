@@ -1,3 +1,4 @@
+import math
 from abc import ABC
 from dataclasses import dataclass
 from enum import Enum, auto
@@ -41,67 +42,6 @@ class QubitMeasure(_QubitBaseOperation):
     def to_ir(self, ctx: Context):
         self.ir = qnet.measure(qin=self.qubit.ir)
         return self.ir
-
-
-class XGate(_QubitBaseOperation):
-    def __init__(self, *operands: QoalaExpression):
-        assert len(operands) == 1
-        super().__init__(qubit=operands[0])
-        QoalaProgram.add_to_body(self)
-
-    def to_ir(self, ctx: Context):
-        raise OperationNotYetImplementedError(XGate.__name__)
-
-
-class YGate(_QubitBaseOperation):
-    def __init__(self, *operands: QoalaExpression):
-        assert len(operands) == 1
-        super().__init__(qubit=operands[0])
-        QoalaProgram.add_to_body(self)
-
-    def to_ir(self, ctx: Context):
-        raise OperationNotYetImplementedError(YGate.__name__)
-
-
-class ZGate(_QubitBaseOperation):
-    def __init__(self, *operands: QoalaExpression):
-        assert len(operands) == 1
-        super().__init__(qubit=operands[0])
-        QoalaProgram.add_to_body(self)
-
-    def to_ir(self, ctx: Context):
-        raise OperationNotYetImplementedError(ZGate.__name__)
-
-
-class TGate(_QubitBaseOperation):
-    def __init__(self, *operands: QoalaExpression):
-        assert len(operands) == 1
-        super().__init__(qubit=operands[0])
-        QoalaProgram.add_to_body(self)
-
-    def to_ir(self, ctx: Context):
-        raise OperationNotYetImplementedError(TGate.__name__)
-
-
-class HGate(_QubitBaseOperation):
-    def __init__(self, *operands: QoalaExpression):
-        assert len(operands) == 1
-        super().__init__(qubit=operands[0])
-        QoalaProgram.add_to_body(self)
-
-    def to_ir(self, ctx: Context):
-        self.ir = qnet.hadamard(self.qubit.ir)
-        return self.ir
-
-
-class SGate(_QubitBaseOperation):
-    def __init__(self, *operands: QoalaExpression):
-        assert len(operands) == 1
-        super().__init__(qubit=operands[0])
-        QoalaProgram.add_to_body(self)
-
-    def to_ir(self, ctx: Context):
-        raise OperationNotYetImplementedError(SGate.__name__)
 
 
 class RotateBaseAxis(Enum):
@@ -175,6 +115,67 @@ class RotateZ(Rotate):
         # We then register that the qubit has a "new" value
         self.qubit.ir = self.ir
         return self.ir
+
+
+class XGate(RotateX):
+    def __init__(self, *operands: QoalaExpression):
+        assert len(operands) == 1
+        rotation_angle = QoalaNumericValue.from_immediate(math.pi)
+        super().__init__(qubit=operands[0], angle=rotation_angle)
+
+    def to_ir(self, ctx: Context):
+        return super().to_ir(ctx)
+
+
+class YGate(_QubitBaseOperation):
+    def __init__(self, *operands: QoalaExpression):
+        assert len(operands) == 1
+        super().__init__(qubit=operands[0])
+        QoalaProgram.add_to_body(self)
+
+    def to_ir(self, ctx: Context):
+        raise OperationNotYetImplementedError(YGate.__name__)
+
+
+class ZGate(_QubitBaseOperation):
+    def __init__(self, *operands: QoalaExpression):
+        assert len(operands) == 1
+        super().__init__(qubit=operands[0])
+        QoalaProgram.add_to_body(self)
+
+    def to_ir(self, ctx: Context):
+        raise OperationNotYetImplementedError(ZGate.__name__)
+
+
+class TGate(_QubitBaseOperation):
+    def __init__(self, *operands: QoalaExpression):
+        assert len(operands) == 1
+        super().__init__(qubit=operands[0])
+        QoalaProgram.add_to_body(self)
+
+    def to_ir(self, ctx: Context):
+        raise OperationNotYetImplementedError(TGate.__name__)
+
+
+class HGate(_QubitBaseOperation):
+    def __init__(self, *operands: QoalaExpression):
+        assert len(operands) == 1
+        super().__init__(qubit=operands[0])
+        QoalaProgram.add_to_body(self)
+
+    def to_ir(self, ctx: Context):
+        self.ir = qnet.hadamard(self.qubit.ir)
+        return self.ir
+
+
+class SGate(_QubitBaseOperation):
+    def __init__(self, *operands: QoalaExpression):
+        assert len(operands) == 1
+        super().__init__(qubit=operands[0])
+        QoalaProgram.add_to_body(self)
+
+    def to_ir(self, ctx: Context):
+        raise OperationNotYetImplementedError(SGate.__name__)
 
 
 @dataclass(init=False)
