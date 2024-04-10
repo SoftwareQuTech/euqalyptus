@@ -12,7 +12,7 @@ from qoala.ast.operations import QoalaOperation
 from qoala.ast.operations.arrays import GetItem
 from qoala.ast.qubit import QoalaQubit
 from qoala.ast.value import (
-    QoalaExpression, QoalaFloatOrExpression, QoalaBit,
+    QoalaExpression, QoalaFloatOrExpression,
     QoalaInteger, QoalaFloat, QoalaArray, QoalaNumericValue
 )
 from qoala.errors import OperationNotYetImplementedError, UnknownTypeError, UnknownRemoteError
@@ -20,150 +20,85 @@ from qoala.utils.binding_types import i32, f32
 
 
 @dataclass(init=False)
-class QubitMeasure(QoalaOperation):
-    qubit: QoalaQubit
+class _QubitBaseOperation(QoalaOperation, ABC):
+    qubit: QoalaExpression
 
-    def __init__(self, *operands: QoalaExpression):
+    def __init__(self, qubit: QoalaExpression):
         super().__init__()
+        assert qubit.can_evaluate_to(QoalaQubit)
+        self.qubit = qubit
+
+    def can_evaluate_to(self, cls) -> bool:
+        return cls == QoalaQubit
+
+
+class QubitMeasure(_QubitBaseOperation):
+    def __init__(self, *operands: QoalaExpression):
         assert len(operands) == 1
-        assert isinstance(operands[0], QoalaQubit)
-        self.qubit = operands[0]
+        super().__init__(qubit=operands[0])
         QoalaProgram.add_to_body(self)
 
-    def can_evaluate_to(self, cls):
-        if cls == QoalaBit:
-            return True
-        else:
-            return False
-
     def to_ir(self, ctx: Context):
-        # TODO - Do we need tomake a difference between "qnet.measure" and "qnet.eprs_measure"??
         self.ir = qnet.measure(qin=self.qubit.ir)
         return self.ir
 
 
-@dataclass(init=False)
-class XGate(QoalaOperation):
-    qubit: QoalaQubit
-
+class XGate(_QubitBaseOperation):
     def __init__(self, *operands: QoalaExpression):
-        super().__init__()
         assert len(operands) == 1
-        assert isinstance(operands[0], QoalaQubit)
-        self.qubit = operands[0]
+        super().__init__(qubit=operands[0])
         QoalaProgram.add_to_body(self)
-
-    def can_evaluate_to(self, cls):
-        if cls == QoalaQubit:
-            return True
-        else:
-            return False
 
     def to_ir(self, ctx: Context):
         raise OperationNotYetImplementedError(XGate.__name__)
 
 
-@dataclass(init=False)
-class YGate(QoalaOperation):
-    qubit: QoalaQubit
-
+class YGate(_QubitBaseOperation):
     def __init__(self, *operands: QoalaExpression):
-        super().__init__()
         assert len(operands) == 1
-        assert isinstance(operands[0], QoalaQubit)
-        self.qubit = operands[0]
+        super().__init__(qubit=operands[0])
         QoalaProgram.add_to_body(self)
-
-    def can_evaluate_to(self, cls):
-        if cls == QoalaQubit:
-            return True
-        else:
-            return False
 
     def to_ir(self, ctx: Context):
         raise OperationNotYetImplementedError(YGate.__name__)
 
 
-@dataclass(init=False)
-class ZGate(QoalaOperation):
-    qubit: QoalaQubit
-
+class ZGate(_QubitBaseOperation):
     def __init__(self, *operands: QoalaExpression):
-        super().__init__()
         assert len(operands) == 1
-        assert isinstance(operands[0], QoalaQubit)
-        self.qubit = operands[0]
+        super().__init__(qubit=operands[0])
         QoalaProgram.add_to_body(self)
-
-    def can_evaluate_to(self, cls):
-        if cls == QoalaQubit:
-            return True
-        else:
-            return False
 
     def to_ir(self, ctx: Context):
         raise OperationNotYetImplementedError(ZGate.__name__)
 
 
-@dataclass(init=False)
-class TGate(QoalaOperation):
-    qubit: QoalaQubit
-
+class TGate(_QubitBaseOperation):
     def __init__(self, *operands: QoalaExpression):
-        super().__init__()
         assert len(operands) == 1
-        assert isinstance(operands[0], QoalaQubit)
-        self.qubit = operands[0]
+        super().__init__(qubit=operands[0])
         QoalaProgram.add_to_body(self)
-
-    def can_evaluate_to(self, cls):
-        if cls == QoalaQubit:
-            return True
-        else:
-            return False
 
     def to_ir(self, ctx: Context):
         raise OperationNotYetImplementedError(TGate.__name__)
 
 
-@dataclass(init=False)
-class HGate(QoalaOperation):
-    qubit: QoalaQubit
-
+class HGate(_QubitBaseOperation):
     def __init__(self, *operands: QoalaExpression):
-        super().__init__()
         assert len(operands) == 1
-        assert isinstance(operands[0], QoalaQubit)
-        self.qubit = operands[0]
+        super().__init__(qubit=operands[0])
         QoalaProgram.add_to_body(self)
-
-    def can_evaluate_to(self, cls):
-        if cls == QoalaQubit:
-            return True
-        else:
-            return False
 
     def to_ir(self, ctx: Context):
         self.ir = qnet.hadamard(self.qubit.ir)
         return self.ir
 
 
-@dataclass(init=False)
-class SGate(QoalaOperation):
-    qubit: QoalaQubit
-
+class SGate(_QubitBaseOperation):
     def __init__(self, *operands: QoalaExpression):
-        super().__init__()
         assert len(operands) == 1
-        assert isinstance(operands[0], QoalaQubit)
-        self.qubit = operands[0]
+        super().__init__(qubit=operands[0])
         QoalaProgram.add_to_body(self)
-
-    def can_evaluate_to(self, cls):
-        if cls == QoalaQubit:
-            return True
-        else:
-            return False
 
     def to_ir(self, ctx: Context):
         raise OperationNotYetImplementedError(SGate.__name__)
@@ -176,8 +111,7 @@ class RotateBaseAxis(Enum):
 
 
 @dataclass(init=False)
-class Rotate(QoalaOperation, ABC):
-    qubit: QoalaQubit
+class Rotate(_QubitBaseOperation, ABC):
     angle: QoalaFloatOrExpression
 
     def __init__(
@@ -186,10 +120,8 @@ class Rotate(QoalaOperation, ABC):
             angle: QoalaFloatOrExpression,
             axis: RotateBaseAxis
     ):
-        super().__init__()
+        super().__init__(qubit=qubit)
         # We assume the users of this class will pass _at least_ default values for all operands
-        assert isinstance(qubit, QoalaQubit)
-        self.qubit = qubit
         self.angle = angle
         QoalaProgram.add_to_body(self)
 
@@ -202,9 +134,6 @@ class RotateX(Rotate):
             angle: QoalaFloatOrExpression
     ):
         super().__init__(qubit=qubit, angle=angle, axis=RotateBaseAxis.X)
-
-    def can_evaluate_to(self, cls):
-        return cls == QoalaQubit
 
     def to_ir(self, ctx: Context):
         # We first add this operation to the program
@@ -223,9 +152,6 @@ class RotateY(Rotate):
     ):
         super().__init__(qubit=qubit, angle=angle, axis=RotateBaseAxis.Y)
 
-    def can_evaluate_to(self, cls):
-        return cls == QoalaQubit
-
     def to_ir(self, ctx: Context):
         # We first add this operation to the program
         self.ir = qnet.rot_y(qin=self.qubit.ir, angle=self.angle.ir)
@@ -243,9 +169,6 @@ class RotateZ(Rotate):
     ):
         super().__init__(qubit=qubit, angle=angle, axis=RotateBaseAxis.Z)
 
-    def can_evaluate_to(self, cls):
-        return cls == QoalaQubit
-
     def to_ir(self, ctx: Context):
         # We first add this operation to the program
         self.ir = qnet.rot_z(qin=self.qubit.ir, angle=self.angle.ir)
@@ -255,23 +178,14 @@ class RotateZ(Rotate):
 
 
 @dataclass(init=False)
-class CNotGate(QoalaOperation):
-    quibit: QoalaQubit
+class CNotGate(_QubitBaseOperation):
     target: QoalaQubit
 
     def __init__(self, qubit: QoalaExpression, target: QoalaExpression):
-        super().__init__()
-        assert isinstance(qubit, QoalaQubit)
-        assert isinstance(target, QoalaQubit)
+        super().__init__(qubit=qubit)
+        assert target.can_evaluate_to(QoalaQubit)
         self.target = target
-        self.qubit = qubit
         QoalaProgram.add_to_body(self)
-
-    def can_evaluate_to(self, cls):
-        if cls == QoalaQubit:
-            return True
-        else:
-            return False
 
     def to_ir(self, ctx: Context):
         # We first add this operation to the program
@@ -282,21 +196,10 @@ class CNotGate(QoalaOperation):
         return self.ir
 
 
-@dataclass(init=False)
-class CPhaseGate(QoalaOperation):
-    target: QoalaQubit
-
+class CPhaseGate(_QubitBaseOperation):
     def __init__(self, target: QoalaExpression):
-        super().__init__()
-        assert isinstance(target, QoalaQubit)
-        self.target = target
+        super().__init__(qubit=target)
         QoalaProgram.add_to_body(self)
-
-    def can_evaluate_to(self, cls):
-        if cls == QoalaQubit:
-            return True
-        else:
-            return False
 
     def to_ir(self, ctx: Context):
         raise OperationNotYetImplementedError(CPhaseGate.__name__)
