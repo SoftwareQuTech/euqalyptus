@@ -5,7 +5,7 @@ from typing import List, Type, TypeVar
 
 import qnet.dialects.qnet as qnet
 import qnet.dialects.tensor as tensor
-from qnet.ir import Context
+from qnet.ir import Context, IntegerAttr
 
 from qoala import QoalaProgram
 from qoala.ast.operations import QoalaOperation
@@ -398,10 +398,11 @@ class BaseRecvOp(QoalaArray[_Qoala_Base_Type, _Native_Base_Type]):
             if remote is None:
                 raise UnknownRemoteError(self.remote)
             remote_name = self.remote
+        lengthAttrribute = IntegerAttr.get(i32(), self.length)
         if self.base_type == int:
-            self.ir = qnet.recv_ints(remote=remote_name, cout=tensor_shape)
+            self.ir = qnet.recv_ints(remote=remote_name, cout=tensor_shape, length=lengthAttrribute)
         elif self.base_type == float:
-            self.ir = qnet.recv_floats(remote=remote_name, cout=tensor_shape)
+            self.ir = qnet.recv_floats(remote=remote_name, cout=tensor_shape, length=lengthAttrribute)
         else:
             raise UnknownTypeError(f"Cannot create recv operation for base type '{self.base_type}'")
         if self.length == 1:
