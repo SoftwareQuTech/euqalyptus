@@ -2,7 +2,7 @@ import math
 from abc import ABC
 from dataclasses import dataclass
 from enum import Enum, auto
-from typing import List, Type, TypeVar
+from typing import Generic, List, Type, TypeVar
 
 import qnet.dialects.qnet as qnet
 import qnet.dialects.tensor as tensor
@@ -117,34 +117,33 @@ class RotateZ(Rotate):
         return self.ir
 
 
-class XGate(RotateX):
-    def __init__(self, *operands: QoalaExpression):
-        assert len(operands) == 1
-        rotation_angle = QoalaNumericValue.from_immediate(math.pi)
-        super().__init__(qubit=operands[0], angle=rotation_angle)
+def templated_class(base_clazz):
+    def outer(clazz):
+        class _BaseEasyRotation(base_clazz):
+            def __init__(self, *operands: QoalaExpression):
+                assert len(operands) == 1
+                rotation_angle = QoalaNumericValue.from_immediate(math.pi)
+                super().__init__(qubit=operands[0], angle=rotation_angle)
 
-    def to_ir(self, ctx: Context):
-        return super().to_ir(ctx)
-
-
-class YGate(_QubitBaseOperation):
-    def __init__(self, *operands: QoalaExpression):
-        assert len(operands) == 1
-        super().__init__(qubit=operands[0])
-        QoalaProgram.add_to_body(self)
-
-    def to_ir(self, ctx: Context):
-        raise OperationNotYetImplementedError(YGate.__name__)
+            def to_ir(self, ctx: Context):
+                return super().to_ir(ctx)
+        return _BaseEasyRotation
+    return outer
 
 
-class ZGate(_QubitBaseOperation):
-    def __init__(self, *operands: QoalaExpression):
-        assert len(operands) == 1
-        super().__init__(qubit=operands[0])
-        QoalaProgram.add_to_body(self)
+@templated_class(RotateX)
+class XGate:
+    pass
 
-    def to_ir(self, ctx: Context):
-        raise OperationNotYetImplementedError(ZGate.__name__)
+
+@templated_class(RotateY)
+class YGate:
+    pass
+
+
+@templated_class(RotateZ)
+class ZGate:
+    pass
 
 
 class TGate(_QubitBaseOperation):
