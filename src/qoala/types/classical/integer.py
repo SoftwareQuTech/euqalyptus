@@ -1,7 +1,8 @@
 from typing import Self, Optional
 
 from qoala.ast.value import QoalaInteger, Signedness
-from qoala.types.classical import QoalaClassicalType, _Internal_Value_Type, InvalidArgumentError
+from qoala.errors import NotUnsignedIntegerArgumentError, NotIntegerArgumentError
+from qoala.types.classical import QoalaClassicalType, _Internal_Value_Type
 
 
 class QoalaIntegerType(QoalaClassicalType[_Internal_Value_Type]):
@@ -45,7 +46,7 @@ class Int32(SignedIntegerType[int]):
         elif len(args) >= 1:
             kwargs["value"] = args[0]
             if not isinstance(args[0], int):
-                raise InvalidArgumentError(f"'{Int32.__name__}' type only supports integer values")
+                raise NotIntegerArgumentError(Int32.__name__)
         else:
             kwargs["value"] = 0
 
@@ -86,9 +87,9 @@ class UInt32(UnsignedIntegerType[int]):
         elif len(args) >= 1:
             kwargs["value"] = args[0]
             if not isinstance(args[0], int):
-                raise InvalidArgumentError(f"'{UInt32.__name__}' type only supports integer values")
+                raise NotIntegerArgumentError(UInt32.__name__)
             if args[0] < 0:
-                raise InvalidArgumentError(f"'{UInt32.__name__}' type only supports positive integer values")
+                raise NotUnsignedIntegerArgumentError(UInt32.__name__)
         else:
             kwargs["value"] = 0
 

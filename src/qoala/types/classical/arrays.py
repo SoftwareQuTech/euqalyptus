@@ -1,8 +1,8 @@
-from typing import Generic, TypeVar, Optional, Sized, Union, Type
+from typing import Generic, TypeVar, Optional, Union, Type
 
 from qoala.ast.value import QoalaArray, QoalaExpression
+from qoala.errors import InvalidArrayArgumentError
 from qoala.types.classical import QoalaClassicalType
-from qoala.types.classical.errors import InvalidArgumentError
 from qoala.types.classical.floats import Float
 from qoala.types.classical.integer import Int
 
@@ -10,7 +10,10 @@ _Qoala_Base_Type = TypeVar("_Qoala_Base_Type", bound=QoalaClassicalType)
 _Native_Base_Type = TypeVar("_Native_Base_Type", int, float)
 
 
-class _Array(Generic[_Qoala_Base_Type, _Native_Base_Type], Sized):
+class _Array(Generic[_Qoala_Base_Type, _Native_Base_Type]):
+    """
+    Internal class used to group all the common behavior of numeric arrays
+    """
     def __new__(cls, *elements, **kwargs):
         return QoalaArray[_Qoala_Base_Type, _Native_Base_Type](*elements, **kwargs)
 
@@ -23,57 +26,126 @@ class _Array(Generic[_Qoala_Base_Type, _Native_Base_Type], Sized):
         # Here we can assert that the elements are expressions
         # whether they can evaluate to a Double or not, is a semantic check
         if any(not isinstance(element, (base_type, QoalaExpression)) for element in elements):
-            raise InvalidArgumentError(f"Array of type '{array_type.__name__}' "
-                                       f"can only hold values of type '{base_type.__name__}'")
+            raise InvalidArrayArgumentError(array_type.__name__, base_type.__name__)
 
     def store(self, new_element: _Qoala_Base_Type | _Native_Base_Type) -> None:
+        """
+        Appends the given element to the array.
+
+        Parameters
+        ----------
+        new_element: _Qoala_Base_Type | _Native_Base_Type
+            the new element to append. Can either be a python type or a qoala type,
+            but it must be consistent with the array you are trying to append to (i.e.
+            it is not possible to append a float or QoalaFloat to an IntArray)
+
+        Returns
+        -------
+        None
+        """
         # Nothing to do here
         pass
 
-    def __repr__(self) -> str:
-        pass
-
-    def __len__(self) -> int:
-        pass
-
     def __getitem__(self, item) -> _Qoala_Base_Type:
-        pass
+        """
+        "Brackets" operator for the qoala arrays. This method allows using qoala arrays
+        using the indexing operator int the same way as an ordinatry python array:
+        array = IntArray(10, 20, 30)
+        value = array[1] ## This access is allowed by this method
+        """
+        ...
 
     # Arrays are fixed-length by default (unless you use `store`)
     # so there is no __setitem__ overload
 
 
 class IntArray(_Array[Int, int]):
-    def __new__(cls, *elements, **kwargs):
+    """
+    An immutable array of 32 bits-wide integers. By immutable, it means that the size
+    of the array *cannot* be changed, and the values stored in the array cannot be
+    changed either
+    """
+    def __new__(
+            cls,
+            *elements,
+            **kwargs
+    ):
         kwargs["base_type"] = int
         kwargs["base_size"] = 32
         if "length" not in kwargs:
             kwargs["length"] = 0
+        if "base" in kwargs:
+            kwargs["base_clone"] = kwargs["base"]
+            del kwargs["base"]
+        else:
+            kwargs["base_clone"] = None
         _Array._assert_elements(*elements, base_type=int, array_type=IntArray)
         return super().__new__(cls, *elements, **kwargs)
 
     def __init__(
             self,
-            *elements: Union[_Qoala_Base_Type, int],
-            other_array: Optional[QoalaArray[_Qoala_Base_Type, int]] = None
+            base: Optional[QoalaArray[Int, int]] = None,
+            *elements: Union[Int, int],
+            **kwargs
     ):
+        """
+        Creates a new IntArray instance with the given elements
+
+        Parameters
+        ----------
+        elements:
+            the elements to put in the array. The creation of the array will perform a
+            type check to avoid inserting invalid values in the array (e.g. a float)
+        base : QoalaArray
+            an optional base array to create *a shallow copy* from. If this parameter
+            is given in addition to any elements, the resulting array will contain
+            *first* the same values of the base array, and then all the new elements given.
+        """
         # Nothing to do here
         pass
 
 
 class FloatArray(_Array[Float, float]):
-    def __new__(cls, *elements, **kwargs):
+    """
+    An immutable array of 32 bits-wide single precision floating point values. By immutable,
+    it means that the size of the array *cannot* be changed, and the values stored in the
+    array cannot be changed either
+    """
+    def __new__(
+            cls,
+            *elements,
+            **kwargs
+    ):
         kwargs["base_type"] = float
         kwargs["base_size"] = 32
         if "length" not in kwargs:
             kwargs["length"] = 0
+        if "base" in kwargs:
+            kwargs["base_clone"] = kwargs["base"]
+            del kwargs["base"]
+        else:
+            kwargs["base_clone"] = None
         _Array._assert_elements(*elements, base_type=float, array_type=FloatArray)
         return super().__new__(cls, *elements, **kwargs)
 
     def __init__(
             self,
-            *elements: _Qoala_Base_Type | float,
-            other_array: Optional[QoalaArray[_Qoala_Base_Type, float]] = None
+            base: Optional[QoalaArray[Float, float]] = None,
+            *elements: Float | float,
+            **kwargs
     ):
+        """
+        Creates a new FloatArray instance with the given elements
+
+        Parameters
+        ----------
+        elements:
+            the elements to put in the array. The creation of the array will perform a
+            type check to avoid inserting invalid values in the array (e.g. a int)
+        base : QoalaArray
+            an optional base array to create *a shallow copy* from. If this parameter
+            is given in addition to any elements, the resulting array will contain
+            *first* the same values of the base array, and then all the new elements given.
+        """
         # Nothing to do here
         pass

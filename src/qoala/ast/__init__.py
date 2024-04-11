@@ -15,10 +15,6 @@ class QoalaASTElement(ABC):
         pass
 
 
-class QoalaStatement(QoalaASTElement, ABC):
-    pass
-
-
 @dataclass(init=False)
 class QoalaExpression(QoalaASTElement, ABC):
     _ir_vals: List[Operation]

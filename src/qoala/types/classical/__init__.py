@@ -2,7 +2,6 @@ from abc import ABC
 from typing import TypeVar, Generic
 
 from qoala.types import QoalaType
-from qoala.types.classical.errors import InvalidArgumentError
 
 _Internal_Value_Type = TypeVar('_Internal_Value_Type')
 
