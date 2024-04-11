@@ -183,16 +183,23 @@ class CNotGate(_QubitBaseOperation):
         return self.ir
 
 
+@dataclass(init=False)
 class CPhaseGate(_QubitBaseOperation):
-    def __init__(self, target: QoalaExpression):
-        super().__init__(qubit=target)
+    # This is an alias for the "CZ" gate
+    target: QoalaExpression
+
+    def __init__(self, qubit: QoalaExpression, target: QoalaExpression):
+        super().__init__(qubit=qubit)
+        assert target.can_evaluate_to(QoalaQubit)
+        self.target = target
         QoalaProgram.add_to_body(self)
 
     def to_ir(self, ctx: Context):
         # We first add this operation to the program
-        self.ir = qnet.cz(qin=self.qubit.ir, angle=self.angle.ir)
+        self.ir = qnet.cz(qin0=self.qubit.ir, qin1=self.target.ir)
         # We then register that the qubit has a "new" value
-        self.qubit.ir = self.ir
+        self.qubit.ir = self.ir[0]
+        self.target.ir = self.ir[1]
         return self.ir
 
 
