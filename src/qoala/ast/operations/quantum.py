@@ -1,8 +1,7 @@
 import math
 from abc import ABC
 from dataclasses import dataclass
-from enum import Enum, auto
-from typing import Generic, List, Type, TypeVar
+from typing import List, Type, TypeVar
 
 import qnet.dialects.qnet as qnet
 import qnet.dialects.tensor as tensor
@@ -16,7 +15,7 @@ from qoala.ast.value import (
     QoalaExpression, QoalaFloatOrExpression,
     QoalaInteger, QoalaFloat, QoalaArray, QoalaNumericValue
 )
-from qoala.errors import OperationNotYetImplementedError, UnknownTypeError, UnknownRemoteError
+from qoala.errors import UnknownTypeError, UnknownRemoteError
 from qoala.utils.binding_types import i32, f32
 
 
@@ -44,12 +43,6 @@ class QubitMeasure(_QubitBaseOperation):
         return self.ir
 
 
-class RotateBaseAxis(Enum):
-    X = auto()
-    Y = auto()
-    Z = auto()
-
-
 @dataclass(init=False)
 class Rotate(_QubitBaseOperation, ABC):
     angle: QoalaFloatOrExpression
@@ -57,8 +50,7 @@ class Rotate(_QubitBaseOperation, ABC):
     def __init__(
             self,
             qubit: QoalaExpression,
-            angle: QoalaFloatOrExpression,
-            axis: RotateBaseAxis
+            angle: QoalaFloatOrExpression
     ):
         super().__init__(qubit=qubit)
         # We assume the users of this class will pass _at least_ default values for all operands
@@ -72,7 +64,7 @@ class RotateX(Rotate):
             qubit: QoalaExpression,
             angle: QoalaFloatOrExpression
     ):
-        super().__init__(qubit=qubit, angle=angle, axis=RotateBaseAxis.X)
+        super().__init__(qubit=qubit, angle=angle)
 
     def to_ir(self, ctx: Context):
         # We first add this operation to the program
@@ -88,7 +80,7 @@ class RotateY(Rotate):
             qubit: QoalaExpression,
             angle: QoalaFloatOrExpression
     ):
-        super().__init__(qubit=qubit, angle=angle, axis=RotateBaseAxis.Y)
+        super().__init__(qubit=qubit, angle=angle)
 
     def to_ir(self, ctx: Context):
         # We first add this operation to the program
@@ -104,7 +96,7 @@ class RotateZ(Rotate):
             qubit: QoalaExpression,
             angle: QoalaFloatOrExpression
     ):
-        super().__init__(qubit=qubit, angle=angle, axis=RotateBaseAxis.Z)
+        super().__init__(qubit=qubit, angle=angle)
 
     def to_ir(self, ctx: Context):
         # We first add this operation to the program
@@ -114,8 +106,14 @@ class RotateZ(Rotate):
         return self.ir
 
 
-def Rotation(base_clazz: Type, base_rotation: float):
+# Decorator used to "template" the classes annotated.
+# This decorator will create a class that is a subclass of 'base_class' and
+# that contains the '__init__' and 'to_ir' methods
+def RotationAlias(base_clazz: Type, base_rotation: float):
     def outer(decorated_clazz):
+        if not issubclass(base_clazz, Rotate):
+            raise TypeError(f"The 'RotationAlias' decorator can only be applied to subclasses of 'Rotation'")
+
         class _BaseEasyRotation(base_clazz):
             def __init__(self, *operands: QoalaExpression):
                 assert len(operands) == 1
@@ -128,27 +126,28 @@ def Rotation(base_clazz: Type, base_rotation: float):
     return outer
 
 
-@Rotation(RotateX, base_rotation=math.pi)
+# Definition of the "Rotation Aliases"; basic rotations with a fixed given angle
+@RotationAlias(RotateX, base_rotation=math.pi)
 class XGate:
     pass
 
 
-@Rotation(RotateY, base_rotation=math.pi)
+@RotationAlias(RotateY, base_rotation=math.pi)
 class YGate:
     pass
 
 
-@Rotation(RotateZ, base_rotation=math.pi)
+@RotationAlias(RotateZ, base_rotation=math.pi)
 class ZGate:
     pass
 
 
-@Rotation(RotateZ, base_rotation=(math.pi / 2.0))
+@RotationAlias(RotateZ, base_rotation=(math.pi / 2.0))
 class SGate:
     pass
 
 
-@Rotation(RotateZ, base_rotation=(math.pi / 4.0))
+@RotationAlias(RotateZ, base_rotation=(math.pi / 4.0))
 class TGate:
     pass
 
