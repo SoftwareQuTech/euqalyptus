@@ -66,7 +66,6 @@ class Rotate(_QubitBaseOperation, ABC):
         QoalaProgram.add_to_body(self)
 
 
-@dataclass(init=False)
 class RotateX(Rotate):
     def __init__(
             self,
@@ -83,7 +82,6 @@ class RotateX(Rotate):
         return self.ir
 
 
-@dataclass(init=False)
 class RotateY(Rotate):
     def __init__(
             self,
@@ -100,7 +98,6 @@ class RotateY(Rotate):
         return self.ir
 
 
-@dataclass(init=False)
 class RotateZ(Rotate):
     def __init__(
             self,
@@ -117,12 +114,12 @@ class RotateZ(Rotate):
         return self.ir
 
 
-def templated_class(base_clazz):
-    def outer(clazz):
+def Rotation(base_clazz: Type, base_rotation: float):
+    def outer(decorated_clazz):
         class _BaseEasyRotation(base_clazz):
             def __init__(self, *operands: QoalaExpression):
                 assert len(operands) == 1
-                rotation_angle = QoalaNumericValue.from_immediate(math.pi)
+                rotation_angle = QoalaNumericValue.from_immediate(base_rotation)
                 super().__init__(qubit=operands[0], angle=rotation_angle)
 
             def to_ir(self, ctx: Context):
@@ -131,29 +128,29 @@ def templated_class(base_clazz):
     return outer
 
 
-@templated_class(RotateX)
+@Rotation(RotateX, base_rotation=math.pi)
 class XGate:
     pass
 
 
-@templated_class(RotateY)
+@Rotation(RotateY, base_rotation=math.pi)
 class YGate:
     pass
 
 
-@templated_class(RotateZ)
+@Rotation(RotateZ, base_rotation=math.pi)
 class ZGate:
     pass
 
 
-class TGate(_QubitBaseOperation):
-    def __init__(self, *operands: QoalaExpression):
-        assert len(operands) == 1
-        super().__init__(qubit=operands[0])
-        QoalaProgram.add_to_body(self)
+@Rotation(RotateZ, base_rotation=(math.pi / 2.0))
+class SGate:
+    pass
 
-    def to_ir(self, ctx: Context):
-        raise OperationNotYetImplementedError(TGate.__name__)
+
+@Rotation(RotateZ, base_rotation=(math.pi / 4.0))
+class TGate:
+    pass
 
 
 class HGate(_QubitBaseOperation):
@@ -165,16 +162,6 @@ class HGate(_QubitBaseOperation):
     def to_ir(self, ctx: Context):
         self.ir = qnet.hadamard(self.qubit.ir)
         return self.ir
-
-
-class SGate(_QubitBaseOperation):
-    def __init__(self, *operands: QoalaExpression):
-        assert len(operands) == 1
-        super().__init__(qubit=operands[0])
-        QoalaProgram.add_to_body(self)
-
-    def to_ir(self, ctx: Context):
-        raise OperationNotYetImplementedError(SGate.__name__)
 
 
 @dataclass(init=False)
@@ -202,7 +189,11 @@ class CPhaseGate(_QubitBaseOperation):
         QoalaProgram.add_to_body(self)
 
     def to_ir(self, ctx: Context):
-        raise OperationNotYetImplementedError(CPhaseGate.__name__)
+        # We first add this operation to the program
+        self.ir = qnet.cz(qin=self.qubit.ir, angle=self.angle.ir)
+        # We then register that the qubit has a "new" value
+        self.qubit.ir = self.ir
+        return self.ir
 
 
 @dataclass(init=False)
