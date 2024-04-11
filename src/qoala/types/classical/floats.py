@@ -1,26 +1,11 @@
-from abc import ABC
 from typing import Self
 
 from qoala.ast.value import QoalaFloat
-from qoala.types.classical import QoalaClassicalType, _Internal_Value_Type
+from qoala.types.classical import QoalaClassicalType, _Internal_Value_Type, _NumericOperandsOverload
 
 
-class QoalaFloatingPointType(QoalaClassicalType[_Internal_Value_Type], ABC):
-    # We overload the operators, so IDEs do not get confused because of the
-    # dynamic type of floats, so instances of this class "can use" the overloaded
-    # operator. This is because the constructor of this class (method __new__)
-    # returns a QoalaExpression type, rather than a Float/Double instance
-    def __add__(self, other):
-        pass
-
-    def __sub__(self, other):
-        pass
-
-    def __mul__(self, other):
-        pass
-
-    def __truediv__(self, other):
-        pass
+class QoalaFloatingPointType(QoalaClassicalType[_Internal_Value_Type], _NumericOperandsOverload):
+    pass
 
 
 class Float(QoalaFloatingPointType[float]):

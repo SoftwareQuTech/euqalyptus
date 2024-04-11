@@ -3,8 +3,8 @@ from typing import Generic, TypeVar, Optional, Union, Type
 from qoala.ast.value import QoalaArray, QoalaExpression
 from qoala.errors import InvalidArrayArgumentError
 from qoala.types.classical import QoalaClassicalType
-from qoala.types.classical.floats import Float
-from qoala.types.classical.integer import Int
+from qoala.types.classical.floats import Float, Double
+from qoala.types.classical.integer import Int, Int32
 
 _Qoala_Base_Type = TypeVar("_Qoala_Base_Type", bound=QoalaClassicalType)
 _Native_Base_Type = TypeVar("_Native_Base_Type", int, float)
@@ -84,9 +84,8 @@ class IntArray(_Array[Int, int]):
 
     def __init__(
             self,
-            base: Optional[QoalaArray[Int, int]] = None,
-            *elements: Union[Int, int],
-            **kwargs
+            *elements: Int | Int32 | int,
+            base: QoalaArray[Int, int] | None = None
     ):
         """
         Creates a new IntArray instance with the given elements
@@ -130,9 +129,8 @@ class FloatArray(_Array[Float, float]):
 
     def __init__(
             self,
-            base: Optional[QoalaArray[Float, float]] = None,
-            *elements: Float | float,
-            **kwargs
+            *elements: Float | Double | float,
+            base: QoalaArray[Float, float] | None = None
     ):
         """
         Creates a new FloatArray instance with the given elements
