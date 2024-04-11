@@ -1,8 +1,6 @@
 from abc import ABC
 from typing import Self
 
-from deprecated import deprecated
-
 from qoala.ast.value import QoalaFloat
 from qoala.types.classical import QoalaClassicalType, _Internal_Value_Type
 
@@ -25,11 +23,8 @@ class QoalaFloatingPointType(QoalaClassicalType[_Internal_Value_Type], ABC):
         pass
 
 
-# TODO - Change the `float` parametric type when implementing
-#        the internal representation.
-# TODO - Expose the symbol of the internal representation
-#        of this type
 class Float(QoalaFloatingPointType[float]):
+    """"""
     def __new__(cls, *args, **kwargs):
         kwargs["width"] = 32
 
@@ -59,9 +54,5 @@ class Float(QoalaFloatingPointType[float]):
         pass
 
 
-@deprecated(reason="Double type is not supported by Qoala.\n"
-                   "For this reason the usage of this type is not encouraged.\n"
-                   "To maintain compatibility, this type will be implemented as\n"
-                   "a synonym of the 'Float' type.")
-class Double(Float):
-    pass
+# the "Double" type is just a synonym of the "Float"
+Double = Float
