@@ -227,6 +227,21 @@ class Qubit(QoalaQuantumType, ABC):
         """
         ...
 
+    def cz(self, target: Self) -> None:
+        """
+        Synonym for the "CPHASE" operation.
+        Apply a CPHASE (CZ) gate between this qubit (control) and a target qubit.
+
+        Parameters
+        ----------
+        target: Qubit
+            target qubit. Should have the same connection as this qubit.
+
+        Returns
+        -------
+        None
+        """
+
     def free(self) -> None:
         """
         Free the qubit and its virtual ID.

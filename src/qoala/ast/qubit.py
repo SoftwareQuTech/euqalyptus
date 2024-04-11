@@ -83,6 +83,10 @@ class QoalaQubit(QoalaExpression, ABC):
         pass
 
     @abstractmethod
+    def cz(self, target: Self) -> QoalaOperation:
+        pass
+
+    @abstractmethod
     def free(self) -> QoalaOperation:
         # TODO - Implement
         pass
@@ -204,6 +208,9 @@ class QbitBaseOperations(QoalaQubit, ABC):
     def cphase(self, target: Self) -> QoalaOperation:
         from qoala.ast.operations.quantum import CPhaseGate
         return QoalaOperation._create_expression_for_op(CPhaseGate, qubit=self, target=target)
+
+    def cz(self, target: Self) -> QoalaOperation:
+        return self.cphase(target)
 
     def free(self) -> QoalaOperation:
         # TODO - Implement
