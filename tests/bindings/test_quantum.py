@@ -10,7 +10,7 @@ from qoala.operations.quantum import recv_int, recv_ints, recv_floats, send_floa
 
 
 @QoalaProgram
-def complex_quantum_program():
+def quantum_base_gates_program():
     n_val = Int(20)
     d_val = Int(30)
     angle_val = Float(21.2)
@@ -34,11 +34,25 @@ def complex_quantum_program():
     )
 
     qubit.cnot(qubit_b)
-    # CPhase gates cannot be compiled yet
-    # qubit.cphase(qubit_b)
 
     measurement_a = qubit.measure()
     measurement_b = qubit_b.measure()
+
+
+@QoalaProgram
+def quantum_alias_gates_program():
+    qubit = LocalQubit()
+    qubit_b = LocalQubit()
+
+    qubit.X()
+    qubit.Y()
+    qubit.Z()
+    qubit.S()
+    qubit.T()
+    qubit.cphase(qubit_b)
+
+    qubit.measure()
+    qubit_b.measure()
 
 
 @QoalaProgram
@@ -110,18 +124,19 @@ def quantum_entanglement_program_c():
     m = q[2].measure()
     t2 = recv_ints("Bob", 5)
     # Here we try to use an index whose value is only known at runtime
+    # We DO NOT support this yet
     q[t2[4]].H()
 
 
 class TestQoalaQnetPythonBindingsQuantum:
-    def test_complex_program_to_qoala_qnet(self):
+    def test_base_gates_program_to_qoala_qnet(self):
         with pytest.raises(NotYetCompiledError) as ex:
-            _, _ = complex_quantum_program.module
+            _, _ = quantum_base_gates_program.module
         assert str(ex.value) == "The program has not been compiled yet. Did you invoke 'compile()' on it?"
-        _, module = complex_quantum_program.compile()
+        _, module = quantum_base_gates_program.compile()
         assert isinstance(module, QoalaModule)
         expected_asm = """module {
-  qnet.func @complex_quantum_program() {
+  qnet.func @quantum_base_gates_program() {
     %c20_i32 = arith.constant 20 : i32
     %c30_i32 = arith.constant 30 : i32
     %cst = arith.constant 2.120000e+01 : f32
@@ -135,6 +150,35 @@ class TestQoalaQnetPythonBindingsQuantum:
     %qout0, %qout1 = qnet.cnot %4, %1 : !qnet.qubit, !qnet.qubit
     %5 = qnet.measure %qout0 : i1
     %6 = qnet.measure %qout1 : i1
+    qnet.return
+  }
+}
+"""
+        assert str(module.asm) == expected_asm
+
+    def test_alias_gates_program_to_qoala_qnet(self):
+        with pytest.raises(NotYetCompiledError) as ex:
+            _, _ = quantum_alias_gates_program.module
+        assert str(ex.value) == "The program has not been compiled yet. Did you invoke 'compile()' on it?"
+        _, module = quantum_alias_gates_program.compile()
+        assert isinstance(module, QoalaModule)
+        expected_asm = """module {
+  qnet.func @quantum_alias_gates_program() {
+    %0 = qnet.new_qubit : !qnet.qubit
+    %1 = qnet.new_qubit : !qnet.qubit
+    %cst = arith.constant 3.14159274 : f32
+    %2 = qnet.rot_x %0, %cst : !qnet.qubit
+    %cst_0 = arith.constant 3.14159274 : f32
+    %3 = qnet.rot_y %2, %cst_0 : !qnet.qubit
+    %cst_1 = arith.constant 3.14159274 : f32
+    %4 = qnet.rot_z %3, %cst_1 : !qnet.qubit
+    %cst_2 = arith.constant 1.57079637 : f32
+    %5 = qnet.rot_z %4, %cst_2 : !qnet.qubit
+    %cst_3 = arith.constant 0.785398185 : f32
+    %6 = qnet.rot_z %5, %cst_3 : !qnet.qubit
+    %qout0, %qout1 = qnet.cz %6, %1 : !qnet.qubit, !qnet.qubit
+    %7 = qnet.measure %qout0 : i1
+    %8 = qnet.measure %qout1 : i1
     qnet.return
   }
 }

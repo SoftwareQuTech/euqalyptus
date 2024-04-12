@@ -34,11 +34,9 @@ class TestQuantumSemantics:
         qubit.Z()
         qubit.T()
         qubit.H()
-        qubit.K()
         qubit.S()
 
         measurement = qubit.measure()
-        qubit.reset()
 
         assert isinstance(qubit, QoalaLocalQubit)
         assert isinstance(measurement, QoalaBit)

@@ -227,15 +227,20 @@ class Qubit(QoalaQuantumType, ABC):
         """
         ...
 
-    def reset(self) -> None:
-        r"""
-        Reset the qubit to the state \|0>.
+    def cz(self, target: Self) -> None:
+        """
+        Synonym for the "CPHASE" operation.
+        Apply a CPHASE (CZ) gate between this qubit (control) and a target qubit.
+
+        Parameters
+        ----------
+        target: Qubit
+            target qubit. Should have the same connection as this qubit.
 
         Returns
         -------
         None
         """
-        ...
 
     def free(self) -> None:
         """

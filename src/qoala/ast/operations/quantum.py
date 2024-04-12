@@ -1,6 +1,6 @@
+import math
 from abc import ABC
 from dataclasses import dataclass
-from enum import Enum, auto
 from typing import List, Type, TypeVar
 
 import qnet.dialects.qnet as qnet
@@ -12,239 +12,59 @@ from qoala.ast.operations import QoalaOperation
 from qoala.ast.operations.arrays import GetItem
 from qoala.ast.qubit import QoalaQubit
 from qoala.ast.value import (
-    QoalaExpression, QoalaFloatOrExpression, QoalaBit,
+    QoalaExpression, QoalaFloatOrExpression,
     QoalaInteger, QoalaFloat, QoalaArray, QoalaNumericValue
 )
-from qoala.errors import OperationNotYetImplementedError, UnknownTypeError, UnknownRemoteError
+from qoala.errors import UnknownTypeError, UnknownRemoteError
 from qoala.utils.binding_types import i32, f32
 
 
 @dataclass(init=False)
-class QubitMeasure(QoalaOperation):
-    qubit: QoalaQubit
+class _QubitBaseOperation(QoalaOperation, ABC):
+    qubit: QoalaExpression
 
-    def __init__(self, *operands: QoalaExpression):
+    def __init__(self, qubit: QoalaExpression):
         super().__init__()
+        assert qubit.can_evaluate_to(QoalaQubit)
+        self.qubit = qubit
+
+    def can_evaluate_to(self, cls) -> bool:
+        return cls == QoalaQubit
+
+
+class QubitMeasure(_QubitBaseOperation):
+    def __init__(self, *operands: QoalaExpression):
         assert len(operands) == 1
-        assert isinstance(operands[0], QoalaQubit)
-        self.qubit = operands[0]
+        super().__init__(qubit=operands[0])
         QoalaProgram.add_to_body(self)
 
-    def can_evaluate_to(self, cls):
-        if cls == QoalaBit:
-            return True
-        else:
-            return False
-
     def to_ir(self, ctx: Context):
-        # TODO - Do we need tomake a difference between "qnet.measure" and "qnet.eprs_measure"??
         self.ir = qnet.measure(qin=self.qubit.ir)
         return self.ir
 
 
 @dataclass(init=False)
-class QubitReset(QoalaOperation, ABC):
-    qubit: QoalaQubit
-
-    def __init__(self, *operands: QoalaExpression):
-        super().__init__()
-        assert len(operands) == 1
-        assert isinstance(operands[0], QoalaQubit)
-        self.qubit = operands[0]
-        QoalaProgram.add_to_body(self)
-
-    def can_evaluate_to(self, cls):
-        # "void" operation; can always evaluate to anything
-        return True
-
-    def to_ir(self, ctx: Context):
-        raise OperationNotYetImplementedError(QubitReset.__name__)
-
-
-@dataclass(init=False)
-class XGate(QoalaOperation):
-    qubit: QoalaQubit
-
-    def __init__(self, *operands: QoalaExpression):
-        super().__init__()
-        assert len(operands) == 1
-        assert isinstance(operands[0], QoalaQubit)
-        self.qubit = operands[0]
-        QoalaProgram.add_to_body(self)
-
-    def can_evaluate_to(self, cls):
-        if cls == QoalaQubit:
-            return True
-        else:
-            return False
-
-    def to_ir(self, ctx: Context):
-        raise OperationNotYetImplementedError(XGate.__name__)
-
-
-@dataclass(init=False)
-class YGate(QoalaOperation):
-    qubit: QoalaQubit
-
-    def __init__(self, *operands: QoalaExpression):
-        super().__init__()
-        assert len(operands) == 1
-        assert isinstance(operands[0], QoalaQubit)
-        self.qubit = operands[0]
-        QoalaProgram.add_to_body(self)
-
-    def can_evaluate_to(self, cls):
-        if cls == QoalaQubit:
-            return True
-        else:
-            return False
-
-    def to_ir(self, ctx: Context):
-        raise OperationNotYetImplementedError(YGate.__name__)
-
-
-@dataclass(init=False)
-class ZGate(QoalaOperation):
-    qubit: QoalaQubit
-
-    def __init__(self, *operands: QoalaExpression):
-        super().__init__()
-        assert len(operands) == 1
-        assert isinstance(operands[0], QoalaQubit)
-        self.qubit = operands[0]
-        QoalaProgram.add_to_body(self)
-
-    def can_evaluate_to(self, cls):
-        if cls == QoalaQubit:
-            return True
-        else:
-            return False
-
-    def to_ir(self, ctx: Context):
-        raise OperationNotYetImplementedError(ZGate.__name__)
-
-
-@dataclass(init=False)
-class TGate(QoalaOperation):
-    qubit: QoalaQubit
-
-    def __init__(self, *operands: QoalaExpression):
-        super().__init__()
-        assert len(operands) == 1
-        assert isinstance(operands[0], QoalaQubit)
-        self.qubit = operands[0]
-        QoalaProgram.add_to_body(self)
-
-    def can_evaluate_to(self, cls):
-        if cls == QoalaQubit:
-            return True
-        else:
-            return False
-
-    def to_ir(self, ctx: Context):
-        raise OperationNotYetImplementedError(TGate.__name__)
-
-
-@dataclass(init=False)
-class HGate(QoalaOperation):
-    qubit: QoalaQubit
-
-    def __init__(self, *operands: QoalaExpression):
-        super().__init__()
-        assert len(operands) == 1
-        assert isinstance(operands[0], QoalaQubit)
-        self.qubit = operands[0]
-        QoalaProgram.add_to_body(self)
-
-    def can_evaluate_to(self, cls):
-        if cls == QoalaQubit:
-            return True
-        else:
-            return False
-
-    def to_ir(self, ctx: Context):
-        self.ir = qnet.hadamard(self.qubit.ir)
-        return self.ir
-
-
-@dataclass(init=False)
-class KGate(QoalaOperation):
-    qubit: QoalaQubit
-
-    def __init__(self, *operands: QoalaExpression):
-        super().__init__()
-        assert len(operands) == 1
-        assert isinstance(operands[0], QoalaQubit)
-        self.qubit = operands[0]
-        QoalaProgram.add_to_body(self)
-
-    def can_evaluate_to(self, cls):
-        if cls == QoalaQubit:
-            return True
-        else:
-            return False
-
-    def to_ir(self, ctx: Context):
-        raise OperationNotYetImplementedError(KGate.__name__)
-
-
-@dataclass(init=False)
-class SGate(QoalaOperation):
-    qubit: QoalaQubit
-
-    def __init__(self, *operands: QoalaExpression):
-        super().__init__()
-        assert len(operands) == 1
-        assert isinstance(operands[0], QoalaQubit)
-        self.qubit = operands[0]
-        QoalaProgram.add_to_body(self)
-
-    def can_evaluate_to(self, cls):
-        if cls == QoalaQubit:
-            return True
-        else:
-            return False
-
-    def to_ir(self, ctx: Context):
-        raise OperationNotYetImplementedError(SGate.__name__)
-
-
-class RotateBaseAxis(Enum):
-    X = auto()
-    Y = auto()
-    Z = auto()
-
-
-@dataclass(init=False)
-class Rotate(QoalaOperation, ABC):
-    qubit: QoalaQubit
+class Rotate(_QubitBaseOperation, ABC):
     angle: QoalaFloatOrExpression
 
     def __init__(
             self,
             qubit: QoalaExpression,
-            angle: QoalaFloatOrExpression,
-            axis: RotateBaseAxis
+            angle: QoalaFloatOrExpression
     ):
-        super().__init__()
+        super().__init__(qubit=qubit)
         # We assume the users of this class will pass _at least_ default values for all operands
-        assert isinstance(qubit, QoalaQubit)
-        self.qubit = qubit
         self.angle = angle
         QoalaProgram.add_to_body(self)
 
 
-@dataclass(init=False)
 class RotateX(Rotate):
     def __init__(
             self,
             qubit: QoalaExpression,
             angle: QoalaFloatOrExpression
     ):
-        super().__init__(qubit=qubit, angle=angle, axis=RotateBaseAxis.X)
-
-    def can_evaluate_to(self, cls):
-        return cls == QoalaQubit
+        super().__init__(qubit=qubit, angle=angle)
 
     def to_ir(self, ctx: Context):
         # We first add this operation to the program
@@ -254,17 +74,13 @@ class RotateX(Rotate):
         return self.ir
 
 
-@dataclass(init=False)
 class RotateY(Rotate):
     def __init__(
             self,
             qubit: QoalaExpression,
             angle: QoalaFloatOrExpression
     ):
-        super().__init__(qubit=qubit, angle=angle, axis=RotateBaseAxis.Y)
-
-    def can_evaluate_to(self, cls):
-        return cls == QoalaQubit
+        super().__init__(qubit=qubit, angle=angle)
 
     def to_ir(self, ctx: Context):
         # We first add this operation to the program
@@ -274,17 +90,13 @@ class RotateY(Rotate):
         return self.ir
 
 
-@dataclass(init=False)
 class RotateZ(Rotate):
     def __init__(
             self,
             qubit: QoalaExpression,
             angle: QoalaFloatOrExpression
     ):
-        super().__init__(qubit=qubit, angle=angle, axis=RotateBaseAxis.Z)
-
-    def can_evaluate_to(self, cls):
-        return cls == QoalaQubit
+        super().__init__(qubit=qubit, angle=angle)
 
     def to_ir(self, ctx: Context):
         # We first add this operation to the program
@@ -294,24 +106,72 @@ class RotateZ(Rotate):
         return self.ir
 
 
+# Decorator used to "template" the classes annotated.
+# This decorator will create a class that is a subclass of 'base_class' and
+# that contains the '__init__' and 'to_ir' methods
+def RotationAlias(base_clazz: Type, base_rotation: float):
+    def outer(decorated_clazz):
+        if not issubclass(base_clazz, Rotate):
+            raise TypeError(f"The 'RotationAlias' decorator can only be applied to subclasses of 'Rotation'")
+
+        class _BaseEasyRotation(base_clazz):
+            def __init__(self, *operands: QoalaExpression):
+                assert len(operands) == 1
+                rotation_angle = QoalaNumericValue.from_immediate(base_rotation)
+                super().__init__(qubit=operands[0], angle=rotation_angle)
+
+            def to_ir(self, ctx: Context):
+                return super().to_ir(ctx)
+        return _BaseEasyRotation
+    return outer
+
+
+# Definition of the "Rotation Aliases"; basic rotations with a fixed given angle
+@RotationAlias(RotateX, base_rotation=math.pi)
+class XGate:
+    pass
+
+
+@RotationAlias(RotateY, base_rotation=math.pi)
+class YGate:
+    pass
+
+
+@RotationAlias(RotateZ, base_rotation=math.pi)
+class ZGate:
+    pass
+
+
+@RotationAlias(RotateZ, base_rotation=(math.pi / 2.0))
+class SGate:
+    pass
+
+
+@RotationAlias(RotateZ, base_rotation=(math.pi / 4.0))
+class TGate:
+    pass
+
+
+class HGate(_QubitBaseOperation):
+    def __init__(self, *operands: QoalaExpression):
+        assert len(operands) == 1
+        super().__init__(qubit=operands[0])
+        QoalaProgram.add_to_body(self)
+
+    def to_ir(self, ctx: Context):
+        self.ir = qnet.hadamard(self.qubit.ir)
+        return self.ir
+
+
 @dataclass(init=False)
-class CNotGate(QoalaOperation):
-    quibit: QoalaQubit
+class CNotGate(_QubitBaseOperation):
     target: QoalaQubit
 
     def __init__(self, qubit: QoalaExpression, target: QoalaExpression):
-        super().__init__()
-        assert isinstance(qubit, QoalaQubit)
-        assert isinstance(target, QoalaQubit)
+        super().__init__(qubit=qubit)
+        assert target.can_evaluate_to(QoalaQubit)
         self.target = target
-        self.qubit = qubit
         QoalaProgram.add_to_body(self)
-
-    def can_evaluate_to(self, cls):
-        if cls == QoalaQubit:
-            return True
-        else:
-            return False
 
     def to_ir(self, ctx: Context):
         # We first add this operation to the program
@@ -323,23 +183,23 @@ class CNotGate(QoalaOperation):
 
 
 @dataclass(init=False)
-class CPhaseGate(QoalaOperation):
-    target: QoalaQubit
+class CPhaseGate(_QubitBaseOperation):
+    # This is an alias for the "CZ" gate
+    target: QoalaExpression
 
-    def __init__(self, target: QoalaExpression):
-        super().__init__()
-        assert isinstance(target, QoalaQubit)
+    def __init__(self, qubit: QoalaExpression, target: QoalaExpression):
+        super().__init__(qubit=qubit)
+        assert target.can_evaluate_to(QoalaQubit)
         self.target = target
         QoalaProgram.add_to_body(self)
 
-    def can_evaluate_to(self, cls):
-        if cls == QoalaQubit:
-            return True
-        else:
-            return False
-
     def to_ir(self, ctx: Context):
-        raise OperationNotYetImplementedError(CPhaseGate.__name__)
+        # We first add this operation to the program
+        self.ir = qnet.cz(qin0=self.qubit.ir, qin1=self.target.ir)
+        # We then register that the qubit has a "new" value
+        self.qubit.ir = self.ir[0]
+        self.target.ir = self.ir[1]
+        return self.ir
 
 
 @dataclass(init=False)
