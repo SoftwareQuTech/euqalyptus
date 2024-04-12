@@ -5,10 +5,9 @@ import qnet.dialects.tensor as tensor
 from qnet.ir import Context
 
 from qoala import QoalaProgram
-from qoala.ast.errors import OperationNotYetImplementedError
 from qoala.ast.operations import QoalaOperation, with_arith_operators
-from qoala.ast.qubit import QbitBaseOperations
 from qoala.ast.value import QoalaExpression, QoalaInteger, QoalaArray
+from qoala.errors import OperationNotYetImplementedError
 from qoala.utils.binding_types import index
 
 
@@ -53,11 +52,6 @@ class GetItem(QoalaOperation):
     def to_ir(self, ctx: Context):
         self.ir = tensor.extract(tensor=self.base_array.ir, indices=[self.index.ir])
         return self.ir
-
-
-@dataclass(init=False)
-class GetQItem(GetItem, QbitBaseOperations):
-    pass
 
 
 @dataclass(init=False)

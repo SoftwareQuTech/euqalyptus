@@ -9,8 +9,8 @@ from qnet.ir import Context
 
 from qoala import QoalaProgram
 from qoala.ast import QoalaExpression, QoalaStatement
-from qoala.ast.errors import UnknownTypeError, OperandMismatchError
 from qoala.ast.operations import QoalaOperation, with_arith_operators
+from qoala.errors import UnknownTypeError, OperandMismatchError
 from qoala.utils.binding_types import i32, ui32, f32, index
 
 _T = TypeVar("_T")
@@ -213,13 +213,8 @@ class QoalaArray(QoalaValue[QoalaExpression], Generic[_Qoala_Base_Type, _Native_
             from qoala.ast.operations.arrays import CastToIndex
             casted_index = QoalaOperation._create_expression_for_op(CastToIndex, item_index)
             index_operand = casted_index
-        from qoala.ast.qubit import QoalaRemoteQubit
-        if _Qoala_Base_Type == QoalaRemoteQubit:
-            from qoala.ast.operations.arrays import GetQItem
-            return QoalaOperation._create_expression_for_op(GetQItem, self, index_operand)
-        else:
-            from qoala.ast.operations.arrays import GetItem
-            return QoalaOperation._create_expression_for_op(GetItem, self, index_operand)
+        from qoala.ast.operations.arrays import GetItem
+        return QoalaOperation._create_expression_for_op(GetItem, self, index_operand)
 
     def can_evaluate_to(self, cls):
         return cls == QoalaArray

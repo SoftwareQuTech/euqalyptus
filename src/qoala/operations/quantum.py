@@ -15,12 +15,12 @@ class RecvInts(IntArray):
 
 
 class RecvInt(RecvInts, QoalaIntegerType):
-    def __new__(cls, remote_name: Remote | str):
-        return RecvIntsOp(remote_name=remote_name, length=1)
+    def __new__(cls, remote_name: Remote | str, length: int = 1):
+        return RecvIntsOp(remote_name=remote_name, length=length)
 
-    def __init__(self, remote_name: Remote | str):
+    def __init__(self, remote_name: Remote | str, length: int = 1):
         # Nothing to do here
-        super().__init__(remote_name=remote_name, length=1)
+        super().__init__(remote_name=remote_name, length=length)
 
 
 class RecvFloats(FloatArray):

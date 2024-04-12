@@ -4,7 +4,7 @@ from qoala import QoalaProgram, QoalaModule, NotYetCompiledError
 from qoala.types.classical.floats import Float
 from qoala.types.classical.integer import Int
 from qoala.types.classical.arrays import IntArray, FloatArray
-from qoala.types.quantum.qubit import LocalQubit, Entangle
+from qoala.types.quantum.qubit import LocalQubit, Entangle, EntangledQubit
 from qoala.operations import Remote
 from qoala.operations.quantum import recv_int, recv_ints, recv_floats, send_floats, send_ints
 
@@ -79,7 +79,8 @@ def classical_send_immediates_and_array_of_values():
 
 @QoalaProgram
 def quantum_entanglement_program():
-    q = Entangle("Bob", 1)[0]
+    Remote("Bob")
+    q = Entangle("Bob")
     t1 = recv_int("Bob")
     q.rot_X(t1)
     t2 = recv_int("Bob")
@@ -89,12 +90,27 @@ def quantum_entanglement_program():
 
 @QoalaProgram
 def quantum_entanglement_program_b():
-    q = Entangle("Bob", 3)[2]
+    Remote("Bob")
+    q0, q1, q2 = Entangle("Bob", 3)
     t1 = recv_floats("Bob", 2)
-    q.rot_X(angle=t1[0])
+    q2.rot_X(angle=t1[0])
     t2 = recv_floats("Bob", 2)
-    q.rot_Y(angle=t2[1])
-    m = q.measure()
+    q2.rot_Y(angle=t2[1])
+    m = q2.measure()
+
+
+@QoalaProgram
+def quantum_entanglement_program_c():
+    Remote("Bob")
+    q = Entangle("Bob", 3)
+    t1 = recv_floats("Bob", 2)
+    # We access the entangled qubits as if they were an array
+    q[2].rot_X(angle=t1[0])
+    q[2].rot_Y(angle=t1[1])
+    m = q[2].measure()
+    t2 = recv_ints("Bob", 5)
+    # Here we try to use an index whose value is only known at runtime
+    q[t2[4]].H()
 
 
 class TestQoalaQnetPythonBindingsQuantum:
@@ -134,7 +150,7 @@ class TestQoalaQnetPythonBindingsQuantum:
         expected_asm = """module {
   qnet.func @classical_remote_communication() {
     qnet.remote @Bob
-    %0 = qnet.recv_ints  {remote = @Bob} : tensor<10xi32>
+    %0 = qnet.recv_ints  {length = 10 : i32, remote = @Bob} : tensor<10xi32>
     %c0 = arith.constant 0 : index
     %extracted = tensor.extract %0[%c0] : tensor<10xi32>
     %c5 = arith.constant 5 : index
@@ -238,27 +254,25 @@ class TestQoalaQnetPythonBindingsQuantum:
         expected_asm = """module {
   qnet.func @quantum_entanglement_program() {
     qnet.remote @Bob
-    %0 = qnet.eprs  {N = 1 : i32, remote = @Bob} : tensor<1x!qnet.qubit>
+    %0 = qnet.eprs  {remote = @Bob} : !qnet.qubit
+    %1 = qnet.recv_ints  {length = 1 : i32, remote = @Bob} : tensor<1xi32>
     %c0 = arith.constant 0 : index
-    %extracted = tensor.extract %0[%c0] : tensor<1x!qnet.qubit>
-    %1 = qnet.recv_ints  {remote = @Bob} : tensor<1xi32>
-    %c0_0 = arith.constant 0 : index
-    %extracted_1 = tensor.extract %1[%c0_0] : tensor<1xi32>
+    %extracted = tensor.extract %1[%c0] : tensor<1xi32>
     %cst = arith.constant 0.000000e+00 : f32
-    %cst_2 = arith.constant 3.14159274 : f32
-    %2 = arith.uitofp %extracted_1 : i32 to f32
-    %3 = arith.mulf %2, %cst_2 : f32
+    %cst_0 = arith.constant 3.14159274 : f32
+    %2 = arith.uitofp %extracted : i32 to f32
+    %3 = arith.mulf %2, %cst_0 : f32
     %4 = math.exp2 %cst : f32
     %5 = arith.divf %3, %4 : f32
-    %6 = qnet.rot_x %extracted, %5 : !qnet.qubit
-    %7 = qnet.recv_ints  {remote = @Bob} : tensor<1xi32>
-    %c0_3 = arith.constant 0 : index
-    %extracted_4 = tensor.extract %7[%c0_3] : tensor<1xi32>
-    %cst_5 = arith.constant 0.000000e+00 : f32
-    %cst_6 = arith.constant 3.14159274 : f32
-    %8 = arith.uitofp %extracted_4 : i32 to f32
-    %9 = arith.mulf %8, %cst_6 : f32
-    %10 = math.exp2 %cst_5 : f32
+    %6 = qnet.rot_x %0, %5 : !qnet.qubit
+    %7 = qnet.recv_ints  {length = 1 : i32, remote = @Bob} : tensor<1xi32>
+    %c0_1 = arith.constant 0 : index
+    %extracted_2 = tensor.extract %7[%c0_1] : tensor<1xi32>
+    %cst_3 = arith.constant 0.000000e+00 : f32
+    %cst_4 = arith.constant 3.14159274 : f32
+    %8 = arith.uitofp %extracted_2 : i32 to f32
+    %9 = arith.mulf %8, %cst_4 : f32
+    %10 = math.exp2 %cst_3 : f32
     %11 = arith.divf %9, %10 : f32
     %12 = qnet.rot_y %6, %11 : !qnet.qubit
     %13 = qnet.measure %12 : i1
@@ -284,18 +298,65 @@ class TestQoalaQnetPythonBindingsQuantum:
         expected_asm = """module {
   qnet.func @quantum_entanglement_program_b() {
     qnet.remote @Bob
-    %0 = qnet.eprs  {N = 3 : i32, remote = @Bob} : tensor<3x!qnet.qubit>
-    %c2 = arith.constant 2 : index
-    %extracted = tensor.extract %0[%c2] : tensor<3x!qnet.qubit>
-    %1 = qnet.recv_floats  {remote = @Bob} : tensor<2xf32>
+    %0 = qnet.eprs  {remote = @Bob} : !qnet.qubit
+    %1 = qnet.eprs  {remote = @Bob} : !qnet.qubit
+    %2 = qnet.eprs  {remote = @Bob} : !qnet.qubit
+    %3 = qnet.recv_floats  {length = 2 : i32, remote = @Bob} : tensor<2xf32>
     %c0 = arith.constant 0 : index
-    %extracted_0 = tensor.extract %1[%c0] : tensor<2xf32>
-    %2 = qnet.rot_x %extracted, %extracted_0 : !qnet.qubit
-    %3 = qnet.recv_floats  {remote = @Bob} : tensor<2xf32>
+    %extracted = tensor.extract %3[%c0] : tensor<2xf32>
+    %4 = qnet.rot_x %2, %extracted : !qnet.qubit
+    %5 = qnet.recv_floats  {length = 2 : i32, remote = @Bob} : tensor<2xf32>
     %c1 = arith.constant 1 : index
-    %extracted_1 = tensor.extract %3[%c1] : tensor<2xf32>
-    %4 = qnet.rot_y %2, %extracted_1 : !qnet.qubit
-    %5 = qnet.measure %4 : i1
+    %extracted_0 = tensor.extract %5[%c1] : tensor<2xf32>
+    %6 = qnet.rot_y %4, %extracted_0 : !qnet.qubit
+    %7 = qnet.measure %6 : i1
+    qnet.return
+  }
+}
+"""
+        assert str(module.asm) == expected_asm
+
+    @pytest.mark.skip(reason="Using multiple entangled qubits using array syntax is not supported yet")
+    def test_entanglement_program_c_to_qoala_qnet(self):
+        with pytest.raises(NotYetCompiledError) as ex:
+            _, _ = quantum_entanglement_program_c.module
+        assert str(ex.value) == "The program has not been compiled yet. Did you invoke 'compile()' on it?"
+        _, module = quantum_entanglement_program_c.compile()
+        assert isinstance(module, QoalaModule)
+        # NOTE - All the qubit operations performed on a qubit modify the internal state of the qubit,
+        #        as seen from the SDK side of the compiler. However, the semantics of the generated MLIR
+        #        is a bit different. Since MLIR follows a Single Static Assignment (SSA) approach, an
+        #        operation _cannot_ modify the state of a registry, but rather _returns_ the modified
+        #        value, so it can be assigned to a new registry.
+        #        Being this said, successive operations applied on the same qubit (as depicted in the
+        #        code tested in this case) _MUST_ operate on the "updated" value of the qubit.
+        expected_asm = """module {
+  qnet.func @quantum_entanglement_program_c() {
+    qnet.remote @Bob
+    %0 = qnet.eprs  {remote = @Bob} : !qnet.qubit
+    %1 = qnet.eprs  {remote = @Bob} : !qnet.qubit
+    %2 = qnet.eprs  {remote = @Bob} : !qnet.qubit
+    %from_elements = tensor.from_elements %0, %1, %2 : tensor<3x!qnet.qubit>
+    %3 = qnet.recv_floats  {length = 2 : i32, remote = @Bob} : tensor<2xf32>
+    %c2 = arith.constant 2 : index
+    %extracted = tensor.extract %from_elements[%c2] : tensor<3x!qnet.qubit>
+    %c0 = arith.constant 0 : index
+    %extracted_0 = tensor.extract %3[%c0] : tensor<2xf32>
+    %4 = qnet.rot_x %extracted, %extracted_0 : !qnet.qubit
+    %c2_1 = arith.constant 2 : index
+    %extracted_2 = tensor.extract %from_elements[%c2_1] : tensor<3x!qnet.qubit>
+    %c1 = arith.constant 1 : index
+    %extracted_3 = tensor.extract %3[%c1] : tensor<2xf32>
+    %5 = qnet.rot_y %extracted_2, %extracted_3 : !qnet.qubit
+    %c2_4 = arith.constant 2 : index
+    %extracted_5 = tensor.extract %from_elements[%c2_4] : tensor<3x!qnet.qubit>
+    %6 = qnet.measure %extracted_5 : i1
+    %7 = qnet.recv_ints  {length = 2 : i32, remote = @Bob} : tensor<5xi32>
+    %c4 = arith.constant 4 : index
+    %extracted_6 = tensor.extract %7[%c4] : tensor<5xi32>
+    %8 = arith.index_cast %extracted_6 : i32 to index
+    %extracted_7 = tensor.extract %from_elements[%8] : tensor<3x!qnet.qubit>
+    %9 = qnet.hadamard %extracted_7 : !qnet.qubit
     qnet.return
   }
 }

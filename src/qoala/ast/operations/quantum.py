@@ -5,10 +5,9 @@ from typing import List, Type, TypeVar
 
 import qnet.dialects.qnet as qnet
 import qnet.dialects.tensor as tensor
-from qnet.ir import Context
+from qnet.ir import Context, IntegerAttr
 
 from qoala import QoalaProgram
-from qoala.ast.errors import OperationNotYetImplementedError, UnknownTypeError
 from qoala.ast.operations import QoalaOperation
 from qoala.ast.operations.arrays import GetItem
 from qoala.ast.qubit import QoalaQubit
@@ -16,6 +15,7 @@ from qoala.ast.value import (
     QoalaExpression, QoalaFloatOrExpression, QoalaBit,
     QoalaInteger, QoalaFloat, QoalaArray, QoalaNumericValue
 )
+from qoala.errors import OperationNotYetImplementedError, UnknownTypeError, UnknownRemoteError
 from qoala.utils.binding_types import i32, f32
 
 
@@ -38,7 +38,7 @@ class QubitMeasure(QoalaOperation):
 
     def to_ir(self, ctx: Context):
         # TODO - Do we need tomake a difference between "qnet.measure" and "qnet.eprs_measure"??
-        self.ir = qnet.measure(qin0=self.qubit.ir)
+        self.ir = qnet.measure(qin=self.qubit.ir)
         return self.ir
 
 
@@ -163,7 +163,7 @@ class HGate(QoalaOperation):
             return False
 
     def to_ir(self, ctx: Context):
-        self.ir = qnet.hadamard(self.qubit)
+        self.ir = qnet.hadamard(self.qubit.ir)
         return self.ir
 
 
@@ -343,12 +343,13 @@ class CPhaseGate(QoalaOperation):
 
 
 @dataclass(init=False)
-class DeclareRemote(QoalaOperation):
+class DeclaredRemote(QoalaOperation):
     remote_name: str
 
     def __init__(self, remote_name: str):
         super().__init__()
         self.remote_name = remote_name
+        QoalaProgram.add_declared_remote(remote_name, self)
         QoalaProgram.add_to_body(self)
 
     def can_evaluate_to(self, cls):
@@ -366,10 +367,10 @@ _Native_Base_Type = TypeVar("_Native_Base_Type")
 @dataclass(init=False)
 class BaseRecvOp(QoalaArray[_Qoala_Base_Type, _Native_Base_Type]):
     # Does this need to be a string? It seems to be just a "reference"
-    remote: DeclareRemote | str
+    remote: DeclaredRemote | str
     base_type: Type
 
-    def __init__(self, remote_name: DeclareRemote | str, length: int, base_type: Type):
+    def __init__(self, remote_name: DeclaredRemote | str, length: int, base_type: Type):
         super().__init__(base_size=32, base_type=base_type, length=length)
         self.remote = remote_name
         self.base_type = base_type
@@ -390,14 +391,18 @@ class BaseRecvOp(QoalaArray[_Qoala_Base_Type, _Native_Base_Type]):
     def to_ir(self, ctx: Context):
         base_tensor_type = i32() if self.base_type == int else f32()
         tensor_shape = tensor.RankedTensorType.get(shape=[self.length], element_type=base_tensor_type)
-        if isinstance(self.remote, DeclareRemote):
+        if isinstance(self.remote, DeclaredRemote):
             remote_name = self.remote.remote_name
         else:
+            remote = QoalaProgram.get_declared_remote(self.remote)
+            if remote is None:
+                raise UnknownRemoteError(self.remote)
             remote_name = self.remote
+        lengthAttrribute = IntegerAttr.get(i32(), self.length)
         if self.base_type == int:
-            self.ir = qnet.recv_ints(remote=remote_name, cout=tensor_shape)
+            self.ir = qnet.recv_ints(remote=remote_name, cout=tensor_shape, length=lengthAttrribute)
         elif self.base_type == float:
-            self.ir = qnet.recv_floats(remote=remote_name, cout=tensor_shape)
+            self.ir = qnet.recv_floats(remote=remote_name, cout=tensor_shape, length=lengthAttrribute)
         else:
             raise UnknownTypeError(f"Cannot create recv operation for base type '{self.base_type}'")
         if self.length == 1:
@@ -416,19 +421,19 @@ class BaseRecvOp(QoalaArray[_Qoala_Base_Type, _Native_Base_Type]):
 
 @dataclass(init=False)
 class RecvIntsOp(BaseRecvOp[QoalaInteger, int]):
-    def __init__(self, remote_name: DeclareRemote | str, length: int):
+    def __init__(self, remote_name: DeclaredRemote | str, length: int):
         super().__init__(remote_name=remote_name, length=length, base_type=int)
 
 
 @dataclass(init=False)
 class RecvFloatsOp(BaseRecvOp[QoalaFloat, float]):
-    def __init__(self, remote_name: DeclareRemote | str, length: int):
+    def __init__(self, remote_name: DeclaredRemote | str, length: int):
         super().__init__(remote_name=remote_name, length=length, base_type=float)
 
 
 @dataclass(init=False)
 class BaseSendOp(QoalaOperation):
-    remote: DeclareRemote | str
+    remote: DeclaredRemote | str
     values: List[QoalaExpression]
     base_type: Type
     qoala_type: Type
@@ -470,7 +475,7 @@ class BaseSendOp(QoalaOperation):
         tensor_shape = tensor.RankedTensorType.get(shape=[len(elements)], element_type=hir_base_type)
         tensor_values = tensor.from_elements(elements=elements, result=tensor_shape)
 
-        if isinstance(self.remote, DeclareRemote):
+        if isinstance(self.remote, DeclaredRemote):
             remote_name = self.remote.remote_name
         else:
             remote_name = self.remote
@@ -485,11 +490,11 @@ class BaseSendOp(QoalaOperation):
 
 @dataclass(init=False)
 class SendIntsOp(BaseSendOp):
-    def __init__(self, *vals: QoalaExpression, remote_name: DeclareRemote | str):
+    def __init__(self, *vals: QoalaExpression, remote_name: DeclaredRemote | str):
         super().__init__(*vals, remote_name=remote_name, qoala_type=QoalaInteger, base_type=int)
 
 
 @dataclass(init=False)
 class SendFloatsOp(BaseSendOp):
-    def __init__(self, *vals: QoalaExpression, remote_name: DeclareRemote | str):
+    def __init__(self, *vals: QoalaExpression, remote_name: DeclaredRemote | str):
         super().__init__(*vals, remote_name=remote_name, qoala_type=QoalaFloat, base_type=float)

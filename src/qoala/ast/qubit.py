@@ -4,18 +4,13 @@ from dataclasses import dataclass
 from typing import Self
 
 import qnet.dialects.qnet as qnet
-import qnet.dialects.tensor as tensor
-from qnet.dialects.qnet import QubitType
 from qnet.ir import Context
 
 from qoala import QoalaProgram
 from qoala.ast import QoalaExpression
-from qoala.ast.errors import OperandMismatchError
 from qoala.ast.operations import QoalaOperation
 from qoala.ast.operations.numeric import Pow2, Divide, Multiply
 from qoala.ast.value import (
-    QoalaInteger,
-    QoalaArray,
     QoalaNumericValue,
     ImmediateQIntOrExpression,
     ImmediateQFloatOrExpression,
@@ -237,62 +232,29 @@ class QoalaLocalQubit(QbitBaseOperations):
         QoalaProgram.add_to_body(self)
 
     def can_evaluate_to(self, cls):
-        if cls == QoalaQubit:
-            return True
-        else:
-            return False
+        return cls == QoalaQubit
 
     def to_ir(self, ctx: Context):
         self.ir = qnet.new_qubit()
         return self.ir
 
 
+# This class represents a "remote" qubit, i.e. an entangled qubit
+# It behaves like a single qubit, so you can perform any "traditional"
+# operations on this qubit
 @dataclass(init=False)
-class QoalaRemoteQubit(QoalaLocalQubit):
-    # Is there any difference between a local and an "entangled" local qubit?
-    pass
-
-
-@dataclass(init=False)
-class QoalaEprs(QoalaArray[QoalaQubit, int]):
-    num_pairs: int
+class QoalaEprs(QbitBaseOperations):
     remote_name: str
-    remote: QoalaOperation
 
-    def __init__(self, name: str, n: int):
+    def __init__(self, name: str):
+        super().__init__()
+        # We assume the remote was declared before using the name (symbol)
         self.remote_name = name
-        self.num_pairs = n
-        # Before using the remote, it needs to be declared
-        from qoala.ast.operations.quantum import DeclareRemote
-        self.remote = DeclareRemote(self.remote_name)
-        super().__init__(base_type=int, base_size=1, length=n)
-        # We don't need to add this operation to the body, since it's already done by the
-        # call to the constructor on the parent class
+        QoalaProgram.add_to_body(self)
 
-    # Special case since EPRS qubits behave like arrays, we need a way to access the entangled qubits
-    def __getitem__(self, item_index: ImmediateQIntOrExpression) -> QoalaExpression:
-        if isinstance(item_index, int):
-            index_operand = QoalaNumericValue.from_immediate(item_index, is_index=True)
-        else:
-            # The index is already a qoala expression, which can evaluate either to a float or int
-            # If it evaluates to an int, we need to cast it to an integer
-            if not item_index.can_evaluate_to(QoalaInteger):
-                raise OperandMismatchError(f"The index operand '{item_index}' cannot evaluate to an integer, "
-                                           f"hence it cannot be used index an array.")
-            from qoala.ast.operations.arrays import CastToIndex
-            casted_index = QoalaOperation._create_expression_for_op(CastToIndex, item_index)
-            index_operand = casted_index
-        from qoala.ast.operations.arrays import GetQItem
-        return QoalaOperation._create_expression_for_op(GetQItem, self, index_operand)
-
-    # Functions for generating IR
-    def can_evaluate_to(self, cls) -> bool:
+    def can_evaluate_to(self, cls):
         return cls == QoalaQubit
 
     def to_ir(self, ctx: Context):
-        # Creating a qubit type requires passing the mlir context object
-        ty = QubitType.get(ctx)
-        tensor_shape = tensor.RankedTensorType.get(shape=[self.num_pairs], element_type=ty)
-        self.ir = qnet.EprsOp(qout=tensor_shape, N=self.num_pairs, remote=self.remote_name)
+        self.ir = qnet.eprs(remote=self.remote_name)
         return self.ir
-
