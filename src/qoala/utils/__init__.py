@@ -1,2 +1,0 @@
-class NoValueError(RuntimeError):
-    pass

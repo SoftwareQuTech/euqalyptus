@@ -231,7 +231,7 @@ class BaseRecvOp(QoalaArray[_Qoala_Base_Type, _Native_Base_Type]):
     base_type: Type
 
     def __init__(self, remote_name: DeclaredRemote | str, length: int, base_type: Type):
-        super().__init__(base_size=32, base_type=base_type, length=length)
+        super().__init__(base_size=32, base_type=base_type, length=length, base_clone=None)
         self.remote = remote_name
         self.base_type = base_type
         # We don't need to add this operation to the body, since it will be done

@@ -45,7 +45,6 @@ def with_arith_operators(cls):
     dunder_methods = [
         "__abs__",
         "__add__",
-        "__add__",
         "__and__",
         "__bool__",
         "__ceil__",

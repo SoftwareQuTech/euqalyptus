@@ -8,7 +8,7 @@ import qnet.dialects.tensor as tensor
 from qnet.ir import Context
 
 from qoala import QoalaProgram
-from qoala.ast import QoalaExpression, QoalaStatement
+from qoala.ast import QoalaExpression
 from qoala.ast.operations import QoalaOperation, with_arith_operators
 from qoala.errors import UnknownTypeError, OperandMismatchError
 from qoala.utils.binding_types import i32, ui32, f32, index
@@ -154,13 +154,17 @@ class QoalaArray(QoalaValue[QoalaExpression], Generic[_Qoala_Base_Type, _Native_
             *elements,
             base_type: Type,
             base_size: int,
-            length: int
+            length: int,
+            base_clone: Optional[Self]
     ):
         super().__init__()
         self.members = []
         self.base_type = base_type
         self.qoala_type = QoalaInteger if base_type == int else QoalaFloat
         self.base_size = base_size
+        if base_clone is not None:
+            for member in base_clone.members:
+                self.members.append(member)
         if len(elements) > 0:
             self.length = 0
             for element in elements:
@@ -189,7 +193,7 @@ class QoalaArray(QoalaValue[QoalaExpression], Generic[_Qoala_Base_Type, _Native_
             self.length = length
         QoalaProgram.add_to_body(self)
 
-    def store(self, new_element: QoalaExpression | _Native_Base_Type) -> QoalaStatement:
+    def store(self, new_element: QoalaExpression | _Native_Base_Type) -> QoalaExpression:
         if isinstance(new_element, self.base_type):
             to_add = QoalaNumericValue.from_immediate(new_element)
         else:

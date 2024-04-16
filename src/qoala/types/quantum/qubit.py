@@ -3,7 +3,6 @@ from typing import Optional, Self, Tuple
 
 from qoala import QoalaProgram
 from qoala.ast.qubit import QoalaLocalQubit, QoalaEprs
-from qoala.ast.value import QoalaBit
 from qoala.errors import UnknownRemoteError
 from qoala.types.classical.floats import QoalaFloatingPointType
 from qoala.types.classical.integer import QoalaIntegerType
@@ -25,7 +24,7 @@ class Qubit(QoalaQuantumType, ABC):
     methods on a `Qubit` instance.
     """
 
-    def measure(self) -> QoalaBit:
+    def measure(self) -> QoalaIntegerType:
         """
         Measure the qubit in the standard basis and get the measurement outcome.
 

@@ -1,38 +1,25 @@
 from typing import Self, Optional
 
 from qoala.ast.value import QoalaInteger, Signedness
-from qoala.types.classical import QoalaClassicalType, _Internal_Value_Type, InvalidArgumentError
+from qoala.errors import NotUnsignedIntegerArgumentError, NotIntegerArgumentError
+from qoala.types.classical import QoalaClassicalType, _Internal_Value_Type, _NumericOperandsOverload
 
 
-class QoalaIntegerType(QoalaClassicalType[_Internal_Value_Type]):
-    # We overload the operators, so IDEs do not get confused because of the
-    # dynamic type of integers, so instances of this class "can use" the overloaded
-    # operator. This is because the constructor of this class (method __new__)
-    # returns a QoalaExpression type, rather than an Int/Int32/UInt32 instance
-    def __add__(self, other):
-        pass
-
-    def __sub__(self, other):
-        pass
-
-    def __mul__(self, other):
-        pass
-
-    def __truediv__(self, other):
-        pass
-
-
-class SignedIntegerType(QoalaIntegerType[_Internal_Value_Type]):
+class QoalaIntegerType(QoalaClassicalType[_Internal_Value_Type], _NumericOperandsOverload):
     pass
 
 
-class UnsignedIntegerType(QoalaIntegerType[_Internal_Value_Type]):
+class _SignedIntegerType(QoalaIntegerType[_Internal_Value_Type]):
     pass
 
 
-class Int32(SignedIntegerType[int]):
+class _UnsignedIntegerType(QoalaIntegerType[_Internal_Value_Type]):
+    pass
+
+
+class Int32(_SignedIntegerType[int]):
     """
-    Class used to represent a `signed integer` of 32 bits
+    Represents a `signed integer` of 32 bits
     """
 
     def __new__(cls, *args, **kwargs):
@@ -45,7 +32,7 @@ class Int32(SignedIntegerType[int]):
         elif len(args) >= 1:
             kwargs["value"] = args[0]
             if not isinstance(args[0], int):
-                raise InvalidArgumentError(f"'{Int32.__name__}' type only supports integer values")
+                raise NotIntegerArgumentError(Int32.__name__)
         else:
             kwargs["value"] = 0
 
@@ -62,18 +49,30 @@ class Int32(SignedIntegerType[int]):
             other: Optional[Self] = None,
             # TODO - The next arguments are used when creating an Int32 from other types
     ):
+        """
+        Creates a new instance of a 32 bits-wide *signed* integer.
+
+        Parameters
+        ----------
+        immediate: int
+            the immediate value (as a python integer) for the new qoala integer. If not given
+            this value defaults to '0'
+        other: Int32
+            if given, the newly created integer will contain a copy of the value passed here.
+            Using this argument has the effect to create *a totally new integer instance*, but
+            containing the same value as the given argument. Use this method to create "deep
+            copies" of an integer.
+        """
         # Nothing to do here
-        pass
+        ...
 
 
-# "SIGNLESS" version of an integer.
-# TODO - Implement this class as a real "signless" integer, to avoid confusion in the generated MLIR
 Int = Int32
 
 
-class UInt32(UnsignedIntegerType[int]):
+class UInt32(_UnsignedIntegerType[int]):
     """
-    Class used to represent a `signed integer` of 32 bits
+    Represents an `unsigned integer` of 32 bits
     """
 
     def __new__(cls, *args, **kwargs):
@@ -86,9 +85,9 @@ class UInt32(UnsignedIntegerType[int]):
         elif len(args) >= 1:
             kwargs["value"] = args[0]
             if not isinstance(args[0], int):
-                raise InvalidArgumentError(f"'{UInt32.__name__}' type only supports integer values")
+                raise NotIntegerArgumentError(UInt32.__name__)
             if args[0] < 0:
-                raise InvalidArgumentError(f"'{UInt32.__name__}' type only supports positive integer values")
+                raise NotUnsignedIntegerArgumentError(UInt32.__name__)
         else:
             kwargs["value"] = 0
 
@@ -105,6 +104,20 @@ class UInt32(UnsignedIntegerType[int]):
             other: Optional[Self] = 0,
             # TODO - The next arguments are used when creating an UInt32 from other types
     ):
+        """
+        Creates a new instance of a 32 bits-wide *unsigned* integer.
+
+        Parameters
+        ----------
+        immediate: int
+            the immediate value (as a python integer) for the new qoala integer. If not given
+            this value defaults to '0'
+        other: UInt32
+            if given, the newly created integer will contain a copy of the value passed here.
+            Using this argument has the effect to create *a totally new integer instance*, but
+            containing the same value as the given argument. Use this method to create "deep
+            copies" of an integer.
+        """
         # Nothing to do here
         pass
 

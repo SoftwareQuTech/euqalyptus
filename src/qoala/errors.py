@@ -1,3 +1,28 @@
+class InvalidArgumentError(RuntimeError):
+    pass
+
+
+class NotIntegerArgumentError(InvalidArgumentError):
+    def __init__(self, cls_name: str):
+        super().__init__(f"'{cls_name}' type only supports integer values")
+
+
+class NotUnsignedIntegerArgumentError(InvalidArgumentError):
+    def __init__(self, cls_name: str):
+        super().__init__(f"'{cls_name}' type only supports positive integer values")
+
+
+class NotFloatArgumentError(InvalidArgumentError):
+    def __init__(self, cls_name: str):
+        super().__init__(f"'{cls_name}' type only supports positive integer values")
+
+
+class InvalidArrayArgumentError(InvalidArgumentError):
+    def __init__(self, array_base_type: str, native_type: str):
+        super().__init__(f"Array of type '{array_base_type}' "
+                         f"can only hold values of type '{native_type}'")
+
+
 class UnknownRemoteError(RuntimeError):
     def __init__(self, name: str):
         super().__init__(f"Unkown remote with name '{name}'. "

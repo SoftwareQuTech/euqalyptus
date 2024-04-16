@@ -51,7 +51,7 @@ def simple_arith_program_composed():
 
     float_A = Float(20.0)
     float_B = Float(4.0)
-    # float_c uses a float, but also a "composed" expression (sustraction)
+    # float_c uses a float, but also a "composed" expression (subtraction)
     # which can evaluate to an integer
     float_d = float_c * float_A
     float_e = float_d / float_B

@@ -2,7 +2,7 @@ import pytest
 
 from qoala.ast.operations.numeric import Add, Subtract, Multiply, Divide
 from qoala.ast.value import QoalaInteger, QoalaFloat, Signedness
-from qoala.types.classical import InvalidArgumentError
+from qoala.errors import InvalidArrayArgumentError, NotUnsignedIntegerArgumentError, NotIntegerArgumentError
 from qoala.types.classical.arrays import IntArray, FloatArray
 from qoala.types.classical.floats import Float
 from qoala.types.classical.integer import Int32, UInt32
@@ -70,26 +70,26 @@ class TestNumbersSemantics:
         assert int_f.operand_b is int_b
 
     def test_wrong_numeric_initialization(self):
-        with pytest.raises(InvalidArgumentError) as ex:
+        with pytest.raises(NotUnsignedIntegerArgumentError) as ex:
             _ = UInt32(-10)
         assert str(ex.value) == "'UInt32' type only supports positive integer values"
 
-        with pytest.raises(InvalidArgumentError) as ex:
+        with pytest.raises(NotIntegerArgumentError) as ex:
             _ = Int32(10.2)
         assert str(ex.value) == "'Int32' type only supports integer values"
 
-        with pytest.raises(InvalidArgumentError) as ex:
+        with pytest.raises(NotIntegerArgumentError) as ex:
             _ = UInt32(0.25)
         assert str(ex.value) == "'UInt32' type only supports integer values"
 
-        with pytest.raises(InvalidArgumentError) as ex:
+        with pytest.raises(NotIntegerArgumentError) as ex:
             _ = UInt32(-3.25)
         assert str(ex.value) == "'UInt32' type only supports integer values"
 
     def test_wrong_array_initialization(self):
-        with pytest.raises(InvalidArgumentError) as ex:
+        with pytest.raises(InvalidArrayArgumentError) as ex:
             _ = IntArray(10.2)
         assert str(ex.value) == "Array of type 'IntArray' can only hold values of type 'int'"
-        with pytest.raises(InvalidArgumentError) as ex:
+        with pytest.raises(InvalidArrayArgumentError) as ex:
             _ = FloatArray(10)
         assert str(ex.value) == "Array of type 'FloatArray' can only hold values of type 'float'"
