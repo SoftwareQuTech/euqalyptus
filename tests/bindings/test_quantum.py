@@ -192,8 +192,8 @@ class TestQoalaQnetPythonBindingsQuantum:
         _, module = classical_remote_communication.compile()
         assert isinstance(module, QoalaModule)
         expected_asm = """module {
+  qnet.remote @Bob
   qnet.func @classical_remote_communication() {
-    qnet.remote @Bob
     %0 = qnet.recv_ints  {length = 10 : i32, remote = @Bob} : tensor<10xi32>
     %c0 = arith.constant 0 : index
     %extracted = tensor.extract %0[%c0] : tensor<10xi32>
@@ -213,8 +213,8 @@ class TestQoalaQnetPythonBindingsQuantum:
         _, module = classical_send_immediate_values.compile()
         assert isinstance(module, QoalaModule)
         expected_asm = """module {
+  qnet.remote @Alice
   qnet.func @classical_send_immediate_values() {
-    qnet.remote @Alice
     %c10_i32 = arith.constant 10 : i32
     %c20_i32 = arith.constant 20 : i32
     %from_elements = tensor.from_elements %c10_i32, %c20_i32 : tensor<2xi32>
@@ -236,8 +236,8 @@ class TestQoalaQnetPythonBindingsQuantum:
         _, module = classical_send_array_of_values.compile()
         assert isinstance(module, QoalaModule)
         expected_asm = """module {
+  qnet.remote @Alice
   qnet.func @classical_send_array_of_values() {
-    qnet.remote @Alice
     %c10_i32 = arith.constant 10 : i32
     %c20_i32 = arith.constant 20 : i32
     %from_elements = tensor.from_elements %c10_i32, %c20_i32 : tensor<2xi32>
@@ -261,8 +261,8 @@ class TestQoalaQnetPythonBindingsQuantum:
         _, module = classical_send_immediates_and_array_of_values.compile()
         assert isinstance(module, QoalaModule)
         expected_asm = """module {
+  qnet.remote @Alice
   qnet.func @classical_send_immediates_and_array_of_values() {
-    qnet.remote @Alice
     %c10_i32 = arith.constant 10 : i32
     %c20_i32 = arith.constant 20 : i32
     %from_elements = tensor.from_elements %c10_i32, %c20_i32 : tensor<2xi32>
@@ -296,8 +296,8 @@ class TestQoalaQnetPythonBindingsQuantum:
         #        Being this said, successive operations applied on the same qubit (as depicted in the
         #        code tested in this case) _MUST_ operate on the "updated" value of the qubit.
         expected_asm = """module {
+  qnet.remote @Bob
   qnet.func @quantum_entanglement_program() {
-    qnet.remote @Bob
     %0 = qnet.eprs  {remote = @Bob} : !qnet.qubit
     %1 = qnet.recv_ints  {length = 1 : i32, remote = @Bob} : tensor<1xi32>
     %c0 = arith.constant 0 : index
@@ -340,8 +340,8 @@ class TestQoalaQnetPythonBindingsQuantum:
         #        Being this said, successive operations applied on the same qubit (as depicted in the
         #        code tested in this case) _MUST_ operate on the "updated" value of the qubit.
         expected_asm = """module {
+  qnet.remote @Bob
   qnet.func @quantum_entanglement_program_b() {
-    qnet.remote @Bob
     %0 = qnet.eprs  {remote = @Bob} : !qnet.qubit
     %1 = qnet.eprs  {remote = @Bob} : !qnet.qubit
     %2 = qnet.eprs  {remote = @Bob} : !qnet.qubit
@@ -375,8 +375,8 @@ class TestQoalaQnetPythonBindingsQuantum:
         #        Being this said, successive operations applied on the same qubit (as depicted in the
         #        code tested in this case) _MUST_ operate on the "updated" value of the qubit.
         expected_asm = """module {
+  qnet.remote @Bob
   qnet.func @quantum_entanglement_program_c() {
-    qnet.remote @Bob
     %0 = qnet.eprs  {remote = @Bob} : !qnet.qubit
     %1 = qnet.eprs  {remote = @Bob} : !qnet.qubit
     %2 = qnet.eprs  {remote = @Bob} : !qnet.qubit

@@ -118,6 +118,7 @@ class QoalaProgram:
             # We clear the body of this qoala program.
             self._module.clear_body()
             ret_val = self._entry_fun(*args, **kwargs)
+            self._module.remotes = [remote for _, remote in self._declared_remotes.items()]
             self._is_compiled = True
             # We delete the reference to the QoalaProgram under compilation
             del QoalaProgram._instance

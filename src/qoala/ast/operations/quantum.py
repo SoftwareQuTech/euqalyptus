@@ -210,7 +210,6 @@ class DeclaredRemote(QoalaOperation):
         super().__init__()
         self.remote_name = remote_name
         QoalaProgram.add_declared_remote(remote_name, self)
-        QoalaProgram.add_to_body(self)
 
     def can_evaluate_to(self, cls):
         return False
