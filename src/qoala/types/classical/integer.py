@@ -78,6 +78,7 @@ class UInt32(_UnsignedIntegerType[int]):
     def __new__(cls, *args, **kwargs):
         kwargs["width"] = 32
         kwargs["signedness"] = Signedness.UNSIGNED
+
         if "immediate" in kwargs:
             assert isinstance(kwargs["immediate"], int)
             kwargs["value"] = kwargs["immediate"]

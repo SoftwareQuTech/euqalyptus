@@ -5,6 +5,7 @@ from typing import List, Self, Any, Dict, Tuple
 
 from qoala.ast import QoalaASTElement
 from qoala.module import QoalaModule
+import qoala.utils.debug_info as dbg_info
 
 
 class NotYetCompiledError(RuntimeError):
@@ -68,7 +69,9 @@ class QoalaProgram:
     _declared_remotes: Dict[str, Any]
 
     def __init__(self, entry_fun: Callable):
-        self._module = QoalaModule(entry_fun.__name__)
+        self._function_name = entry_fun.__name__
+        module_dbg_info = dbg_info.get_debug_info_for_function(entry_fun)
+        self._module = QoalaModule(self._function_name, module_dbg_info)
         self._entry_fun = entry_fun
         self._is_compiled = False
 
@@ -112,6 +115,8 @@ class QoalaProgram:
         # This does not allow parallel compilation, since instructions of different programs
         # would end in the same body, of a single function.
         try:
+            # TODO - Change this ugly way to set the name of the function for the debugging info engine
+            dbg_info.function_name = self._function_name
             QoalaProgram._compiler_lock.acquire()
             QoalaProgram._instance = self
             QoalaProgram._declared_remotes = {}

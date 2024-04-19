@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 
 from qnet.dialects import arith
-from qnet.ir import Context
+from qnet.ir import Context, Location
 
 from qoala import QoalaProgram
 from qoala.ast.operations import QoalaOperation, QoalaExpression
@@ -23,7 +23,13 @@ class IntToFloat(QoalaOperation):
         return cls == QoalaFloat
 
     def to_ir(self, ctx: Context):
-        self.ir = arith.uitofp(f32(), self.operand.ir)
+        source_location = Location.file(
+            filename=self.debug_info.filename,
+            line=self.debug_info.line_start,
+            col=self.debug_info.col_start,
+            context=ctx
+        )
+        self.ir = arith.uitofp(f32(), self.operand.ir, loc=source_location)
         return self.ir
 
 
@@ -41,5 +47,11 @@ class FloatToInt(QoalaOperation):
         return cls == QoalaInteger
 
     def to_ir(self, ctx: Context):
-        self.ir = arith.fptoui(i32(), self.operand.ir)
+        source_location = Location.file(
+            filename=self.debug_info.filename,
+            line=self.debug_info.line_start,
+            col=self.debug_info.col_start,
+            context=ctx
+        )
+        self.ir = arith.fptoui(i32(), self.operand.ir, loc=source_location)
         return self.ir

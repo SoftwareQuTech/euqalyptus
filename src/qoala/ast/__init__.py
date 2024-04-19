@@ -2,6 +2,8 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from typing import List, TypeVar
 
+from qoala.utils.debug_info import DebugInfo
+
 from qnet.ir import Context, Operation
 
 _T = TypeVar("_T")
@@ -9,6 +11,7 @@ _T = TypeVar("_T")
 
 @dataclass(init=False)
 class QoalaASTElement(ABC):
+    debug_info: DebugInfo
 
     @abstractmethod
     def to_ir(self, ctx: Context):

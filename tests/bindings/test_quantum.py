@@ -253,6 +253,7 @@ class TestQoalaQnetPythonBindingsQuantum:
 }
 """
         assert str(module.asm) == expected_asm
+        print(module.asm_dbg)
 
     def test_classical_send_immediates_and_array_of_values(self):
         with pytest.raises(NotYetCompiledError) as ex:

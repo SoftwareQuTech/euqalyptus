@@ -6,6 +6,7 @@ from qoala.errors import InvalidArrayArgumentError, NotUnsignedIntegerArgumentEr
 from qoala.types.classical.arrays import IntArray, FloatArray
 from qoala.types.classical.floats import Float
 from qoala.types.classical.integer import Int32, UInt32
+import qoala.utils.debug_info as dbg_info
 
 
 class TestNumbersSemantics:
@@ -13,6 +14,16 @@ class TestNumbersSemantics:
         (10, 20, Int32, QoalaInteger),
         (11.1, 22.2, Float, QoalaFloat)
     ]
+
+    @pytest.fixture(autouse=True, scope="function")
+    def setup_debug_info(self, request):
+        # For allowing debug info
+        # Nuance; parametrized tests use [param-types]... remove that part
+        if "[" in request.node.name:
+            bracket_index = request.node.name.index("[")
+            dbg_info.function_name = request.node.name[0:bracket_index]
+        else:
+            dbg_info.function_name = request.node.name
 
     @pytest.mark.parametrize("val_a, val_b, numeric_type, internal_type", numeric_test_data)
     def test_basic_numeric_semantics(
