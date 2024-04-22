@@ -253,7 +253,6 @@ class TestQoalaQnetPythonBindingsQuantum:
 }
 """
         assert str(module.asm) == expected_asm
-        print(module.asm_dbg)
 
     def test_classical_send_immediates_and_array_of_values(self):
         with pytest.raises(NotYetCompiledError) as ex:
@@ -280,7 +279,6 @@ class TestQoalaQnetPythonBindingsQuantum:
   }
 }
 """
-        print(module.asm)
         assert str(module.asm) == expected_asm
 
     def test_entanglement_program_to_qoala_qnet(self):
@@ -360,6 +358,36 @@ class TestQoalaQnetPythonBindingsQuantum:
 }
 """
         assert str(module.asm) == expected_asm
+        expected_dbg_asm = """module {
+  qnet.remote @Bob loc(#loc1)
+  qnet.func @quantum_entanglement_program_b() {
+    %0 = qnet.eprs  {remote = @Bob} : !qnet.qubit loc(#loc2)
+    %1 = qnet.eprs  {remote = @Bob} : !qnet.qubit loc(#loc2)
+    %2 = qnet.eprs  {remote = @Bob} : !qnet.qubit loc(#loc2)
+    %3 = qnet.recv_floats  {length = 2 : i32, remote = @Bob} : tensor<2xf32> loc(#loc3)
+    %c0 = arith.constant 0 : index loc(#loc3)
+    %extracted = tensor.extract %3[%c0] : tensor<2xf32> loc(#loc4)
+    %4 = qnet.rot_x %2, %extracted : !qnet.qubit loc(#loc5)
+    %5 = qnet.recv_floats  {length = 2 : i32, remote = @Bob} : tensor<2xf32> loc(#loc6)
+    %c1 = arith.constant 1 : index loc(#loc6)
+    %extracted_0 = tensor.extract %5[%c1] : tensor<2xf32> loc(#loc7)
+    %6 = qnet.rot_y %4, %extracted_0 : !qnet.qubit loc(#loc8)
+    %7 = qnet.measure %6 : i1 loc(#loc9)
+    qnet.return loc(#loc)
+  } loc(#loc)
+} loc(#loc)
+#loc = loc("/home/diego/code/qoala-compiler/tests/bindings/test_quantum.py":105:0)
+#loc1 = loc("/home/diego/code/qoala-compiler/tests/bindings/test_quantum.py":107:4)
+#loc2 = loc("/home/diego/code/qoala-compiler/tests/bindings/test_quantum.py":108:17)
+#loc3 = loc("/home/diego/code/qoala-compiler/tests/bindings/test_quantum.py":109:9)
+#loc4 = loc("/home/diego/code/qoala-compiler/tests/bindings/test_quantum.py":110:19)
+#loc5 = loc("/home/diego/code/qoala-compiler/tests/bindings/test_quantum.py":110:4)
+#loc6 = loc("/home/diego/code/qoala-compiler/tests/bindings/test_quantum.py":111:9)
+#loc7 = loc("/home/diego/code/qoala-compiler/tests/bindings/test_quantum.py":112:19)
+#loc8 = loc("/home/diego/code/qoala-compiler/tests/bindings/test_quantum.py":112:4)
+#loc9 = loc("/home/diego/code/qoala-compiler/tests/bindings/test_quantum.py":113:8)
+"""
+        assert str(module.asm_dbg) == expected_dbg_asm
 
     @pytest.mark.skip(reason="Using multiple entangled qubits using array syntax is not supported yet")
     def test_entanglement_program_c_to_qoala_qnet(self):
