@@ -8,12 +8,13 @@ import qnet.dialects.tensor as tensor
 from qnet.ir import Context, Location, IntegerAttr
 
 from qoala import QoalaProgram
+from qoala.ast import checkbaseir, QoalaExpression
 from qoala.ast.operations import QoalaOperation
 from qoala.ast.operations.arrays import GetItem
 from qoala.ast.qubit import QoalaQubit
 from qoala.ast.value import (
-    QoalaExpression, QoalaFloatOrExpression,
-    QoalaInteger, QoalaFloat, QoalaArray, QoalaNumericValue
+     QoalaFloatOrExpression, QoalaInteger, QoalaFloat,
+     QoalaArray, QoalaNumericValue
 )
 from qoala.errors import UnknownTypeError, UnknownRemoteError
 from qoala.utils.binding_types import i32, f32
@@ -40,6 +41,7 @@ class QubitMeasure(_QubitBaseOperation):
         super().__init__(qubit=operands[0])
         QoalaProgram.add_to_body(self)
 
+    @checkbaseir
     def to_ir(self, ctx: Context):
         source_location = Location.file(
             filename=self.debug_info.filename,
@@ -74,6 +76,7 @@ class RotateX(Rotate):
     ):
         super().__init__(qubit=qubit, angle=angle)
 
+    @checkbaseir
     def to_ir(self, ctx: Context):
         source_location = Location.file(
             filename=self.debug_info.filename,
@@ -96,6 +99,7 @@ class RotateY(Rotate):
     ):
         super().__init__(qubit=qubit, angle=angle)
 
+    @checkbaseir
     def to_ir(self, ctx: Context):
         source_location = Location.file(
             filename=self.debug_info.filename,
@@ -118,6 +122,7 @@ class RotateZ(Rotate):
     ):
         super().__init__(qubit=qubit, angle=angle)
 
+    @checkbaseir
     def to_ir(self, ctx: Context):
         source_location = Location.file(
             filename=self.debug_info.filename,
@@ -146,6 +151,7 @@ def RotationAlias(base_clazz: Type, base_rotation: float):
                 rotation_angle = QoalaNumericValue.from_immediate(base_rotation, get_debug_info())
                 super().__init__(qubit=operands[0], angle=rotation_angle)
 
+            @checkbaseir
             def to_ir(self, ctx: Context):
                 return super().to_ir(ctx)
         return _BaseEasyRotation
@@ -184,6 +190,7 @@ class HGate(_QubitBaseOperation):
         super().__init__(qubit=operands[0])
         QoalaProgram.add_to_body(self)
 
+    @checkbaseir
     def to_ir(self, ctx: Context):
         source_location = Location.file(
             filename=self.debug_info.filename,
@@ -205,6 +212,7 @@ class CNotGate(_QubitBaseOperation):
         self.target = target
         QoalaProgram.add_to_body(self)
 
+    @checkbaseir
     def to_ir(self, ctx: Context):
         source_location = Location.file(
             filename=self.debug_info.filename,
@@ -231,6 +239,7 @@ class CPhaseGate(_QubitBaseOperation):
         self.target = target
         QoalaProgram.add_to_body(self)
 
+    @checkbaseir
     def to_ir(self, ctx: Context):
         source_location = Location.file(
             filename=self.debug_info.filename,
@@ -258,6 +267,7 @@ class DeclaredRemote(QoalaOperation):
     def can_evaluate_to(self, cls):
         return False
 
+    @checkbaseir
     def to_ir(self, ctx: Context):
         source_location = Location.file(
             filename=self.debug_info.filename,
@@ -278,11 +288,22 @@ class BaseRecvOp(QoalaArray[_Qoala_Base_Type, _Native_Base_Type]):
     # Does this need to be a string? It seems to be just a "reference"
     remote: DeclaredRemote | str
     base_type: Type
+    index_op: QoalaExpression | None
+    get_op: QoalaExpression | None
 
     def __init__(self, remote_name: DeclaredRemote | str, length: int, base_type: Type):
         super().__init__(base_size=32, base_type=base_type, length=length, base_clone=None)
         self.remote = remote_name
         self.base_type = base_type
+        self.index_op = None
+        self.get_op = None
+        if length == 1:
+            # A tricky case. We need to insert operations to manually get the only
+            # qubit of this entanglement pair
+            # We need the index 0
+            self.index_op = QoalaNumericValue.from_immediate(0, dbg_info=self.debug_info, is_index=True)
+            # We insert the GetItem operation, we pass the debug info of the same item
+            self.extract_op = GetItem(self, self.index_op, dbg_info=self.debug_info)
         # We don't need to add this operation to the body, since it will be done
         # by the constructor of the parent class.
 
@@ -297,6 +318,7 @@ class BaseRecvOp(QoalaArray[_Qoala_Base_Type, _Native_Base_Type]):
         else:
             return cls == QoalaArray
 
+    @checkbaseir
     def to_ir(self, ctx: Context):
         source_location = Location.file(
             filename=self.debug_info.filename,
@@ -327,16 +349,9 @@ class BaseRecvOp(QoalaArray[_Qoala_Base_Type, _Native_Base_Type]):
         else:
             raise UnknownTypeError(f"Cannot create recv operation for base type '{self.base_type}'")
         if self.length == 1:
-            # A tricky case. We need to insert operations to manually get the only
-            # qubit of this entanglement pair
-            # We need the index 0
-            index = QoalaNumericValue.from_immediate(0, self.debug_info, is_index=True)
-            # We generate the IR of this index.
-            index.to_ir(ctx)
-            # We insert the GetItem operation, we pass the debug info of the same item
-            extract = GetItem(self, index, dbg_info=self.debug_info)
-            # The IR of that operation is the "value of this operation"
-            self.ir = extract.to_ir(ctx)
+            # In this case the IR of the Recv operation is the value of the extract operation
+            self.index_op.to_ir(ctx)
+            self.ir = self.extract_op.to_ir(ctx)
         return self.ir
 
 
@@ -385,6 +400,7 @@ class BaseSendOp(QoalaOperation):
     def can_evaluate_to(self, cls) -> bool:
         return False
 
+    @checkbaseir
     def to_ir(self, ctx: Context):
         source_location = Location.file(
             filename=self.debug_info.filename,

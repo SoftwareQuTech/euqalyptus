@@ -8,7 +8,7 @@ import qnet.dialects.tensor as tensor
 from qnet.ir import Context, Location
 
 from qoala import QoalaProgram
-from qoala.ast import QoalaExpression
+from qoala.ast import QoalaExpression, checkbaseir
 from qoala.ast.operations import QoalaOperation, with_arith_operators
 from qoala.errors import UnknownTypeError, OperandMismatchError
 from qoala.utils.binding_types import i32, ui32, f32, index
@@ -91,6 +91,7 @@ class QoalaInteger(QoalaNumericValue[int]):
     def can_evaluate_to(self, cls):
         return cls == QoalaInteger
 
+    @checkbaseir
     def to_ir(self, ctx: Context):
         if self.is_index_type:
             integer_type = index()
@@ -137,6 +138,7 @@ class QoalaFloat(QoalaNumericValue[float]):
             self.debug_info = get_debug_info()
         QoalaProgram.add_to_body(self)
 
+    @checkbaseir
     def to_ir(self, ctx: Context):
         float_type = f32()
         source_location = Location.file(
@@ -252,6 +254,7 @@ class QoalaArray(QoalaValue[QoalaExpression], Generic[_Qoala_Base_Type, _Native_
     def members_can_evaluate_to(self, cls):
         return cls == self.qoala_type
 
+    @checkbaseir
     def to_ir(self, ctx: Context):
         elements = [element.ir for element in self.members]
         if self.base_type is int:

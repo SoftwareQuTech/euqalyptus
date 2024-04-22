@@ -7,7 +7,7 @@ import qnet.dialects.qnet as qnet
 from qnet.ir import Context, Location
 
 from qoala import QoalaProgram
-from qoala.ast import QoalaExpression
+from qoala.ast import QoalaExpression, checkbaseir
 from qoala.ast.operations import QoalaOperation
 from qoala.ast.operations.numeric import Pow2, Divide, Multiply
 from qoala.ast.value import (
@@ -230,6 +230,7 @@ class QoalaLocalQubit(QbitBaseOperations):
     def can_evaluate_to(self, cls):
         return cls == QoalaQubit
 
+    @checkbaseir
     def to_ir(self, ctx: Context):
         source_location = Location.file(
             filename=self.debug_info.filename,
@@ -258,6 +259,7 @@ class QoalaEprs(QbitBaseOperations):
     def can_evaluate_to(self, cls):
         return cls == QoalaQubit
 
+    @checkbaseir
     def to_ir(self, ctx: Context):
         source_location = Location.file(
             filename=self.debug_info.filename,

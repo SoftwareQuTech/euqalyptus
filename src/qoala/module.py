@@ -4,13 +4,13 @@ from typing import List
 from qnet.dialects import qnet
 from qnet.ir import *
 
-from qoala.ast import QoalaASTElement, QoalaExpression
+from qoala.ast import QoalaExpression
 from qoala.utils.debug_info import DebugInfo
 
 
 @dataclass(init=False)
 class QoalaModule:
-    _body: List[QoalaASTElement]
+    _body: List[QoalaExpression]
     _remotes: List[QoalaExpression]
     _module_dbg_info: DebugInfo
     _function_name: str
@@ -27,7 +27,7 @@ class QoalaModule:
     def clear_body(self):
         self._body.clear()
 
-    def add_element_to_body(self, elem: QoalaASTElement):
+    def add_element_to_body(self, elem: QoalaExpression):
         self._body.append(elem)
 
     @property

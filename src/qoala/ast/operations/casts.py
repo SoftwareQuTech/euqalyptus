@@ -4,7 +4,8 @@ from qnet.dialects import arith
 from qnet.ir import Context, Location
 
 from qoala import QoalaProgram
-from qoala.ast.operations import QoalaOperation, QoalaExpression
+from qoala.ast import QoalaExpression, checkbaseir
+from qoala.ast.operations import QoalaOperation
 from qoala.ast.value import QoalaFloat, QoalaInteger
 from qoala.utils.binding_types import f32, i32
 
@@ -22,6 +23,7 @@ class IntToFloat(QoalaOperation):
     def can_evaluate_to(self, cls) -> bool:
         return cls == QoalaFloat
 
+    @checkbaseir
     def to_ir(self, ctx: Context):
         source_location = Location.file(
             filename=self.debug_info.filename,
@@ -46,6 +48,7 @@ class FloatToInt(QoalaOperation):
     def can_evaluate_to(self, cls) -> bool:
         return cls == QoalaInteger
 
+    @checkbaseir
     def to_ir(self, ctx: Context):
         source_location = Location.file(
             filename=self.debug_info.filename,

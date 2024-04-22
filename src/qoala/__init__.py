@@ -3,7 +3,7 @@ from collections.abc import Callable
 from threading import Lock
 from typing import List, Self, Any, Dict, Tuple
 
-from qoala.ast import QoalaASTElement
+from qoala.ast import QoalaExpression
 from qoala.module import QoalaModule
 import qoala.utils.debug_info as dbg_info
 
@@ -87,7 +87,7 @@ class QoalaProgram:
             return self._module
 
     @classmethod
-    def add_to_body(cls, item: QoalaASTElement) -> None:
+    def add_to_body(cls, item: QoalaExpression) -> None:
         if hasattr(QoalaProgram, "_instance"):
             QoalaProgram._instance._module.add_element_to_body(item)
 

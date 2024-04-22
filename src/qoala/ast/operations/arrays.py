@@ -5,6 +5,7 @@ import qnet.dialects.tensor as tensor
 from qnet.ir import Context, Location
 
 from qoala import QoalaProgram
+from qoala.ast import checkbaseir
 from qoala.ast.operations import QoalaOperation, with_arith_operators
 from qoala.ast.value import QoalaExpression, QoalaInteger, QoalaArray
 from qoala.errors import OperationNotYetImplementedError
@@ -28,6 +29,7 @@ class CastToIndex(QoalaOperation):
         else:
             return False
 
+    @checkbaseir
     def to_ir(self, ctx: Context):
         source_location = Location.file(
             filename=self.debug_info.filename,
@@ -58,6 +60,7 @@ class GetItem(QoalaOperation):
     def can_evaluate_to(self, cls):
         return self.base_array.members_can_evaluate_to(cls)
 
+    @checkbaseir
     def to_ir(self, ctx: Context):
         source_location = Location.file(
             filename=self.debug_info.filename,
@@ -89,6 +92,7 @@ class SetItem(QoalaOperation):
         else:
             return False
 
+    @checkbaseir
     def to_ir(self, ctx: Context):
         source_location = Location.file(
             filename=self.debug_info.filename,

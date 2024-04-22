@@ -6,7 +6,8 @@ import qnet.dialects.math as math
 from qnet.ir import Context, Location
 
 from qoala import QoalaProgram
-from qoala.ast.operations import QoalaOperation, QoalaExpression, with_arith_operators
+from qoala.ast import QoalaExpression, checkbaseir
+from qoala.ast.operations import QoalaOperation, with_arith_operators
 from qoala.ast.operations.casts import IntToFloat
 from qoala.ast.value import QoalaInteger, QoalaFloat
 from qoala.errors import WrongEvaluationTypeError
@@ -58,6 +59,7 @@ class Add(BaseBinaryArithOp):
                 self.operand_a.can_evaluate_to(cls) and
                 self.operand_b.can_evaluate_to(cls))
 
+    @checkbaseir
     def to_ir(self, ctx: Context):
         # We can assume that both operands evaluate to the same type, since the constructor
         # in the super class will insert an upcast if needed
@@ -90,6 +92,7 @@ class Subtract(BaseBinaryArithOp):
                 self.operand_a.can_evaluate_to(cls) and
                 self.operand_b.can_evaluate_to(cls))
 
+    @checkbaseir
     def to_ir(self, ctx: Context):
         # We can assume that both operands evaluate to the same type, since the constructor
         # in the super class will insert an upcast if needed
@@ -123,6 +126,7 @@ class Multiply(BaseBinaryArithOp):
                 self.operand_a.can_evaluate_to(cls) and
                 self.operand_b.can_evaluate_to(cls))
 
+    @checkbaseir
     def to_ir(self, ctx: Context):
         # We can assume that both operands evaluate to the same type, since the constructor
         # in the super class will insert an upcast if needed
@@ -156,6 +160,7 @@ class Divide(BaseBinaryArithOp):
                 self.operand_a.can_evaluate_to(cls) and
                 self.operand_b.can_evaluate_to(cls))
 
+    @checkbaseir
     def to_ir(self, ctx: Context):
         # We can assume that both operands evaluate to the same type, since the constructor
         # in the super class will insert an upcast if needed
@@ -193,6 +198,7 @@ class Pow(QoalaOperation):
         return ((cls == QoalaInteger or cls == QoalaFloat) and
                 self.base.can_evaluate_to(cls))  # The base of the exponentiation dictates the type of the result
 
+    @checkbaseir
     def to_ir(self, ctx: Context):
         # TODO - In the meantime we assume both operands are of the same type
         #        In the future we could implement semantic checks to automatically cast one
@@ -237,6 +243,7 @@ class Pow2(QoalaOperation):
     def can_evaluate_to(self, cls):
         return cls == QoalaFloat
 
+    @checkbaseir
     def to_ir(self, ctx: Context):
         source_location = Location.file(
             filename=self.debug_info.filename,
