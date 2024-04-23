@@ -24,15 +24,14 @@ class IntToFloat(QoalaOperation):
         return cls == QoalaFloat
 
     @checkbaseir
-    def to_ir(self, ctx: Context):
+    def compile(self, ctx: Context) -> None:
         source_location = Location.file(
             filename=self.debug_info.filename,
             line=self.debug_info.line_start,
             col=self.debug_info.col_start,
             context=ctx
         )
-        self.ir = arith.uitofp(f32(), self.operand.ir, loc=source_location)
-        return self.ir
+        self.ir_value = arith.uitofp(f32(), self.operand.ir_value, loc=source_location)
 
 
 @dataclass(init=False)
@@ -49,12 +48,11 @@ class FloatToInt(QoalaOperation):
         return cls == QoalaInteger
 
     @checkbaseir
-    def to_ir(self, ctx: Context):
+    def compile(self, ctx: Context) -> None:
         source_location = Location.file(
             filename=self.debug_info.filename,
             line=self.debug_info.line_start,
             col=self.debug_info.col_start,
             context=ctx
         )
-        self.ir = arith.fptoui(i32(), self.operand.ir, loc=source_location)
-        return self.ir
+        self.ir_value = arith.fptoui(i32(), self.operand.ir_value, loc=source_location)

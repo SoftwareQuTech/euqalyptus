@@ -88,11 +88,11 @@ class QoalaInteger(QoalaNumericValue[int]):
             self.debug_info = get_debug_info()
         QoalaProgram.add_to_body(self)
 
-    def can_evaluate_to(self, cls):
+    def can_evaluate_to(self, cls) -> bool:
         return cls == QoalaInteger
 
     @checkbaseir
-    def to_ir(self, ctx: Context):
+    def compile(self, ctx: Context) -> None:
         if self.is_index_type:
             integer_type = index()
         elif self.signedness == Signedness.SIGNED:
@@ -107,8 +107,7 @@ class QoalaInteger(QoalaNumericValue[int]):
             col=self.debug_info.col_start,
             context=ctx
         )
-        self.ir = arith.constant(value=self.value, result=integer_type, loc=source_location)
-        return self.ir
+        self.ir_value = arith.constant(value=self.value, result=integer_type, loc=source_location)
 
 
 @with_arith_operators
@@ -138,8 +137,11 @@ class QoalaFloat(QoalaNumericValue[float]):
             self.debug_info = get_debug_info()
         QoalaProgram.add_to_body(self)
 
+    def can_evaluate_to(self, cls) -> bool:
+        return cls == QoalaFloat
+
     @checkbaseir
-    def to_ir(self, ctx: Context):
+    def compile(self, ctx: Context) -> None:
         float_type = f32()
         source_location = Location.file(
             filename=self.debug_info.filename,
@@ -147,11 +149,7 @@ class QoalaFloat(QoalaNumericValue[float]):
             col=self.debug_info.col_start,
             context=ctx
         )
-        self.ir = arith.constant(value=self.value, result=float_type, loc=source_location)
-        return self.ir
-
-    def can_evaluate_to(self, cls):
-        return cls == QoalaFloat
+        self.ir_value = arith.constant(value=self.value, result=float_type, loc=source_location)
 
 
 QoalaFloatOrExpression = QoalaFloat | QoalaExpression
@@ -227,7 +225,7 @@ class QoalaArray(QoalaValue[QoalaExpression], Generic[_Qoala_Base_Type, _Native_
         else:
             to_add = new_element
         from qoala.ast.operations.arrays import SetItem
-        return QoalaOperation._create_expression_for_op(SetItem, self, to_add)
+        return QoalaOperation.create_expression_for_op(SetItem, self, to_add)
 
     def __len__(self) -> int:
         # TODO - Does this operation make sense?
@@ -243,20 +241,20 @@ class QoalaArray(QoalaValue[QoalaExpression], Generic[_Qoala_Base_Type, _Native_
                 raise OperandMismatchError(f"The index operand '{item_index}' cannot evaluate to an integer, "
                                            f"hence it cannot be used index an array.")
             from qoala.ast.operations.arrays import CastToIndex
-            casted_index = QoalaOperation._create_expression_for_op(CastToIndex, item_index)
+            casted_index = QoalaOperation.create_expression_for_op(CastToIndex, item_index)
             index_operand = casted_index
         from qoala.ast.operations.arrays import GetItem
-        return QoalaOperation._create_expression_for_op(GetItem, self, index_operand)
+        return QoalaOperation.create_expression_for_op(GetItem, self, index_operand)
 
-    def can_evaluate_to(self, cls):
+    def can_evaluate_to(self, cls) -> bool:
         return cls == QoalaArray
 
     def members_can_evaluate_to(self, cls):
         return cls == self.qoala_type
 
     @checkbaseir
-    def to_ir(self, ctx: Context):
-        elements = [element.ir for element in self.members]
+    def compile(self, ctx: Context) -> None:
+        ir_values = [element.ir_value for element in self.members]
         if self.base_type is int:
             hir_base_type = i32()
         elif self.base_type is float:
@@ -270,11 +268,10 @@ class QoalaArray(QoalaValue[QoalaExpression], Generic[_Qoala_Base_Type, _Native_
             context=ctx
         )
         result_type = tensor.RankedTensorType.get(shape=[self.length], element_type=hir_base_type, loc=source_location)
-        self.ir = tensor.from_elements(elements=elements, result=result_type, loc=source_location)
-        return self.ir
+        self.ir_value = tensor.from_elements(elements=ir_values, result=result_type, loc=source_location)
 
 
-class QoalaBit(QoalaValue[int]):
+class QoalaBit(QoalaValue[int], ABC):
     """
     Represents the result of performing a measurement of the qubit.
     Theoretically, the result of measuring a qubit can be either 0 or 1.

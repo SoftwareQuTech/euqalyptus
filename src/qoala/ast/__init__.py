@@ -15,23 +15,23 @@ class QoalaExpression(ABC):
     _ir_vals: List[Operation]
     debug_info: DebugInfo
 
-    @abstractmethod
-    def to_ir(self, ctx: Context):
-        pass
-
     def __init__(self):
         self._ir_vals = []
 
+    @abstractmethod
+    def compile(self, ctx: Context) -> None:
+        pass
+
     @property
-    def ir(self) -> Operation | List[Operation] | None:
+    def ir_value(self) -> Operation | List[Operation] | None:
         if len(self._ir_vals) <= 0:
             return None
         # We return the "most recent" value for this expression
         return self._ir_vals[-1]
 
-    @ir.setter
-    def ir(self, new_hir: Operation) -> None:
-        self._ir_vals.append(new_hir)
+    @ir_value.setter
+    def ir_value(self, new_ir_val: Operation) -> None:
+        self._ir_vals.append(new_ir_val)
 
     @abstractmethod
     def can_evaluate_to(self, cls) -> bool:
@@ -66,8 +66,8 @@ class checkbaseir:
         # Since this function is partially initialized, we get a reference of the object
         # that originally contains the decorated method. We can then check if the object's
         # IR has already been computed or not.
-        if instance.ir is not None:
-            return instance.ir
+        if instance.ir_value is not None:
+            return instance.ir_value
         else:
             # If not, we compute the object's IR by calling the decorated function
             return self._to_ir_func(instance, *args, **kwargs)

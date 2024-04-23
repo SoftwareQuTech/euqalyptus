@@ -23,22 +23,18 @@ class CastToIndex(QoalaOperation):
         self.index_val: QoalaExpression = operands[0]
         QoalaProgram.add_to_body(self)
 
-    def can_evaluate_to(self, cls):
-        if self.index_val.can_evaluate_to(QoalaInteger):
-            return True
-        else:
-            return False
+    def can_evaluate_to(self, cls) -> bool:
+        return self.index_val.can_evaluate_to(QoalaInteger)
 
     @checkbaseir
-    def to_ir(self, ctx: Context):
+    def compile(self, ctx: Context) -> None:
         source_location = Location.file(
             filename=self.debug_info.filename,
             line=self.debug_info.line_start,
             col=self.debug_info.col_start,
             context=ctx
         )
-        self.ir = arith.index_cast(in_=self.index_val.ir, out=index(), loc=source_location)
-        return self.ir
+        self.ir_value = arith.index_cast(in_=self.index_val.ir_value, out=index(), loc=source_location)
 
 
 @dataclass(init=False)
@@ -57,19 +53,18 @@ class GetItem(QoalaOperation):
         self.index: QoalaExpression = operands[1]
         QoalaProgram.add_to_body(self)
 
-    def can_evaluate_to(self, cls):
+    def can_evaluate_to(self, cls) -> bool:
         return self.base_array.members_can_evaluate_to(cls)
 
     @checkbaseir
-    def to_ir(self, ctx: Context):
+    def compile(self, ctx: Context) -> None:
         source_location = Location.file(
             filename=self.debug_info.filename,
             line=self.debug_info.line_start,
             col=self.debug_info.col_start,
             context=ctx
         )
-        self.ir = tensor.extract(tensor=self.base_array.ir, indices=[self.index.ir], loc=source_location)
-        return self.ir
+        self.ir_value = tensor.extract(tensor=self.base_array.ir_value, indices=[self.index.ir_value], loc=source_location)
 
 
 @dataclass(init=False)
@@ -85,7 +80,7 @@ class SetItem(QoalaOperation):
         self.index: QoalaExpression = operands[1]
         QoalaProgram.add_to_body(self)
 
-    def can_evaluate_to(self, cls):
+    def can_evaluate_to(self, cls) -> bool:
         if self.index.can_evaluate_to(QoalaInteger) and self.base_array.can_evaluate_to(QoalaArray):
             # TODO - We need to make sure that the type of 'base_array' is == cls
             return True
@@ -93,7 +88,7 @@ class SetItem(QoalaOperation):
             return False
 
     @checkbaseir
-    def to_ir(self, ctx: Context):
+    def compile(self, ctx: Context) -> None:
         source_location = Location.file(
             filename=self.debug_info.filename,
             line=self.debug_info.line_start,

@@ -74,7 +74,7 @@ class QoalaModule:
                 qir_module = Module.create(loc=base_location_info)
                 with InsertionPoint(qir_module.body):
                     for remote in self._remotes:
-                        remote.to_ir(ctx)
+                        remote.compile(ctx)
                     func_type = FunctionType.get(inputs=[], results=[])
                     function = qnet.FuncOp(
                         name=f"{self._function_name}",
@@ -84,7 +84,7 @@ class QoalaModule:
                     block = Block.create_at_start(function.body)
                     with InsertionPoint(block):
                         for operation in self._body:
-                            operation.to_ir(ctx)
+                            operation.compile(ctx)
                         qnet.ReturnOp([], loc=base_location_info)
                 # Before closing the context, we save the ASM we just created
                 self._qir_module = qir_module

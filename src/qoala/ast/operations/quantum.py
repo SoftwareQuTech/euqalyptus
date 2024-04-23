@@ -14,7 +14,7 @@ from qoala.ast.operations.arrays import GetItem
 from qoala.ast.qubit import QoalaQubit
 from qoala.ast.value import (
     QoalaFloatOrExpression, QoalaInteger, QoalaFloat,
-    QoalaArray, QoalaNumericValue
+    QoalaArray, QoalaNumericValue, QoalaBit
 )
 from qoala.errors import UnknownTypeError, UnknownRemoteError
 from qoala.utils.binding_types import i32, f32
@@ -35,22 +35,21 @@ class _QubitBaseOperation(QoalaOperation, ABC):
         return cls == QoalaQubit
 
 
-class QubitMeasure(_QubitBaseOperation):
+class QubitMeasure(_QubitBaseOperation, QoalaBit):
     def __init__(self, *operands: QoalaExpression):
         assert len(operands) == 1
         super().__init__(qubit=operands[0])
         QoalaProgram.add_to_body(self)
 
     @checkbaseir
-    def to_ir(self, ctx: Context):
+    def compile(self, ctx: Context) -> None:
         source_location = Location.file(
             filename=self.debug_info.filename,
             line=self.debug_info.line_start,
             col=self.debug_info.col_start,
             context=ctx
         )
-        self.ir = qnet.measure(qin=self.qubit.ir, loc=source_location)
-        return self.ir
+        self.ir_value = qnet.measure(qin=self.qubit.ir_value, loc=source_location)
 
 
 @dataclass(init=False)
@@ -77,7 +76,7 @@ class RotateX(Rotate):
         super().__init__(qubit=qubit, angle=angle)
 
     @checkbaseir
-    def to_ir(self, ctx: Context):
+    def compile(self, ctx: Context) -> None:
         source_location = Location.file(
             filename=self.debug_info.filename,
             line=self.debug_info.line_start,
@@ -85,10 +84,9 @@ class RotateX(Rotate):
             context=ctx
         )
         # We first add this operation to the program
-        self.ir = qnet.rot_x(qin=self.qubit.ir, angle=self.angle.ir, loc=source_location)
+        self.ir_value = qnet.rot_x(qin=self.qubit.ir_value, angle=self.angle.ir_value, loc=source_location)
         # We then register that the qubit has a "new" value
-        self.qubit.ir = self.ir
-        return self.ir
+        self.qubit.ir_value = self.ir_value
 
 
 class RotateY(Rotate):
@@ -100,7 +98,7 @@ class RotateY(Rotate):
         super().__init__(qubit=qubit, angle=angle)
 
     @checkbaseir
-    def to_ir(self, ctx: Context):
+    def compile(self, ctx: Context) -> None:
         source_location = Location.file(
             filename=self.debug_info.filename,
             line=self.debug_info.line_start,
@@ -108,10 +106,9 @@ class RotateY(Rotate):
             context=ctx
         )
         # We first add this operation to the program
-        self.ir = qnet.rot_y(qin=self.qubit.ir, angle=self.angle.ir, loc=source_location)
+        self.ir_value = qnet.rot_y(qin=self.qubit.ir_value, angle=self.angle.ir_value, loc=source_location)
         # We then register that the qubit has a "new" value
-        self.qubit.ir = self.ir
-        return self.ir
+        self.qubit.ir_value = self.ir_value
 
 
 class RotateZ(Rotate):
@@ -123,7 +120,7 @@ class RotateZ(Rotate):
         super().__init__(qubit=qubit, angle=angle)
 
     @checkbaseir
-    def to_ir(self, ctx: Context):
+    def compile(self, ctx: Context) -> None:
         source_location = Location.file(
             filename=self.debug_info.filename,
             line=self.debug_info.line_start,
@@ -131,15 +128,14 @@ class RotateZ(Rotate):
             context=ctx
         )
         # We first add this operation to the program
-        self.ir = qnet.rot_z(qin=self.qubit.ir, angle=self.angle.ir, loc=source_location)
+        self.ir_value = qnet.rot_z(qin=self.qubit.ir_value, angle=self.angle.ir_value, loc=source_location)
         # We then register that the qubit has a "new" value
-        self.qubit.ir = self.ir
-        return self.ir
+        self.qubit.ir_value = self.ir_value
 
 
 # Decorator used to "template" the classes annotated.
 # This decorator will create a class that is a subclass of 'base_class' and
-# that contains the '__init__' and 'to_ir' methods
+# that contains the '__init__' and 'compile' methods
 def RotationAlias(base_clazz: Type, base_rotation: float):
     def outer(decorated_clazz):
         if not issubclass(base_clazz, Rotate):
@@ -152,8 +148,8 @@ def RotationAlias(base_clazz: Type, base_rotation: float):
                 super().__init__(qubit=operands[0], angle=rotation_angle)
 
             @checkbaseir
-            def to_ir(self, ctx: Context):
-                return super().to_ir(ctx)
+            def compile(self, ctx: Context) -> None:
+                super().compile(ctx)
         return _BaseEasyRotation
     return outer
 
@@ -191,15 +187,14 @@ class HGate(_QubitBaseOperation):
         QoalaProgram.add_to_body(self)
 
     @checkbaseir
-    def to_ir(self, ctx: Context):
+    def compile(self, ctx: Context) -> None:
         source_location = Location.file(
             filename=self.debug_info.filename,
             line=self.debug_info.line_start,
             col=self.debug_info.col_start,
             context=ctx
         )
-        self.ir = qnet.hadamard(self.qubit.ir, loc=source_location)
-        return self.ir
+        self.ir_value = qnet.hadamard(self.qubit.ir_value, loc=source_location)
 
 
 @dataclass(init=False)
@@ -213,7 +208,7 @@ class CNotGate(_QubitBaseOperation):
         QoalaProgram.add_to_body(self)
 
     @checkbaseir
-    def to_ir(self, ctx: Context):
+    def compile(self, ctx: Context) -> None:
         source_location = Location.file(
             filename=self.debug_info.filename,
             line=self.debug_info.line_start,
@@ -221,11 +216,10 @@ class CNotGate(_QubitBaseOperation):
             context=ctx
         )
         # We first add this operation to the program
-        self.ir = qnet.cnot(qin0=self.qubit.ir, qin1=self.target.ir, loc=source_location)
+        self.ir_value = qnet.cnot(qin0=self.qubit.ir_value, qin1=self.target.ir_value, loc=source_location)
         # We then register that the qubit has a "new" value
-        self.qubit.ir = self.ir[0]
-        self.target.ir = self.ir[1]
-        return self.ir
+        self.qubit.ir_value = self.ir_value[0]
+        self.target.ir_value = self.ir_value[1]
 
 
 @dataclass(init=False)
@@ -240,7 +234,7 @@ class CPhaseGate(_QubitBaseOperation):
         QoalaProgram.add_to_body(self)
 
     @checkbaseir
-    def to_ir(self, ctx: Context):
+    def compile(self, ctx: Context) -> None:
         source_location = Location.file(
             filename=self.debug_info.filename,
             line=self.debug_info.line_start,
@@ -248,11 +242,10 @@ class CPhaseGate(_QubitBaseOperation):
             context=ctx
         )
         # We first add this operation to the program
-        self.ir = qnet.cz(qin0=self.qubit.ir, qin1=self.target.ir, loc=source_location)
+        self.ir_value = qnet.cz(qin0=self.qubit.ir_value, qin1=self.target.ir_value, loc=source_location)
         # We then register that the qubit has a "new" value
-        self.qubit.ir = self.ir[0]
-        self.target.ir = self.ir[1]
-        return self.ir
+        self.qubit.ir_value = self.ir_value[0]
+        self.target.ir_value = self.ir_value[1]
 
 
 @dataclass(init=False)
@@ -264,19 +257,18 @@ class DeclaredRemote(QoalaOperation):
         self.remote_name = remote_name
         QoalaProgram.add_declared_remote(remote_name, self)
 
-    def can_evaluate_to(self, cls):
+    def can_evaluate_to(self, cls) -> bool:
         return False
 
     @checkbaseir
-    def to_ir(self, ctx: Context):
+    def compile(self, ctx: Context) -> None:
         source_location = Location.file(
             filename=self.debug_info.filename,
             line=self.debug_info.line_start,
             col=self.debug_info.col_start,
             context=ctx
         )
-        self.ir = qnet.remote(self.remote_name, loc=source_location)
-        return self.ir
+        self.ir_value = qnet.remote(self.remote_name, loc=source_location)
 
 
 _Qoala_Base_Type = TypeVar("_Qoala_Base_Type")
@@ -307,7 +299,7 @@ class BaseRecvOp(QoalaArray[_Qoala_Base_Type, _Native_Base_Type]):
         # We don't need to add this operation to the body, since it will be done
         # by the constructor of the parent class.
 
-    def can_evaluate_to(self, cls):
+    def can_evaluate_to(self, cls) -> bool:
         if self.length == 1:
             if self.base_type == int:
                 return cls == QoalaInteger
@@ -319,7 +311,7 @@ class BaseRecvOp(QoalaArray[_Qoala_Base_Type, _Native_Base_Type]):
             return cls == QoalaArray
 
     @checkbaseir
-    def to_ir(self, ctx: Context):
+    def compile(self, ctx: Context) -> None:
         source_location = Location.file(
             filename=self.debug_info.filename,
             line=self.debug_info.line_start,
@@ -337,12 +329,12 @@ class BaseRecvOp(QoalaArray[_Qoala_Base_Type, _Native_Base_Type]):
             remote_name = self.remote
         length_attr = IntegerAttr.get(i32(), self.length)
         if self.base_type == int:
-            self.ir = qnet.recv_ints(remote=remote_name,
+            self.ir_value = qnet.recv_ints(remote=remote_name,
                                      cout=tensor_shape,
                                      length=length_attr,
                                      loc=source_location)
         elif self.base_type == float:
-            self.ir = qnet.recv_floats(remote=remote_name,
+            self.ir_value = qnet.recv_floats(remote=remote_name,
                                        cout=tensor_shape,
                                        length=length_attr,
                                        loc=source_location)
@@ -350,9 +342,9 @@ class BaseRecvOp(QoalaArray[_Qoala_Base_Type, _Native_Base_Type]):
             raise UnknownTypeError(f"Cannot create recv operation for base type '{self.base_type}'")
         if self.length == 1:
             # In this case the IR of the Recv operation is the value of the extract operation
-            self.index_op.to_ir(ctx)
-            self.ir = self.extract_op.to_ir(ctx)
-        return self.ir
+            self.index_op.compile(ctx)
+            self.extract_op.compile(ctx)
+            self.ir_value = self.extract_op.ir_value
 
 
 @dataclass(init=False)
@@ -401,14 +393,14 @@ class BaseSendOp(QoalaOperation):
         return False
 
     @checkbaseir
-    def to_ir(self, ctx: Context):
+    def compile(self, ctx: Context) -> None:
         source_location = Location.file(
             filename=self.debug_info.filename,
             line=self.debug_info.line_start,
             col=self.debug_info.col_start,
             context=ctx
         )
-        elements = [value.ir for value in self.values]
+        elements = [value.ir_value for value in self.values]
         if self.base_type is int:
             hir_base_type = i32()
         elif self.base_type is float:
@@ -427,12 +419,11 @@ class BaseSendOp(QoalaOperation):
         else:
             remote_name = self.remote
         if self.base_type == int:
-            self.ir = qnet.send_ints(cin=tensor_values, remote=remote_name, loc=source_location)
+            self.ir_value = qnet.send_ints(cin=tensor_values, remote=remote_name, loc=source_location)
         elif self.base_type == float:
-            self.ir = qnet.send_floats(cin=tensor_values, remote=remote_name, loc=source_location)
+            self.ir_value = qnet.send_floats(cin=tensor_values, remote=remote_name, loc=source_location)
         else:
             raise UnknownTypeError(f"Cannot create send operation for base type '{self.base_type}'")
-        return self.ir
 
 
 @dataclass(init=False)

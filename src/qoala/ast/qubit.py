@@ -153,27 +153,27 @@ class QbitBaseOperations(QoalaQubit, ABC):
 
     def X(self) -> QoalaOperation:
         from qoala.ast.operations.quantum import XGate
-        return QoalaOperation._create_expression_for_op(XGate, self)
+        return QoalaOperation.create_expression_for_op(XGate, self)
 
     def Y(self) -> QoalaOperation:
         from qoala.ast.operations.quantum import YGate
-        return QoalaOperation._create_expression_for_op(YGate, self)
+        return QoalaOperation.create_expression_for_op(YGate, self)
 
     def Z(self) -> QoalaOperation:
         from qoala.ast.operations.quantum import ZGate
-        return QoalaOperation._create_expression_for_op(ZGate, self)
+        return QoalaOperation.create_expression_for_op(ZGate, self)
 
     def T(self) -> QoalaOperation:
         from qoala.ast.operations.quantum import TGate
-        return QoalaOperation._create_expression_for_op(TGate, self)
+        return QoalaOperation.create_expression_for_op(TGate, self)
 
     def H(self) -> QoalaOperation:
         from qoala.ast.operations.quantum import HGate
-        return QoalaOperation._create_expression_for_op(HGate, self)
+        return QoalaOperation.create_expression_for_op(HGate, self)
 
     def S(self) -> QoalaOperation:
         from qoala.ast.operations.quantum import SGate
-        return QoalaOperation._create_expression_for_op(SGate, self)
+        return QoalaOperation.create_expression_for_op(SGate, self)
 
     def rot_X(
             self,
@@ -183,7 +183,7 @@ class QbitBaseOperations(QoalaQubit, ABC):
     ) -> QoalaOperation:
         angle_val = QbitBaseOperations._process_angles(n, d, angle, self.debug_info)
         from qoala.ast.operations.quantum import RotateX
-        return QoalaOperation._create_expression_for_op(RotateX, qubit=self, angle=angle_val)
+        return QoalaOperation.create_expression_for_op(RotateX, qubit=self, angle=angle_val)
 
     def rot_Y(
             self,
@@ -193,7 +193,7 @@ class QbitBaseOperations(QoalaQubit, ABC):
     ) -> QoalaOperation:
         angle_val = QbitBaseOperations._process_angles(n, d, angle, self.debug_info)
         from qoala.ast.operations.quantum import RotateY
-        return QoalaOperation._create_expression_for_op(RotateY, qubit=self, angle=angle_val)
+        return QoalaOperation.create_expression_for_op(RotateY, qubit=self, angle=angle_val)
 
     def rot_Z(
             self,
@@ -203,15 +203,15 @@ class QbitBaseOperations(QoalaQubit, ABC):
     ) -> QoalaOperation:
         angle_val = QbitBaseOperations._process_angles(n, d, angle, self.debug_info)
         from qoala.ast.operations.quantum import RotateZ
-        return QoalaOperation._create_expression_for_op(RotateZ, qubit=self, angle=angle_val)
+        return QoalaOperation.create_expression_for_op(RotateZ, qubit=self, angle=angle_val)
 
     def cnot(self, target: Self) -> QoalaOperation:
         from qoala.ast.operations.quantum import CNotGate
-        return QoalaOperation._create_expression_for_op(CNotGate, qubit=self, target=target)
+        return QoalaOperation.create_expression_for_op(CNotGate, qubit=self, target=target)
 
     def cphase(self, target: Self) -> QoalaOperation:
         from qoala.ast.operations.quantum import CPhaseGate
-        return QoalaOperation._create_expression_for_op(CPhaseGate, qubit=self, target=target)
+        return QoalaOperation.create_expression_for_op(CPhaseGate, qubit=self, target=target)
 
     def cz(self, target: Self) -> QoalaOperation:
         return self.cphase(target)
@@ -227,19 +227,18 @@ class QoalaLocalQubit(QbitBaseOperations):
         self.debug_info = get_debug_info()
         QoalaProgram.add_to_body(self)
 
-    def can_evaluate_to(self, cls):
+    def can_evaluate_to(self, cls) -> bool:
         return cls == QoalaQubit
 
     @checkbaseir
-    def to_ir(self, ctx: Context):
+    def compile(self, ctx: Context) -> None:
         source_location = Location.file(
             filename=self.debug_info.filename,
             line=self.debug_info.line_start,
             col=self.debug_info.col_start,
             context=ctx
         )
-        self.ir = qnet.new_qubit(loc=source_location)
-        return self.ir
+        self.ir_value = qnet.new_qubit(loc=source_location)
 
 
 # This class represents a "remote" qubit, i.e. an entangled qubit
@@ -256,16 +255,15 @@ class QoalaEprs(QbitBaseOperations):
         self.debug_info = get_debug_info()
         QoalaProgram.add_to_body(self)
 
-    def can_evaluate_to(self, cls):
+    def can_evaluate_to(self, cls) -> bool:
         return cls == QoalaQubit
 
     @checkbaseir
-    def to_ir(self, ctx: Context):
+    def compile(self, ctx: Context) -> None:
         source_location = Location.file(
             filename=self.debug_info.filename,
             line=self.debug_info.line_start,
             col=self.debug_info.col_start,
             context=ctx
         )
-        self.ir = qnet.eprs(remote=self.remote_name, loc=source_location)
-        return self.ir
+        self.ir_value = qnet.eprs(remote=self.remote_name, loc=source_location)

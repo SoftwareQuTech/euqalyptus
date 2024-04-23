@@ -14,7 +14,7 @@ class QoalaOperation(QoalaExpression, ABC):
         super().__init__()
 
     @staticmethod
-    def _create_expression_for_op(
+    def create_expression_for_op(
             op_class: Type[_cls],
             *operands: QoalaExpression,
             **kw_operands: QoalaExpression
