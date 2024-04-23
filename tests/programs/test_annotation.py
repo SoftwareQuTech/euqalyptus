@@ -179,25 +179,43 @@ class TestQoalaDecorator:
         assert program_with_array_mutation._body[5].base_array is program_with_array_mutation._body[1]
         assert program_with_array_mutation._body[5].index is program_with_array_mutation._body[4]
 
-    @pytest.mark.skip(reason="Most of the gates used here do not have a counterpart in the hir dialect")
     def test_quantum_program_with_simple_gates(self):
         program_local_qubit_with_simple_gates.compile()
 
-        assert len(program_local_qubit_with_simple_gates._body) == 8
+        assert len(program_local_qubit_with_simple_gates._body) == 13
         assert isinstance(program_local_qubit_with_simple_gates._body[0], QoalaLocalQubit)
-        assert isinstance(program_local_qubit_with_simple_gates._body[1], XGate)
-        assert program_local_qubit_with_simple_gates._body[1].qubit is program_local_qubit_with_simple_gates._body[0]
-        assert isinstance(program_local_qubit_with_simple_gates._body[2], YGate)
+        assert isinstance(program_local_qubit_with_simple_gates._body[1], QoalaFloat)
+        assert program_local_qubit_with_simple_gates._body[1].value == 3.141592653589793
+        assert isinstance(program_local_qubit_with_simple_gates._body[2], XGate)
+        assert isinstance(program_local_qubit_with_simple_gates._body[2], RotateX)
         assert program_local_qubit_with_simple_gates._body[2].qubit is program_local_qubit_with_simple_gates._body[0]
-        assert isinstance(program_local_qubit_with_simple_gates._body[3], ZGate)
-        assert program_local_qubit_with_simple_gates._body[3].qubit is program_local_qubit_with_simple_gates._body[0]
-        assert isinstance(program_local_qubit_with_simple_gates._body[4], TGate)
+        assert program_local_qubit_with_simple_gates._body[2].angle is program_local_qubit_with_simple_gates._body[1]
+        assert isinstance(program_local_qubit_with_simple_gates._body[3], QoalaFloat)
+        assert program_local_qubit_with_simple_gates._body[3].value == 3.141592653589793
+        assert isinstance(program_local_qubit_with_simple_gates._body[4], YGate)
+        assert isinstance(program_local_qubit_with_simple_gates._body[4], RotateY)
         assert program_local_qubit_with_simple_gates._body[4].qubit is program_local_qubit_with_simple_gates._body[0]
-        assert isinstance(program_local_qubit_with_simple_gates._body[5], HGate)
-        assert program_local_qubit_with_simple_gates._body[5].qubit is program_local_qubit_with_simple_gates._body[0]
-        assert isinstance(program_local_qubit_with_simple_gates._body[6], SGate)
+        assert program_local_qubit_with_simple_gates._body[4].angle is program_local_qubit_with_simple_gates._body[3]
+        assert isinstance(program_local_qubit_with_simple_gates._body[5], QoalaFloat)
+        assert program_local_qubit_with_simple_gates._body[5].value == 3.141592653589793
+        assert isinstance(program_local_qubit_with_simple_gates._body[6], ZGate)
+        assert isinstance(program_local_qubit_with_simple_gates._body[6], RotateZ)
         assert program_local_qubit_with_simple_gates._body[6].qubit is program_local_qubit_with_simple_gates._body[0]
-        assert isinstance(program_local_qubit_with_simple_gates._body[7], QubitMeasure)
+        assert program_local_qubit_with_simple_gates._body[6].angle is program_local_qubit_with_simple_gates._body[5]
+        assert isinstance(program_local_qubit_with_simple_gates._body[7], QoalaFloat)
+        assert program_local_qubit_with_simple_gates._body[7].value == 0.7853981633974483
+        assert isinstance(program_local_qubit_with_simple_gates._body[8], TGate)
+        assert isinstance(program_local_qubit_with_simple_gates._body[8], RotateZ)
+        assert program_local_qubit_with_simple_gates._body[8].qubit is program_local_qubit_with_simple_gates._body[0]
+        assert program_local_qubit_with_simple_gates._body[8].angle is program_local_qubit_with_simple_gates._body[7]
+        assert isinstance(program_local_qubit_with_simple_gates._body[9], HGate)
+        assert program_local_qubit_with_simple_gates._body[9].qubit is program_local_qubit_with_simple_gates._body[0]
+        assert isinstance(program_local_qubit_with_simple_gates._body[10], QoalaFloat)
+        assert program_local_qubit_with_simple_gates._body[10].value == 1.5707963267948966
+        assert isinstance(program_local_qubit_with_simple_gates._body[11], SGate)
+        assert program_local_qubit_with_simple_gates._body[11].qubit is program_local_qubit_with_simple_gates._body[0]
+        assert program_local_qubit_with_simple_gates._body[11].angle is program_local_qubit_with_simple_gates._body[10]
+        assert isinstance(program_local_qubit_with_simple_gates._body[12], QubitMeasure)
 
     def test_quantum_program_with_complex_gates(self):
         program_local_qubit_with_complex_gates.compile()
