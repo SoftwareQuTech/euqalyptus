@@ -1,4 +1,4 @@
-from typing import Generic, TypeVar, Optional, Union, Type
+from typing import Generic, TypeVar, Type
 
 from qoala.ast.value import QoalaArray, QoalaExpression
 from qoala.errors import InvalidArrayArgumentError

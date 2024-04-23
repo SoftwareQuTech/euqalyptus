@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from inspect import stack, getframeinfo, getsourcefile, getsourcelines
+from inspect import stack, getsourcefile, getsourcelines
 from typing import Callable
 
 

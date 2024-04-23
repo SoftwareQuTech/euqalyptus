@@ -3,11 +3,11 @@ from typing import Type, Tuple, Union, List
 
 import pytest
 
+import qoala.utils.debug_info as dbg_info
 from qoala.ast.value import QoalaArray, QoalaInteger, QoalaFloat
 from qoala.types.classical.arrays import IntArray, FloatArray
 from qoala.types.classical.floats import Float
 from qoala.types.classical.integer import Int32
-import qoala.utils.debug_info as dbg_info
 
 
 class TestArraySemantics:

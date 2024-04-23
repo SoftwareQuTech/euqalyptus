@@ -1,11 +1,11 @@
 import pytest
 
+import qoala.utils.debug_info as dbg_info
 from qoala.ast.operations.quantum import QubitMeasure
 from qoala.ast.qubit import QoalaQubit
 from qoala.types.classical.floats import Float
 from qoala.types.classical.integer import Int
 from qoala.types.quantum.qubit import LocalQubit
-import qoala.utils.debug_info as dbg_info
 
 
 class TestQuantumSyntax:

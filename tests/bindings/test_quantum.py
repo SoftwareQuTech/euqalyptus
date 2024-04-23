@@ -2,12 +2,12 @@ import pytest
 
 from qoala import QoalaProgram, QoalaModule
 from qoala.errors import NotYetCompiledError
-from qoala.types.classical.floats import Float
-from qoala.types.classical.integer import Int
-from qoala.types.classical.arrays import IntArray, FloatArray
-from qoala.types.quantum.qubit import LocalQubit, Entangle
 from qoala.operations import Remote
 from qoala.operations.quantum import recv_int, recv_ints, recv_floats, send_floats, send_ints
+from qoala.types.classical.arrays import IntArray, FloatArray
+from qoala.types.classical.floats import Float
+from qoala.types.classical.integer import Int
+from qoala.types.quantum.qubit import LocalQubit, Entangle
 
 
 @QoalaProgram

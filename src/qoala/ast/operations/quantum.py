@@ -13,8 +13,8 @@ from qoala.ast.operations import QoalaOperation
 from qoala.ast.operations.arrays import GetItem
 from qoala.ast.qubit import QoalaQubit
 from qoala.ast.value import (
-     QoalaFloatOrExpression, QoalaInteger, QoalaFloat,
-     QoalaArray, QoalaNumericValue
+    QoalaFloatOrExpression, QoalaInteger, QoalaFloat,
+    QoalaArray, QoalaNumericValue
 )
 from qoala.errors import UnknownTypeError, UnknownRemoteError
 from qoala.utils.binding_types import i32, f32

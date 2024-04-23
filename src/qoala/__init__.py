@@ -5,10 +5,10 @@ from functools import partial
 from threading import Lock
 from typing import List, Self, Any, Dict, Tuple
 
+import qoala.utils.debug_info as dbg_info
 from qoala.ast import QoalaExpression
 from qoala.errors import NotYetCompiledError, QuantumProgramNotImplementedError
 from qoala.module import QoalaModule
-import qoala.utils.debug_info as dbg_info
 
 
 class QoalaProgram:

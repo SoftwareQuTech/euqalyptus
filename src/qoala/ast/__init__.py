@@ -1,11 +1,11 @@
 from abc import ABC, abstractmethod
-from functools import partial
 from dataclasses import dataclass
+from functools import partial
 from typing import Any, Callable, List, TypeVar
 
-from qoala.utils.debug_info import DebugInfo
-
 from qnet.ir import Context, Operation
+
+from qoala.utils.debug_info import DebugInfo
 
 _T = TypeVar("_T")
 
