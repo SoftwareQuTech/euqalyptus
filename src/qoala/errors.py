@@ -1,3 +1,12 @@
+class QuantumProgramNotImplementedError(RuntimeError):
+    def __init__(self, name: str, extra_msg: str):
+        super().__init__(f"Quantum program '{name}' cannot be instantiated. {extra_msg}")
+
+
+class NotYetCompiledError(RuntimeError):
+    pass
+
+
 class InvalidArgumentError(RuntimeError):
     pass
 

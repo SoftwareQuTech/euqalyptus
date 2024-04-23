@@ -1,10 +1,11 @@
 import pytest
 
-from qoala import QoalaProgram, QoalaModule, NotYetCompiledError
+from qoala import QoalaProgram, QoalaModule
+from qoala.errors import NotYetCompiledError
 from qoala.types.classical.floats import Float
 from qoala.types.classical.integer import Int
 from qoala.types.classical.arrays import IntArray, FloatArray
-from qoala.types.quantum.qubit import LocalQubit, Entangle, EntangledQubit
+from qoala.types.quantum.qubit import LocalQubit, Entangle
 from qoala.operations import Remote
 from qoala.operations.quantum import recv_int, recv_ints, recv_floats, send_floats, send_ints
 
@@ -376,16 +377,16 @@ class TestQoalaQnetPythonBindingsQuantum:
     qnet.return loc(#loc)
   } loc(#loc)
 } loc(#loc)
-#loc = loc("/home/diego/code/qoala-compiler/tests/bindings/test_quantum.py":105:0)
-#loc1 = loc("/home/diego/code/qoala-compiler/tests/bindings/test_quantum.py":107:4)
-#loc2 = loc("/home/diego/code/qoala-compiler/tests/bindings/test_quantum.py":108:17)
-#loc3 = loc("/home/diego/code/qoala-compiler/tests/bindings/test_quantum.py":109:9)
-#loc4 = loc("/home/diego/code/qoala-compiler/tests/bindings/test_quantum.py":110:19)
-#loc5 = loc("/home/diego/code/qoala-compiler/tests/bindings/test_quantum.py":110:4)
-#loc6 = loc("/home/diego/code/qoala-compiler/tests/bindings/test_quantum.py":111:9)
-#loc7 = loc("/home/diego/code/qoala-compiler/tests/bindings/test_quantum.py":112:19)
-#loc8 = loc("/home/diego/code/qoala-compiler/tests/bindings/test_quantum.py":112:4)
-#loc9 = loc("/home/diego/code/qoala-compiler/tests/bindings/test_quantum.py":113:8)
+#loc = loc("/home/diego/code/qoala-compiler/tests/bindings/test_quantum.py":106:0)
+#loc1 = loc("/home/diego/code/qoala-compiler/tests/bindings/test_quantum.py":108:4)
+#loc2 = loc("/home/diego/code/qoala-compiler/tests/bindings/test_quantum.py":109:17)
+#loc3 = loc("/home/diego/code/qoala-compiler/tests/bindings/test_quantum.py":110:9)
+#loc4 = loc("/home/diego/code/qoala-compiler/tests/bindings/test_quantum.py":111:19)
+#loc5 = loc("/home/diego/code/qoala-compiler/tests/bindings/test_quantum.py":111:4)
+#loc6 = loc("/home/diego/code/qoala-compiler/tests/bindings/test_quantum.py":112:9)
+#loc7 = loc("/home/diego/code/qoala-compiler/tests/bindings/test_quantum.py":113:19)
+#loc8 = loc("/home/diego/code/qoala-compiler/tests/bindings/test_quantum.py":113:4)
+#loc9 = loc("/home/diego/code/qoala-compiler/tests/bindings/test_quantum.py":114:8)
 """
         assert str(module.asm_dbg) == expected_dbg_asm
 

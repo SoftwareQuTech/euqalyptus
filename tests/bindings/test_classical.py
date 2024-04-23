@@ -1,6 +1,7 @@
 import pytest
 
-from qoala import QoalaProgram, QoalaModule, NotYetCompiledError
+from qoala import QoalaProgram, QoalaModule
+from qoala.errors import NotYetCompiledError
 from qoala.types.classical.floats import Float
 from qoala.types.classical.integer import Int
 from qoala.types.classical.arrays import IntArray, FloatArray

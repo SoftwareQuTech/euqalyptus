@@ -1,50 +1,14 @@
+import types as py_types
 from abc import ABC, abstractmethod
 from collections.abc import Callable
+from functools import partial
 from threading import Lock
 from typing import List, Self, Any, Dict, Tuple
 
 from qoala.ast import QoalaExpression
+from qoala.errors import NotYetCompiledError, QuantumProgramNotImplementedError
 from qoala.module import QoalaModule
 import qoala.utils.debug_info as dbg_info
-
-
-class NotYetCompiledError(RuntimeError):
-    pass
-
-
-class QoalaProgramBase(ABC):
-    """
-    Base class for Qoala programs. Any quantum internet program must
-    be defined in a class that uses `QoalaProgram` as the base class.
-    Programs that extend this class must implement the `main` method,
-    which acts as the entry point of the program.
-    """
-
-    @abstractmethod
-    def main(self, *args: Any, **kwargs: Dict[Any, Any]) -> Any:
-        """
-        Entry point function for a quantum internet program.
-        This function must use the quantum and classical primitives
-        available in the `qoala` packages and its subpackages.
-
-
-        Parameters
-        ----------
-        args : List[Any]
-            A list of objects used as the arguments of the function.
-
-        kwargs : Dict[Any, Any]
-            A dictionary containing the keyworded arguments for the function.
-
-        Returns
-        -------
-        int :
-            An integer value, meaningful for the qoala runtime platform.
-            Please check the documentation of the qoala platform to match
-            the expected return value of a quantum internet program.
-
-        """
-        ...
 
 
 class QoalaProgram:
@@ -130,3 +94,77 @@ class QoalaProgram:
             return ret_val, self._module
         finally:
             QoalaProgram._compiler_lock.release()
+
+
+class QoalaProgramBase(QoalaProgram, ABC):
+    """
+    Base class for Qoala programs. Any quantum internet program must
+    be defined in a class that uses `QoalaProgram` as the base class.
+    Programs that extend this class must implement the `main` method,
+    which acts as the entry point of the program.
+    WARNING: Due to how the constructor works, instances of subclasses
+    of this class are instances of 'QoalaProgram' rather than
+    'QoalaProgramBase', i.e.:
+    ```
+    class QProg(QoalaProgram):
+        def main():
+           #some code
+    obj = QProg()
+    assert not isinstance(obj, QoalaProgramBase)
+    assert isinstance(obj, QoalaProgram)
+    ```
+    """
+
+    @staticmethod
+    def __main_not_implemented(clazz) -> bool:
+        # Check that
+        # * clazz has a "main" attriobute
+        # * it is a function
+        # * if "main" function has "__isabstrastmethod__" attribute is false
+        if not hasattr(clazz, "main"):
+            return False
+        main_fn = getattr(clazz, "main")
+        if type(main_fn) is py_types.MethodType:
+            return False
+        if hasattr(main_fn, "__isabstractmethod__"):
+            return getattr(getattr(clazz, "main"), '__isabstractmethod__')
+        else:
+            return False
+
+    def __new__(cls, *args, **kwargs):
+        if QoalaProgramBase.__main_not_implemented(cls):
+            raise QuantumProgramNotImplementedError(
+                cls.__name__,
+                f"Main function was not found in the class '{cls.__name__}'")
+        # Black magic: create the instance, using the "main" function as the
+        # entry function
+        instance = QoalaProgram(entry_fun=cls.main)
+        # We override that, partially initializing the entry function with the instance (self) argument
+        instance._entry_fun = partial(cls.main, instance)
+        # We return the instance of the newly created object
+        return instance
+
+    @abstractmethod
+    def main(self, *args: Any, **kwargs: Any) -> Any:
+        """
+        Entry point function for a quantum internet program.
+        This function must use the quantum and classical primitives
+        available in the `qoala` packages and its subpackages.
+
+
+        Parameters
+        ----------
+        args : List[Any]
+            A list of objects used as the arguments of the function.
+
+        kwargs : Dict[Any, Any]
+            A dictionary containing the keyworded arguments for the function.
+
+        Returns
+        -------
+        int :
+            An integer value, meaningful for the qoala runtime platform.
+            Please check the documentation of the qoala platform to match
+            the expected return value of a quantum internet program.
+
+        """
