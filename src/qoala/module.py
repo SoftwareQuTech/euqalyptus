@@ -43,25 +43,27 @@ class QoalaModule:
     @property
     def generic_asm(self) -> str:
         if not self._is_initialized:
-            self._init_qir_module()
+            self.generate_qoala_hir()
         return str(self._qir_module.operation.get_asm(print_generic_op_form=True))
 
     @property
     def asm(self) -> str:
         if not self._is_initialized:
-            self._init_qir_module()
+            self.generate_qoala_hir()
         return str(self._qir_module.operation.get_asm())
 
     @property
     def asm_dbg(self) -> str:
         if not self._is_initialized:
-            self._init_qir_module()
+            self.generate_qoala_hir()
         return str(self._qir_module.operation.get_asm(enable_debug_info=True))
 
     def __str__(self) -> str:
         return self.asm
 
-    def _init_qir_module(self) -> None:
+    def generate_qoala_hir(self) -> None:
+        if self._is_initialized:
+            return
         with Context() as ctx:
             base_location_info = Location.file(
                 filename=self._module_dbg_info.filename,
@@ -75,7 +77,7 @@ class QoalaModule:
                 with InsertionPoint(qir_module.body):
                     for remote in self._remotes:
                         remote.compile(ctx)
-                    func_type = FunctionType.get(inputs=[], results=[])
+                    func_type = FunctionType.get(inputs=[], results=[], context=ctx)
                     function = qnet.FuncOp(
                         name=f"{self._function_name}",
                         type=func_type,

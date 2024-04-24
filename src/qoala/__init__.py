@@ -72,7 +72,7 @@ class QoalaProgram:
     def __call__(self, *args: Any, **kwargs: Any) -> Tuple[int, QoalaModule]:
         return self.compile(*args, **kwargs)
 
-    def compile(self, *args: Any, **kwargs: Any) -> Tuple[int, QoalaModule]:
+    def compile(self, /, *args: Any, compile_lazy: bool = False, **kwargs: Any) -> Tuple[int, QoalaModule]:
         # TODO - Implement (if needed) more functionality than just invoking the function
         # To ease the insertion of the statement into the program body, we need to
         # keep a reference to the current instance of the QoalaProgram we are compiling.
@@ -89,6 +89,8 @@ class QoalaProgram:
             ret_val = self._entry_fun(*args, **kwargs)
             self._module.remotes = [remote for _, remote in self._declared_remotes.items()]
             self._is_compiled = True
+            if not compile_lazy:
+                self.module.generate_qoala_hir()
             # We delete the reference to the QoalaProgram under compilation
             del QoalaProgram._instance
             return ret_val, self._module

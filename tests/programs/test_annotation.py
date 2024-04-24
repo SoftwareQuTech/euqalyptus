@@ -109,14 +109,19 @@ def program_local_qubit_with_complex_gates():
     measurement_b = qubit_b.measure()
 
 
+# Across all the tests of this file, we only make assertions on the AST, so we compile "lazily"
+# (do not transform the AST into Qoala HIR
 class TestQoalaDecorator:
     def test_decorator_on_mt_program(self):
-        empty_program.compile()
+        empty_program.compile(compile_lazy=True)
+        # The second invocation to "compile" should not do anything, since the program
+        # was already compiled
+        empty_program.compile(compile_lazy=True)
 
         assert len(empty_program._body) == 0
 
     def test_basic_arith_program(self):
-        arithmetic_program.compile()
+        arithmetic_program.compile(compile_lazy=True)
 
         assert len(arithmetic_program._body) == 6
         assert isinstance(arithmetic_program._body[0], QoalaInteger)
@@ -135,14 +140,14 @@ class TestQoalaDecorator:
         assert arithmetic_program._body[5].operand_b is arithmetic_program._body[0]
 
     def test_program_using_args(self):
-        program_with_arg.compile(1, 2.5)
+        program_with_arg.compile(1, 2.5, compile_lazy=True)
 
         assert len(program_with_arg._body) == 2
         assert isinstance(program_with_arg._body[0], QoalaInteger)
         assert isinstance(program_with_arg._body[1], QoalaFloat)
 
     def test_program_with_array_access(self):
-        program_with_array_access.compile()
+        program_with_array_access.compile(compile_lazy=True)
 
         assert len(program_with_array_access._body) == 5
         assert isinstance(program_with_array_access._body[0], QoalaInteger)
@@ -159,7 +164,7 @@ class TestQoalaDecorator:
         assert program_with_array_access._body[4].index is program_with_array_access._body[3]
 
     def test_program_with_array_mutation(self):
-        program_with_array_mutation.compile()
+        program_with_array_mutation.compile(compile_lazy=True)
 
         assert len(program_with_array_mutation._body) == 6
         assert isinstance(program_with_array_mutation._body[0], QoalaArray)
@@ -180,7 +185,7 @@ class TestQoalaDecorator:
         assert program_with_array_mutation._body[5].index is program_with_array_mutation._body[4]
 
     def test_quantum_program_with_simple_gates(self):
-        program_local_qubit_with_simple_gates.compile()
+        program_local_qubit_with_simple_gates.compile(compile_lazy=True)
 
         assert len(program_local_qubit_with_simple_gates._body) == 13
         assert isinstance(program_local_qubit_with_simple_gates._body[0], QoalaLocalQubit)
@@ -218,7 +223,7 @@ class TestQoalaDecorator:
         assert isinstance(program_local_qubit_with_simple_gates._body[12], QubitMeasure)
 
     def test_quantum_program_with_complex_gates(self):
-        program_local_qubit_with_complex_gates.compile()
+        program_local_qubit_with_complex_gates.compile(compile_lazy=True)
 
         assert len(program_local_qubit_with_complex_gates._body) == 13
         assert isinstance(program_local_qubit_with_complex_gates._body[0], QoalaInteger)
