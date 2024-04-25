@@ -1,7 +1,5 @@
 from typing import List, Any
 
-import pytest
-
 from qoala import QoalaProgramBase
 from qoala.ast.operations.arrays import GetItem, SetItem
 from qoala.ast.operations.numeric import Add, Subtract, Multiply, Divide
@@ -50,37 +48,41 @@ class ProgramWithArrayMutation(QoalaProgramBase):
         arr_b.store(5)
 
 
-@pytest.mark.skip(reason="Qoala programs declaration using class inheritance is not implemented yet")
+# Across all the tests of this file, we only make assertions on the AST, so we compile "lazily"
+# (do not transform the AST into Qoala HIR
 class TestQoalaClass:
     def test_mt_program(self):
         empty_program = EmptyProgram()
-        empty_program.compile()
+        empty_program.compile(list(), compile_lazy=True)
+        # The second invocation to "compile" should not do anything, since the program
+        # was already compiled
+        empty_program.compile(list(), compile_lazy=True)
 
         assert len(empty_program._body) == 0
 
     def test_basic_arith_program(self):
         arithmetic_program = ArithmeticProgram()
-        arithmetic_program.compile()
+        arithmetic_program.compile(compile_lazy=True)
 
         assert len(arithmetic_program._body) == 6
         assert isinstance(arithmetic_program._body[0], QoalaInteger)
         assert isinstance(arithmetic_program._body[1], QoalaInteger)
         assert isinstance(arithmetic_program._body[2], Add)
-        assert arithmetic_program._body[2].operand_a == arithmetic_program._body[0]
-        assert arithmetic_program._body[2].operand_b == arithmetic_program._body[1]
+        assert arithmetic_program._body[2].operand_a is arithmetic_program._body[0]
+        assert arithmetic_program._body[2].operand_b is arithmetic_program._body[1]
         assert isinstance(arithmetic_program._body[3], Subtract)
-        assert arithmetic_program._body[3].operand_a == arithmetic_program._body[1]
-        assert arithmetic_program._body[3].operand_b == arithmetic_program._body[0]
+        assert arithmetic_program._body[3].operand_a is arithmetic_program._body[1]
+        assert arithmetic_program._body[3].operand_b is arithmetic_program._body[0]
         assert isinstance(arithmetic_program._body[4], Multiply)
-        assert arithmetic_program._body[4].operand_a == arithmetic_program._body[0]
-        assert arithmetic_program._body[4].operand_b == arithmetic_program._body[0]
+        assert arithmetic_program._body[4].operand_a is arithmetic_program._body[0]
+        assert arithmetic_program._body[4].operand_b is arithmetic_program._body[0]
         assert isinstance(arithmetic_program._body[5], Divide)
-        assert arithmetic_program._body[5].operand_a == arithmetic_program._body[1]
-        assert arithmetic_program._body[5].operand_b == arithmetic_program._body[0]
+        assert arithmetic_program._body[5].operand_a is arithmetic_program._body[1]
+        assert arithmetic_program._body[5].operand_b is arithmetic_program._body[0]
 
     def test_program_using_args(self):
         program_with_arg = ProgramWithArg()
-        program_with_arg.compile(1, 2.5)
+        program_with_arg.compile(1, 2.5, compile_lazy=True)
 
         assert len(program_with_arg._body) == 2
         assert isinstance(program_with_arg._body[0], QoalaInteger)
@@ -88,7 +90,7 @@ class TestQoalaClass:
 
     def test_program_with_array_access(self):
         program_with_array_access = ProgramWithArrayAccess()
-        program_with_array_access.compile()
+        program_with_array_access.compile(compile_lazy=True)
 
         assert len(program_with_array_access._body) == 5
         assert isinstance(program_with_array_access._body[0], QoalaInteger)
@@ -101,12 +103,12 @@ class TestQoalaClass:
         assert isinstance(program_with_array_access._body[2].members[1], QoalaInteger)
         assert isinstance(program_with_array_access._body[3], QoalaInteger)
         assert isinstance(program_with_array_access._body[4], GetItem)
-        assert program_with_array_access._body[4].base_array == program_with_array_access._body[2]
-        assert program_with_array_access._body[4].index == program_with_array_access._body[3]
+        assert program_with_array_access._body[4].base_array is program_with_array_access._body[2]
+        assert program_with_array_access._body[4].index is program_with_array_access._body[3]
 
     def test_program_with_array_mutation(self):
         program_with_array_mutation = ProgramWithArrayMutation()
-        program_with_array_mutation.compile()
+        program_with_array_mutation.compile(compile_lazy=True)
 
         assert len(program_with_array_mutation._body) == 6
         assert isinstance(program_with_array_mutation._body[0], QoalaArray)
@@ -119,9 +121,9 @@ class TestQoalaClass:
         assert program_with_array_mutation._body[1].length == 0
         assert isinstance(program_with_array_mutation._body[2], QoalaFloat)
         assert isinstance(program_with_array_mutation._body[3], SetItem)
-        assert program_with_array_mutation._body[3].base_array == program_with_array_mutation._body[0]
-        assert program_with_array_mutation._body[3].index == program_with_array_mutation._body[2]
+        assert program_with_array_mutation._body[3].base_array is program_with_array_mutation._body[0]
+        assert program_with_array_mutation._body[3].index is program_with_array_mutation._body[2]
         assert isinstance(program_with_array_mutation._body[4], QoalaInteger)
         assert isinstance(program_with_array_mutation._body[5], SetItem)
-        assert program_with_array_mutation._body[5].base_array == program_with_array_mutation._body[1]
-        assert program_with_array_mutation._body[5].index == program_with_array_mutation._body[4]
+        assert program_with_array_mutation._body[5].base_array is program_with_array_mutation._body[1]
+        assert program_with_array_mutation._body[5].index is program_with_array_mutation._body[4]

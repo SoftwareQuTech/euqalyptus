@@ -1,3 +1,6 @@
+import pytest
+
+import qoala.utils.debug_info as dbg_info
 from qoala.ast.operations.quantum import QubitMeasure
 from qoala.ast.qubit import QoalaQubit
 from qoala.types.classical.floats import Float
@@ -6,6 +9,16 @@ from qoala.types.quantum.qubit import LocalQubit
 
 
 class TestQuantumSyntax:
+    @pytest.fixture(autouse=True, scope="function")
+    def setup_debug_info(self, request):
+        # For allowing debug info
+        # Nuance; parametrized tests use [param-types]... remove that part
+        if "[" in request.node.name:
+            bracket_index = request.node.name.index("[")
+            dbg_info.function_name = request.node.name[0:bracket_index]
+        else:
+            dbg_info.function_name = request.node.name
+
     def test_qubit_allocation(self):
         qubit = LocalQubit()
 

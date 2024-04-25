@@ -1,10 +1,11 @@
 from dataclasses import dataclass
 
 from qnet.dialects import arith
-from qnet.ir import Context
+from qnet.ir import Context, Location
 
 from qoala import QoalaProgram
-from qoala.ast.operations import QoalaOperation, QoalaExpression
+from qoala.ast import QoalaExpression, checkbaseir
+from qoala.ast.operations import QoalaOperation
 from qoala.ast.value import QoalaFloat, QoalaInteger
 from qoala.utils.binding_types import f32, i32
 
@@ -22,9 +23,15 @@ class IntToFloat(QoalaOperation):
     def can_evaluate_to(self, cls) -> bool:
         return cls == QoalaFloat
 
-    def to_ir(self, ctx: Context):
-        self.ir = arith.uitofp(f32(), self.operand.ir)
-        return self.ir
+    @checkbaseir
+    def compile(self, ctx: Context) -> None:
+        source_location = Location.file(
+            filename=self.debug_info.filename,
+            line=self.debug_info.line_start,
+            col=self.debug_info.col_start,
+            context=ctx
+        )
+        self.ir_value = arith.uitofp(f32(), self.operand.ir_value, loc=source_location)
 
 
 @dataclass(init=False)
@@ -40,6 +47,12 @@ class FloatToInt(QoalaOperation):
     def can_evaluate_to(self, cls) -> bool:
         return cls == QoalaInteger
 
-    def to_ir(self, ctx: Context):
-        self.ir = arith.fptoui(i32(), self.operand.ir)
-        return self.ir
+    @checkbaseir
+    def compile(self, ctx: Context) -> None:
+        source_location = Location.file(
+            filename=self.debug_info.filename,
+            line=self.debug_info.line_start,
+            col=self.debug_info.col_start,
+            context=ctx
+        )
+        self.ir_value = arith.fptoui(i32(), self.operand.ir_value, loc=source_location)

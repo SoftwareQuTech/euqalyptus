@@ -2,6 +2,7 @@ from typing import Generic, TypeVar
 
 import pytest
 
+import qoala.utils.debug_info as dbg_info
 from qoala.ast.value import QoalaExpression, QoalaInteger, QoalaFloat, QoalaArray
 from qoala.types.classical.arrays import IntArray, FloatArray
 from qoala.types.classical.floats import Float, Double, QoalaFloatingPointType
@@ -27,6 +28,16 @@ class TestIntegerClassicalSyntax(Generic[_Base_Type_Int]):
     # It deviates a bit from what a user could write (a user will never use a
     # factory based on a parametric type), but it simplifies the specification
     # of all the possible test cases.
+
+    @pytest.fixture(autouse=True, scope="function")
+    def setup_debug_info(self, request):
+        # For allowing debug info
+        # Nuance; parametrized tests use [param-types]... remove that part
+        if "[" in request.node.name:
+            bracket_index = request.node.name.index("[")
+            dbg_info.function_name = request.node.name[0:bracket_index]
+        else:
+            dbg_info.function_name = request.node.name
 
     @staticmethod
     def _get_int_from_immediate(clazz: type, immediate: int) -> _Base_Type_Int:
@@ -86,6 +97,16 @@ class TestIntegerClassicalSyntax(Generic[_Base_Type_Int]):
 
 @pytest.mark.parametrize("clazz", (Float, Double))
 class TestFloatClassicalSyntax(Generic[_Base_Type_Float]):
+    @pytest.fixture(autouse=True, scope="function")
+    def setup_debug_info(self, request):
+        # For allowing debug info
+        # Nuance; parametrized tests use [param-types]... remove that part
+        if "[" in request.node.name:
+            bracket_index = request.node.name.index("[")
+            dbg_info.function_name = request.node.name[0:bracket_index]
+        else:
+            dbg_info.function_name = request.node.name
+
     @staticmethod
     def _get_float_from_immediate(clazz: type, immediate: float) -> _Base_Type_Float:
         match clazz.__name__:
@@ -139,6 +160,16 @@ class TestFloatClassicalSyntax(Generic[_Base_Type_Float]):
 
 
 class TestArrayClassicalSyntax:
+    @pytest.fixture(autouse=True, scope="function")
+    def setup_debug_info(self, request):
+        # For allowing debug info
+        # Nuance; parametrized tests use [param-types]... remove that part
+        if "[" in request.node.name:
+            bracket_index = request.node.name.index("[")
+            dbg_info.function_name = request.node.name[0:bracket_index]
+        else:
+            dbg_info.function_name = request.node.name
+
     def test_declare_integer_array(self):
         val_a = Int(10)
         val_b = Int(20)

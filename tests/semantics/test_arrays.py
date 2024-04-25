@@ -3,6 +3,7 @@ from typing import Type, Tuple, Union, List
 
 import pytest
 
+import qoala.utils.debug_info as dbg_info
 from qoala.ast.value import QoalaArray, QoalaInteger, QoalaFloat
 from qoala.types.classical.arrays import IntArray, FloatArray
 from qoala.types.classical.floats import Float
@@ -14,6 +15,16 @@ class TestArraySemantics:
         ((10, 20), (5, 3), int, Int32, IntArray, QoalaInteger),
         ((15.3, 10), (-5.8, 4.1), float, Float, FloatArray, QoalaFloat)
     ]
+
+    @pytest.fixture(autouse=True, scope="function")
+    def setup_debug_info(self, request):
+        # For allowing debug info
+        # Nuance; parametrized tests use [param-types]... remove that part
+        if "[" in request.node.name:
+            bracket_index = request.node.name.index("[")
+            dbg_info.function_name = request.node.name[0:bracket_index]
+        else:
+            dbg_info.function_name = request.node.name
 
     @pytest.mark.parametrize("values, constants, vals_type, base_type, array_type, member_type", arrays_test_data)
     def test_array_semantics(

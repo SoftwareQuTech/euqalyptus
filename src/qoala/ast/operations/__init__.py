@@ -2,16 +2,19 @@ from abc import ABC
 from typing import Type, TypeVar
 
 from qoala.ast import QoalaExpression
+from qoala.utils.debug_info import get_debug_info
 
 _cls = TypeVar("_cls", bound=QoalaExpression)
 
 
 class QoalaOperation(QoalaExpression, ABC):
     def __init__(self):
+        if not hasattr(self, 'debug_info'):
+            self.debug_info = get_debug_info()
         super().__init__()
 
     @staticmethod
-    def _create_expression_for_op(
+    def create_expression_for_op(
             op_class: Type[_cls],
             *operands: QoalaExpression,
             **kw_operands: QoalaExpression
@@ -34,7 +37,7 @@ def with_arith_operators(cls):
             other: QoalaExpression
             if not isinstance(args[0], QoalaExpression):
                 from qoala.ast.value import QoalaNumericValue
-                other = QoalaNumericValue.from_immediate(args[0])
+                other = QoalaNumericValue.from_immediate(args[0], self.debug_info)
             else:
                 other = args[0]
             from qoala.ast.operations.numeric import ArithOperatorFactory

@@ -3,18 +3,19 @@ from dataclasses import dataclass
 
 import qnet.dialects.arith as arith
 import qnet.dialects.math as math
-from qnet.ir import Context
+from qnet.ir import Context, Location
 
 from qoala import QoalaProgram
-from qoala.ast import QoalaExpression
-from qoala.ast.operations import with_arith_operators
+from qoala.ast import QoalaExpression, checkbaseir
+from qoala.ast.operations import QoalaOperation, with_arith_operators
 from qoala.ast.operations.casts import IntToFloat
 from qoala.ast.value import QoalaInteger, QoalaFloat
 from qoala.errors import WrongEvaluationTypeError
+from qoala.utils.debug_info import get_debug_info
 
 
 @dataclass(init=False)
-class BaseBinaryArithOp(QoalaExpression, ABC):
+class BaseBinaryArithOp(QoalaOperation, ABC):
     operand_a: QoalaExpression
     operand_b: QoalaExpression
 
@@ -51,24 +52,30 @@ class Add(BaseBinaryArithOp):
         super().__init__(*operands)
         QoalaProgram.add_to_body(self)
 
-    def can_evaluate_to(self, cls):
+    def can_evaluate_to(self, cls) -> bool:
         # We can assume that both operands evaluate to the same type, since the constructor
         # in the super class will insert an upcast if needed
         return ((cls == QoalaInteger or cls == QoalaFloat) and
                 self.operand_a.can_evaluate_to(cls) and
                 self.operand_b.can_evaluate_to(cls))
 
-    def to_ir(self, ctx: Context):
+    @checkbaseir
+    def compile(self, ctx: Context) -> None:
         # We can assume that both operands evaluate to the same type, since the constructor
         # in the super class will insert an upcast if needed
+        source_location = Location.file(
+            filename=self.debug_info.filename,
+            line=self.debug_info.line_start,
+            col=self.debug_info.col_start,
+            context=ctx
+        )
         if self.operand_a.can_evaluate_to(QoalaInteger):
-            self.ir = arith.addi(self.operand_a.ir, self.operand_b.ir)
+            self.ir_value = arith.addi(self.operand_a.ir_value, self.operand_b.ir_value, loc=source_location)
         elif self.operand_a.can_evaluate_to(QoalaFloat):
-            self.ir = arith.addf(self.operand_a.ir, self.operand_b.ir)
+            self.ir_value = arith.addf(self.operand_a.ir_value, self.operand_b.ir_value, loc=source_location)
         else:
             raise WrongEvaluationTypeError(f"When creating an operation of type '{self.__class__.__name__}', "
                                            f"the operands cannot be evaluated to any valid value.")
-        return self.ir
 
 
 @with_arith_operators
@@ -77,24 +84,30 @@ class Subtract(BaseBinaryArithOp):
         super().__init__(*operands)
         QoalaProgram.add_to_body(self)
 
-    def can_evaluate_to(self, cls):
+    def can_evaluate_to(self, cls) -> bool:
         # We can assume that both operands evaluate to the same type, since the constructor
         # in the super class will insert an upcast if needed
         return ((cls == QoalaInteger or cls == QoalaFloat) and
                 self.operand_a.can_evaluate_to(cls) and
                 self.operand_b.can_evaluate_to(cls))
 
-    def to_ir(self, ctx: Context):
+    @checkbaseir
+    def compile(self, ctx: Context) -> None:
         # We can assume that both operands evaluate to the same type, since the constructor
         # in the super class will insert an upcast if needed
+        source_location = Location.file(
+            filename=self.debug_info.filename,
+            line=self.debug_info.line_start,
+            col=self.debug_info.col_start,
+            context=ctx
+        )
         if self.operand_a.can_evaluate_to(QoalaInteger):
-            self.ir = arith.subi(self.operand_a.ir, self.operand_b.ir)
+            self.ir_value = arith.subi(self.operand_a.ir_value, self.operand_b.ir_value, loc=source_location)
         elif self.operand_a.can_evaluate_to(QoalaFloat):
-            self.ir = arith.subf(self.operand_a.ir, self.operand_b.ir)
+            self.ir_value = arith.subf(self.operand_a.ir_value, self.operand_b.ir_value, loc=source_location)
         else:
             raise WrongEvaluationTypeError(f"When creating an operation of type '{self.__class__.__name__}', "
                                            f"the operands cannot be evaluated to any valid value.")
-        return self.ir
 
 
 @dataclass(init=False)
@@ -104,24 +117,30 @@ class Multiply(BaseBinaryArithOp):
         super().__init__(*operands)
         QoalaProgram.add_to_body(self)
 
-    def can_evaluate_to(self, cls):
+    def can_evaluate_to(self, cls) -> bool:
         # We can assume that both operands evaluate to the same type, since the constructor
         # in the super class will insert an upcast if needed
         return ((cls == QoalaInteger or cls == QoalaFloat) and
                 self.operand_a.can_evaluate_to(cls) and
                 self.operand_b.can_evaluate_to(cls))
 
-    def to_ir(self, ctx: Context):
+    @checkbaseir
+    def compile(self, ctx: Context) -> None:
         # We can assume that both operands evaluate to the same type, since the constructor
         # in the super class will insert an upcast if needed
+        source_location = Location.file(
+            filename=self.debug_info.filename,
+            line=self.debug_info.line_start,
+            col=self.debug_info.col_start,
+            context=ctx
+        )
         if self.operand_a.can_evaluate_to(QoalaInteger):
-            self.ir = arith.muli(self.operand_a.ir, self.operand_b.ir)
+            self.ir_value = arith.muli(self.operand_a.ir_value, self.operand_b.ir_value, loc=source_location)
         elif self.operand_a.can_evaluate_to(QoalaFloat):
-            self.ir = arith.mulf(self.operand_a.ir, self.operand_b.ir)
+            self.ir_value = arith.mulf(self.operand_a.ir_value, self.operand_b.ir_value, loc=source_location)
         else:
             raise WrongEvaluationTypeError(f"When creating an operation of type '{self.__class__.__name__}', "
                                            f"the operands cannot be evaluated to any valid value.")
-        return self.ir
 
 
 @dataclass(init=False)
@@ -131,29 +150,35 @@ class Divide(BaseBinaryArithOp):
         super().__init__(*operands)
         QoalaProgram.add_to_body(self)
 
-    def can_evaluate_to(self, cls):
+    def can_evaluate_to(self, cls) -> bool:
         # We can assume that both operands evaluate to the same type, since the constructor
         # in the super class will insert an upcast if needed
         return ((cls == QoalaInteger or cls == QoalaFloat) and
                 self.operand_a.can_evaluate_to(cls) and
                 self.operand_b.can_evaluate_to(cls))
 
-    def to_ir(self, ctx: Context):
+    @checkbaseir
+    def compile(self, ctx: Context) -> None:
         # We can assume that both operands evaluate to the same type, since the constructor
         # in the super class will insert an upcast if needed
+        source_location = Location.file(
+            filename=self.debug_info.filename,
+            line=self.debug_info.line_start,
+            col=self.debug_info.col_start,
+            context=ctx
+        )
         if self.operand_a.can_evaluate_to(QoalaInteger):
-            self.ir = arith.divui(self.operand_a.ir, self.operand_b.ir)
+            self.ir_value = arith.divui(self.operand_a.ir_value, self.operand_b.ir_value, loc=source_location)
         elif self.operand_a.can_evaluate_to(QoalaFloat):
-            self.ir = arith.divf(self.operand_a.ir, self.operand_b.ir)
+            self.ir_value = arith.divf(self.operand_a.ir_value, self.operand_b.ir_value, loc=source_location)
         else:
             raise WrongEvaluationTypeError(f"When creating an operation of type '{self.__class__.__name__}', "
                                            f"the operands cannot be evaluated to any valid value.")
-        return self.ir
 
 
 @dataclass(init=False)
 @with_arith_operators
-class Pow(QoalaExpression):
+class Pow(QoalaOperation):
     base: QoalaExpression
     exponent: QoalaExpression
 
@@ -162,34 +187,41 @@ class Pow(QoalaExpression):
         assert len(operands) == 2
         self.base = operands[0]
         self.exponent = operands[1]
+        self.debug_info = get_debug_info()
         QoalaProgram.add_to_body(self)
 
-    def can_evaluate_to(self, cls):
+    def can_evaluate_to(self, cls) -> bool:
         return ((cls == QoalaInteger or cls == QoalaFloat) and
                 self.base.can_evaluate_to(cls))  # The base of the exponentiation dictates the type of the result
 
-    def to_ir(self, ctx: Context):
+    @checkbaseir
+    def compile(self, ctx: Context) -> None:
         # TODO - In the meantime we assume both operands are of the same type
         #        In the future we could implement semantic checks to automatically cast one
         #        type to another one
+        source_location = Location.file(
+            filename=self.debug_info.filename,
+            line=self.debug_info.line_start,
+            col=self.debug_info.col_start,
+            context=ctx
+        )
         if self.base.can_evaluate_to(QoalaInteger) and self.exponent.can_evaluate_to(QoalaInteger):
             # Both base and exponents can evaluate to integers
-            self.ir = math.powf(self.base.ir, self.exponent.ir)
+            self.ir_value = math.powf(self.base.ir_value, self.exponent.ir_value, loc=source_location)
         elif self.base.can_evaluate_to(QoalaFloat) and self.exponent.can_evaluate_to(QoalaFloat):
             # Both base and exponents can evaluate to floats
-            self.ir = math.ipowi(self.base.ir, self.exponent.ir)
+            self.ir_value = math.ipowi(self.base.ir_value, self.exponent.ir_value, loc=source_location)
         elif self.base.can_evaluate_to(QoalaFloat) and self.exponent.can_evaluate_to(QoalaInteger):
             # Both base and exponents can evaluate to floats
-            self.ir = math.fpowi(self.base.ir, self.exponent.ir)
+            self.ir_value = math.fpowi(self.base.ir_value, self.exponent.ir_value, loc=source_location)
         else:
             raise WrongEvaluationTypeError(f"When creating an operation of type '{self.__class__.__name__}', "
                                            f"the operands cannot be evaluated to any valid value.")
-        return self.ir
 
 
 @dataclass(init=False)
 @with_arith_operators
-class Pow2(QoalaExpression):
+class Pow2(QoalaOperation):
     exponent: QoalaExpression
 
     def __init__(self, *operands: QoalaExpression):
@@ -200,18 +232,25 @@ class Pow2(QoalaExpression):
             self.exponent = IntToFloat(operands[0])
         else:
             self.exponent = operands[0]
+        self.debug_info = get_debug_info()
         QoalaProgram.add_to_body(self)
 
-    def can_evaluate_to(self, cls):
+    def can_evaluate_to(self, cls) -> bool:
         return cls == QoalaFloat
 
-    def to_ir(self, ctx: Context):
+    @checkbaseir
+    def compile(self, ctx: Context) -> None:
+        source_location = Location.file(
+            filename=self.debug_info.filename,
+            line=self.debug_info.line_start,
+            col=self.debug_info.col_start,
+            context=ctx
+        )
         if self.exponent.can_evaluate_to(QoalaInteger) or self.exponent.can_evaluate_to(QoalaFloat):
-            self.ir = math.exp2(self.exponent.ir)
+            self.ir_value = math.exp2(self.exponent.ir_value, loc=source_location)
         else:
             raise WrongEvaluationTypeError(f"When creating an operation of type '{self.__class__.__name__}', "
                                            f"the operands cannot be evaluated to any valid value.")
-        return self.ir
 
 
 class ArithOperatorFactory:
