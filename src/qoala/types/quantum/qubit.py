@@ -280,6 +280,10 @@ class EntangledQubit(Qubit):
         pass
 
 
+"""
+Creates an entangled qubit with the given remote. If the remote is not declared, the
+creation of the qubit will fail.
+"""
 def Entangle(name: str, n: int = 1) -> EntangledQubit | Tuple[EntangledQubit, ...]:
     if QoalaProgram.get_declared_remote(name) is None:
         raise UnknownRemoteError(name)

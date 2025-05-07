@@ -120,7 +120,7 @@ class QoalaProgramBase(QoalaProgram, ABC):
     @staticmethod
     def __main_not_implemented(clazz) -> bool:
         # Check that
-        # * clazz has a "main" attriobute
+        # * clazz has a "main" attribute
         # * it is a function
         # * if "main" function has "__isabstrastmethod__" attribute is false
         if not hasattr(clazz, "main"):

@@ -6,10 +6,8 @@ from qoala import QoalaProgram, QoalaModule
 from qoala.errors import NotYetCompiledError
 from qoala.operations import Remote
 from qoala.operations.quantum import recv_int, recv_ints, recv_floats, send_floats, send_ints
-from qoala.types.classical.arrays import IntArray, FloatArray
-from qoala.types.classical.floats import Float
-from qoala.types.classical.integer import Int
-from qoala.types.quantum.qubit import LocalQubit, Entangle
+from qoala.types.classical import IntArray, FloatArray, Float, Int
+from qoala.types.quantum import LocalQubit, Entangle
 
 
 @QoalaProgram
@@ -380,16 +378,16 @@ class TestQoalaQnetPythonBindingsQuantum:
     qnet.return loc(#loc)
   }} loc(#loc)
 }} loc(#loc)
-#loc = loc("{str(current_path)}":108:0)
-#loc1 = loc("{str(current_path)}":110:4)
-#loc2 = loc("{str(current_path)}":111:17)
-#loc3 = loc("{str(current_path)}":112:9)
-#loc4 = loc("{str(current_path)}":113:19)
-#loc5 = loc("{str(current_path)}":113:4)
-#loc6 = loc("{str(current_path)}":114:9)
-#loc7 = loc("{str(current_path)}":115:19)
-#loc8 = loc("{str(current_path)}":115:4)
-#loc9 = loc("{str(current_path)}":116:8)
+#loc = loc("{str(current_path)}":106:0)
+#loc1 = loc("{str(current_path)}":108:4)
+#loc2 = loc("{str(current_path)}":109:17)
+#loc3 = loc("{str(current_path)}":110:9)
+#loc4 = loc("{str(current_path)}":111:19)
+#loc5 = loc("{str(current_path)}":111:4)
+#loc6 = loc("{str(current_path)}":112:9)
+#loc7 = loc("{str(current_path)}":113:19)
+#loc8 = loc("{str(current_path)}":113:4)
+#loc9 = loc("{str(current_path)}":114:8)
 """
         assert str(module.asm_dbg) == expected_dbg_asm
 

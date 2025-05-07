@@ -1,6 +1,6 @@
 from qoala.ast.operations.quantum import RecvIntsOp, RecvFloatsOp, SendIntsOp, SendFloatsOp
 from qoala.operations import Remote
-from qoala.types.classical.arrays import IntArray, FloatArray
+from qoala.types.classical import IntArray, FloatArray
 from qoala.types.classical.floats import QoalaFloatingPointType
 from qoala.types.classical.integer import QoalaIntegerType
 

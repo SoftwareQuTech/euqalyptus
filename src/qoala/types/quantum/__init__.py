@@ -8,3 +8,6 @@ class QoalaQuantumType(QoalaType, ABC):
     Base class for qoala quantum types
     """
     pass
+
+
+from .qubit import LocalQubit, Entangle

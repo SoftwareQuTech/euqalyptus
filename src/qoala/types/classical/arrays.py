@@ -2,9 +2,7 @@ from typing import Generic, TypeVar, Type
 
 from qoala.ast.value import QoalaArray, QoalaExpression
 from qoala.errors import InvalidArrayArgumentError
-from qoala.types.classical import QoalaClassicalType
-from qoala.types.classical.floats import Float, Double
-from qoala.types.classical.integer import Int, Int32
+from qoala.types.classical import QoalaClassicalType, Float, Double, Int, Int32
 
 _Qoala_Base_Type = TypeVar("_Qoala_Base_Type", bound=QoalaClassicalType)
 _Native_Base_Type = TypeVar("_Native_Base_Type", int, float)
@@ -49,7 +47,7 @@ class _Array(Generic[_Qoala_Base_Type, _Native_Base_Type]):
     def __getitem__(self, item) -> _Qoala_Base_Type:
         """
         "Brackets" operator for the qoala arrays. This method allows using qoala arrays
-        using the indexing operator int the same way as an ordinatry python array:
+        using the indexing operator int the same way as an ordinary python array:
         array = IntArray(10, 20, 30)
         value = array[1] ## This access is allowed by this method
         """
