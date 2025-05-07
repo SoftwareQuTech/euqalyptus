@@ -1,4 +1,9 @@
-from qoala.ast.operations.quantum import RecvIntsOp, RecvFloatsOp, SendIntsOp, SendFloatsOp
+from qoala.ast.operations.quantum import (
+    RecvIntsOp,
+    RecvFloatsOp,
+    SendIntsOp,
+    SendFloatsOp,
+)
 from qoala.operations import Remote
 from qoala.types.classical import IntArray, FloatArray
 from qoala.types.classical.floats import QoalaFloatingPointType
@@ -6,6 +11,7 @@ from qoala.types.classical.integer import QoalaIntegerType
 
 
 class RecvInts(IntArray):
+
     def __new__(cls, remote_name: Remote | str, length: int):
         return RecvIntsOp(remote_name=remote_name, length=length)
 
@@ -15,6 +21,7 @@ class RecvInts(IntArray):
 
 
 class RecvInt(RecvInts, QoalaIntegerType):
+
     def __new__(cls, remote_name: Remote | str, length: int = 1):
         return RecvIntsOp(remote_name=remote_name, length=length)
 
@@ -24,6 +31,7 @@ class RecvInt(RecvInts, QoalaIntegerType):
 
 
 class RecvFloats(FloatArray):
+
     def __new__(cls, remote_name: Remote | str, length: int):
         return RecvFloatsOp(remote_name=remote_name, length=length)
 
@@ -33,6 +41,7 @@ class RecvFloats(FloatArray):
 
 
 class RecvFloat(RecvFloats, QoalaFloatingPointType):
+
     def __new__(cls, remote_name: Remote | str):
         return RecvFloatsOp(remote_name=remote_name, length=1)
 
@@ -43,20 +52,34 @@ class RecvFloat(RecvFloats, QoalaFloatingPointType):
 
 # TODO - Inherit from what?
 class SendInts:
-    def __new__(cls,  remote_name: Remote | str, *args: IntArray | QoalaIntegerType | int):
+
+    def __new__(
+        cls, remote_name: Remote | str, *args: IntArray | QoalaIntegerType | int
+    ):
         return SendIntsOp(*args, remote_name=remote_name)
 
-    def __init__(self,  remote_name: Remote | str, *args: IntArray | QoalaIntegerType | int):
+    def __init__(
+        self, remote_name: Remote | str, *args: IntArray | QoalaIntegerType | int
+    ):
         # Nothing to do here
         pass
 
 
 # TODO - Inherit from what?
 class SendFloats:
-    def __new__(cls,  remote_name: Remote | str, *args: FloatArray | QoalaFloatingPointType | float):
+
+    def __new__(
+        cls,
+        remote_name: Remote | str,
+        *args: FloatArray | QoalaFloatingPointType | float,
+    ):
         return SendFloatsOp(*args, remote_name=remote_name)
 
-    def __init__(self,  remote_name: Remote | str, *args: FloatArray | QoalaFloatingPointType | float):
+    def __init__(
+        self,
+        remote_name: Remote | str,
+        *args: FloatArray | QoalaFloatingPointType | float,
+    ):
         # Nothing to do here
         pass
 

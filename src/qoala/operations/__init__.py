@@ -6,6 +6,7 @@ class Remote:
     """
     Declares a remote name to be used for entangling qubits.
     """
+
     def __new__(cls, name: str, *args, **kwargs):
         remote = QoalaProgram.get_declared_remote(name)
         if remote is not None:

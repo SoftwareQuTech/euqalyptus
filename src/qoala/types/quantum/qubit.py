@@ -1,5 +1,5 @@
 from abc import ABC
-from typing import Optional, Self, Tuple
+from typing import Self, Tuple
 
 from qoala import QoalaProgram
 from qoala.ast.qubit import QoalaLocalQubit, QoalaEprs
@@ -32,7 +32,7 @@ class Qubit(QoalaQuantumType, ABC):
         -------
             The value of the measure, as a `Bit` object
         """
-        ...
+        pass
 
     def X(self):
         """
@@ -42,7 +42,7 @@ class Qubit(QoalaQuantumType, ABC):
         -------
         None
         """
-        ...
+        pass
 
     def Y(self):
         """
@@ -51,7 +51,7 @@ class Qubit(QoalaQuantumType, ABC):
         -------
         None
         """
-        ...
+        pass
 
     def Z(self):
         """
@@ -60,7 +60,7 @@ class Qubit(QoalaQuantumType, ABC):
         -------
         None
         """
-        ...
+        pass
 
     def T(self):
         """
@@ -69,7 +69,7 @@ class Qubit(QoalaQuantumType, ABC):
         -------
         None
         """
-        ...
+        pass
 
     def H(self):
         """
@@ -78,7 +78,7 @@ class Qubit(QoalaQuantumType, ABC):
         -------
         None
         """
-        ...
+        pass
 
     def K(self):
         """
@@ -88,7 +88,7 @@ class Qubit(QoalaQuantumType, ABC):
         -------
         None
         """
-        ...
+        pass
 
     def S(self):
         """
@@ -98,13 +98,13 @@ class Qubit(QoalaQuantumType, ABC):
         -------
         None
         """
-        ...
+        pass
 
     def rot_X(
-            self,
-            n: int | QoalaIntegerType = 0,
-            d: int | QoalaIntegerType = 0,
-            angle: float | QoalaFloatingPointType | None = None
+        self,
+        n: int | QoalaIntegerType = 0,
+        d: int | QoalaIntegerType = 0,
+        angle: float | QoalaFloatingPointType | None = None,
     ):
         """
         Do a rotation around the X-axis of the specified angle.
@@ -130,13 +130,13 @@ class Qubit(QoalaQuantumType, ABC):
         -------
         None
         """
-        ...
+        pass
 
     def rot_Y(
-            self,
-            n: int | QoalaIntegerType = 0,
-            d: int | QoalaIntegerType = 0,
-            angle: float | QoalaFloatingPointType | None = None
+        self,
+        n: int | QoalaIntegerType = 0,
+        d: int | QoalaIntegerType = 0,
+        angle: float | QoalaFloatingPointType | None = None,
     ):
         """
         Do a rotation around the Y-axis of the specified angle.
@@ -162,13 +162,13 @@ class Qubit(QoalaQuantumType, ABC):
         -------
         None
         """
-        ...
+        pass
 
     def rot_Z(
-            self,
-            n: int | QoalaIntegerType = 0,
-            d: int | QoalaIntegerType = 0,
-            angle: float | QoalaFloatingPointType | None = None
+        self,
+        n: int | QoalaIntegerType = 0,
+        d: int | QoalaIntegerType = 0,
+        angle: float | QoalaFloatingPointType | None = None,
     ):
         """
         Do a rotation around the Z-axis of the specified angle.
@@ -194,7 +194,7 @@ class Qubit(QoalaQuantumType, ABC):
         -------
         None
         """
-        ...
+        pass
 
     def cnot(self, target: Self) -> None:
         """
@@ -209,7 +209,7 @@ class Qubit(QoalaQuantumType, ABC):
         -------
         None
         """
-        ...
+        pass
 
     def cphase(self, target: Self) -> None:
         """
@@ -224,7 +224,7 @@ class Qubit(QoalaQuantumType, ABC):
         -------
         None
         """
-        ...
+        pass
 
     def cz(self, target: Self) -> None:
         """
@@ -240,6 +240,7 @@ class Qubit(QoalaQuantumType, ABC):
         -------
         None
         """
+        pass
 
     def free(self) -> None:
         """
@@ -251,13 +252,14 @@ class Qubit(QoalaQuantumType, ABC):
         -------
         None
         """
-        ...
+        pass
 
 
 class LocalQubit(Qubit):
     """
     Represents a local qubit used for local quantum computation.
     """
+
     def __new__(cls, *args, **kwargs):
         return QoalaLocalQubit()
 
@@ -272,6 +274,7 @@ class EntangledQubit(Qubit):
     """
     Represents a local qubit use for quantum entanglement with a remote host.
     """
+
     def __new__(cls, name: str):
         return QoalaEprs(name)
 
@@ -284,6 +287,8 @@ class EntangledQubit(Qubit):
 Creates an entangled qubit with the given remote. If the remote is not declared, the
 creation of the qubit will fail.
 """
+
+
 def Entangle(name: str, n: int = 1) -> EntangledQubit | Tuple[EntangledQubit, ...]:
     if QoalaProgram.get_declared_remote(name) is None:
         raise UnknownRemoteError(name)

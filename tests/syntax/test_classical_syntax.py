@@ -52,7 +52,9 @@ class TestIntegerClassicalSyntax(Generic[_Base_Type_Int]):
                 raise NotImplementedError()
 
     @staticmethod
-    def _get_int_from_same_type(clazz: type, other_int: _Base_Type_Int) -> _Base_Type_Int:
+    def _get_int_from_same_type(
+        clazz: type, other_int: _Base_Type_Int
+    ) -> _Base_Type_Int:
         match clazz.__name__:
             case "Int32":
                 return Int32(other=other_int)
@@ -97,6 +99,7 @@ class TestIntegerClassicalSyntax(Generic[_Base_Type_Int]):
 
 @pytest.mark.parametrize("clazz", (Float, Double))
 class TestFloatClassicalSyntax(Generic[_Base_Type_Float]):
+
     @pytest.fixture(autouse=True, scope="function")
     def setup_debug_info(self, request):
         # For allowing debug info
@@ -118,7 +121,9 @@ class TestFloatClassicalSyntax(Generic[_Base_Type_Float]):
                 raise NotImplementedError()
 
     @staticmethod
-    def _get_float_from_same_type(clazz: type, other_int: _Base_Type_Float) -> _Base_Type_Float:
+    def _get_float_from_same_type(
+        clazz: type, other_int: _Base_Type_Float
+    ) -> _Base_Type_Float:
         match clazz.__name__:
             case "Float":
                 return Float(other=other_int)
@@ -160,6 +165,7 @@ class TestFloatClassicalSyntax(Generic[_Base_Type_Float]):
 
 
 class TestArrayClassicalSyntax:
+
     @pytest.fixture(autouse=True, scope="function")
     def setup_debug_info(self, request):
         # For allowing debug info

@@ -13,7 +13,7 @@ from qoala.types.classical.integer import Int32
 class TestArraySemantics:
     arrays_test_data = [
         ((10, 20), (5, 3), int, Int32, IntArray, QoalaInteger),
-        ((15.3, 10), (-5.8, 4.1), float, Float, FloatArray, QoalaFloat)
+        ((15.3, 10), (-5.8, 4.1), float, Float, FloatArray, QoalaFloat),
     ]
 
     @pytest.fixture(autouse=True, scope="function")
@@ -26,15 +26,18 @@ class TestArraySemantics:
         else:
             dbg_info.function_name = request.node.name
 
-    @pytest.mark.parametrize("values, constants, vals_type, base_type, array_type, member_type", arrays_test_data)
+    @pytest.mark.parametrize(
+        "values, constants, vals_type, base_type, array_type, member_type",
+        arrays_test_data,
+    )
     def test_array_semantics(
-            self,
-            values: Union[Tuple[int], Tuple[float]],
-            constants: Union[Tuple[int], Tuple[float]],
-            vals_type: Type,
-            base_type: Type,
-            array_type: Type,
-            member_type: QoalaInteger | QoalaFloat
+        self,
+        values: Union[Tuple[int], Tuple[float]],
+        constants: Union[Tuple[int], Tuple[float]],
+        vals_type: Type,
+        base_type: Type,
+        array_type: Type,
+        member_type: QoalaInteger | QoalaFloat,
     ):
         array_values: List[member_type, vals_type] = []
         in_order_values: Queue[vals_type] = Queue()

@@ -1,17 +1,17 @@
 from abc import ABC
 from dataclasses import dataclass
 from enum import Enum, auto
-from typing import Generic, TypeVar, Self, Optional, Type, List
+from typing import Generic, TypeVar, Self, Optional, Type, List, Union
 
 import qnet.dialects.arith as arith
 import qnet.dialects.tensor as tensor
+from qnet.extras.types import i32, ui32, f32, index
 from qnet.ir import Context, Location
 
 from qoala import QoalaProgram
 from qoala.ast import QoalaExpression, checkbaseir
 from qoala.ast.operations import QoalaOperation, with_arith_operators
 from qoala.errors import UnknownTypeError, OperandMismatchError
-from qoala.utils.binding_types import i32, ui32, f32, index
 from qoala.utils.debug_info import DebugInfo, get_debug_info
 
 _T = TypeVar("_T")
@@ -28,6 +28,7 @@ class QoalaValue(QoalaExpression, Generic[_T], ABC):
     Class used to represent a value in the AST. Nodes of this type (i.e.
     subclasses) are usually the leaves of the AST.
     """
+
     pass
 
 
@@ -38,36 +39,41 @@ class QoalaNumericValue(QoalaValue[_T], ABC):
     value: _T
 
     @classmethod
-    def from_immediate(cls, value: _T, dbg_info: DebugInfo, is_index: bool = False) -> Self:
+    def from_immediate(
+        cls, value: _T, dbg_info: DebugInfo, is_index: bool = False
+    ) -> Union["QoalaInteger", "QoalaFloat"]:
         if is_index:
-            return QoalaInteger(value=value, width=32,
-                                signedness=Signedness.SIGNED,
-                                is_index_type=True,
-                                debug_info=dbg_info)
+            return QoalaInteger(
+                value=value,
+                width=32,
+                signedness=Signedness.SIGNED,
+                is_index_type=True,
+                debug_info=dbg_info,
+            )
         elif isinstance(value, int):
-            return QoalaInteger(value=value,
-                                width=32,
-                                signedness=Signedness.SIGNED,
-                                debug_info=dbg_info)
+            return QoalaInteger(
+                value=value, width=32, signedness=Signedness.SIGNED, debug_info=dbg_info
+            )
         elif isinstance(value, float):
-            return QoalaFloat(value=value,
-                              width=32,
-                              debug_info=dbg_info)
+            return QoalaFloat(value=value, width=32, debug_info=dbg_info)
         else:
-            raise UnknownTypeError(f"A Qoala value could not be created from immediate '{value}'. "
-                                   f"Supported immediate types are 'int' and 'float'.")
+            raise UnknownTypeError(
+                f"A Qoala value could not be created from immediate '{value}'. "
+                f"Supported immediate types are 'int' and 'float'."
+            )
 
 
 @with_arith_operators
 class QoalaInteger(QoalaNumericValue[int]):
+
     def __init__(
-            self,
-            value: _T,
-            width: int,
-            signedness: Signedness,
-            debug_info: DebugInfo | None = None,
-            is_index_type: bool = False,
-            other: Optional[Self] = None
+        self,
+        value: int,
+        width: int,
+        signedness: Signedness,
+        debug_info: DebugInfo | None = None,
+        is_index_type: bool = False,
+        other: Optional[Self] = None,
     ):
         super().__init__()
         if other is not None:
@@ -105,19 +111,22 @@ class QoalaInteger(QoalaNumericValue[int]):
             filename=self.debug_info.filename,
             line=self.debug_info.line_start,
             col=self.debug_info.col_start,
-            context=ctx
+            context=ctx,
         )
-        self.ir_value = arith.constant(value=self.value, result=integer_type, loc=source_location)
+        self.ir_value = arith.constant(
+            value=self.value, result=integer_type, loc=source_location
+        )
 
 
 @with_arith_operators
 class QoalaFloat(QoalaNumericValue[float]):
+
     def __init__(
-            self,
-            value: _T,
-            width: int,
-            debug_info: DebugInfo | None = None,
-            other: Optional[Self] = None
+        self,
+        value: float,
+        width: int,
+        debug_info: DebugInfo | None = None,
+        other: Optional[Self] = None,
     ):
         super().__init__()
         if other is not None:
@@ -147,9 +156,11 @@ class QoalaFloat(QoalaNumericValue[float]):
             filename=self.debug_info.filename,
             line=self.debug_info.line_start,
             col=self.debug_info.col_start,
-            context=ctx
+            context=ctx,
         )
-        self.ir_value = arith.constant(value=self.value, result=float_type, loc=source_location)
+        self.ir_value = arith.constant(
+            value=self.value, result=float_type, loc=source_location
+        )
 
 
 QoalaFloatOrExpression = QoalaFloat | QoalaExpression
@@ -167,7 +178,9 @@ _Native_Base_Type = TypeVar("_Native_Base_Type")
 
 
 @dataclass(init=False)
-class QoalaArray(QoalaValue[QoalaExpression], Generic[_Qoala_Base_Type, _Native_Base_Type]):
+class QoalaArray(
+    QoalaValue[QoalaExpression], Generic[_Qoala_Base_Type, _Native_Base_Type]
+):
     qoala_type: Type
     base_type: Type
     base_size: int
@@ -175,12 +188,12 @@ class QoalaArray(QoalaValue[QoalaExpression], Generic[_Qoala_Base_Type, _Native_
     members: List[QoalaExpression]
 
     def __init__(
-            self,
-            *elements,
-            base_type: Type,
-            base_size: int,
-            length: int,
-            base_clone: Optional[Self]
+        self,
+        *elements,
+        base_type: Type,
+        base_size: int,
+        length: int,
+        base_clone: Optional[Self],
     ):
         super().__init__()
         self.members = []
@@ -193,38 +206,51 @@ class QoalaArray(QoalaValue[QoalaExpression], Generic[_Qoala_Base_Type, _Native_
         if len(elements) > 0:
             self.length = 0
             for element in elements:
-                assert isinstance(element, base_type) or isinstance(element, QoalaExpression)
+                assert isinstance(element, base_type) or isinstance(
+                    element, QoalaExpression
+                )
                 if isinstance(element, QoalaExpression):
                     if not element.can_evaluate_to(self.qoala_type):
-                        raise UnknownTypeError(f"The element '{element}' cannot "
-                                               f"evaluate to type '{self.qoala_type}'")
+                        raise UnknownTypeError(
+                            f"The element '{element}' cannot "
+                            f"evaluate to type '{self.qoala_type}'"
+                        )
                     else:
                         self.members.append(element)
                 elif isinstance(element, base_type):
                     match self.base_type.__name__:
                         case "int":
-                            new_element = QoalaInteger(value=element, width=32, signedness=Signedness.SIGNED)
+                            new_element = QoalaInteger(
+                                value=element, width=32, signedness=Signedness.SIGNED
+                            )
                         case "float":
                             new_element = QoalaFloat(value=element, width=32)
                         case _:
-                            raise UnknownTypeError(f"Unknown base type '{self.base_type}'")
+                            raise UnknownTypeError(
+                                f"Unknown base type '{self.base_type}'"
+                            )
                     if new_element is not None:
                         self.members.append(new_element)
                 else:
-                    raise UnknownTypeError(f"The element '{element}' cannot be "
-                                           f"inserted on an array of type '{self.base_type}'")
+                    raise UnknownTypeError(
+                        f"The element '{element}' cannot be "
+                        f"inserted on an array of type '{self.base_type}'"
+                    )
                 self.length = self.length + 1
         else:
             self.length = length
         self.debug_info = get_debug_info()
         QoalaProgram.add_to_body(self)
 
-    def store(self, new_element: QoalaExpression | _Native_Base_Type) -> QoalaExpression:
+    def store(
+        self, new_element: QoalaExpression | _Native_Base_Type
+    ) -> QoalaExpression:
         if isinstance(new_element, self.base_type):
             to_add = QoalaNumericValue.from_immediate(new_element, self.debug_info)
         else:
             to_add = new_element
         from qoala.ast.operations.arrays import SetItem
+
         return QoalaOperation.create_expression_for_op(SetItem, self, to_add)
 
     def __len__(self) -> int:
@@ -233,17 +259,25 @@ class QoalaArray(QoalaValue[QoalaExpression], Generic[_Qoala_Base_Type, _Native_
 
     def __getitem__(self, item_index: QoalaExpression | int) -> QoalaExpression:
         if isinstance(item_index, int):
-            index_operand = QoalaNumericValue.from_immediate(item_index, self.debug_info, is_index=True)
+            index_operand = QoalaNumericValue.from_immediate(
+                item_index, self.debug_info, is_index=True
+            )
         else:
             # The index is already a qoala expression, which can evaluate either to a float or int
             # If it evaluates to an int, we need to cast it to an integer
             if not item_index.can_evaluate_to(QoalaInteger):
-                raise OperandMismatchError(f"The index operand '{item_index}' cannot evaluate to an integer, "
-                                           f"hence it cannot be used index an array.")
+                raise OperandMismatchError(
+                    f"The index operand '{item_index}' cannot evaluate to an integer, "
+                    f"hence it cannot be used index an array."
+                )
             from qoala.ast.operations.arrays import CastToIndex
-            casted_index = QoalaOperation.create_expression_for_op(CastToIndex, item_index)
+
+            casted_index = QoalaOperation.create_expression_for_op(
+                CastToIndex, item_index
+            )
             index_operand = casted_index
         from qoala.ast.operations.arrays import GetItem
+
         return QoalaOperation.create_expression_for_op(GetItem, self, index_operand)
 
     def can_evaluate_to(self, cls) -> bool:
@@ -260,15 +294,21 @@ class QoalaArray(QoalaValue[QoalaExpression], Generic[_Qoala_Base_Type, _Native_
         elif self.base_type is float:
             hir_base_type = f32()
         else:
-            raise UnknownTypeError(f"Base type '{self.base_type.__name__}' for arrays is not supported")
+            raise UnknownTypeError(
+                f"Base type '{self.base_type.__name__}' for arrays is not supported"
+            )
         source_location = Location.file(
             filename=self.debug_info.filename,
             line=self.debug_info.line_start,
             col=self.debug_info.col_start,
-            context=ctx
+            context=ctx,
         )
-        result_type = tensor.RankedTensorType.get(shape=[self.length], element_type=hir_base_type, loc=source_location)
-        self.ir_value = tensor.from_elements(elements=ir_values, result=result_type, loc=source_location)
+        result_type = tensor.RankedTensorType.get(
+            shape=[self.length], element_type=hir_base_type, loc=source_location
+        )
+        self.ir_value = tensor.from_elements(
+            elements=ir_values, result=result_type, loc=source_location
+        )
 
 
 class QoalaBit(QoalaValue[int], ABC):
@@ -281,4 +321,5 @@ class QoalaBit(QoalaValue[int], ABC):
     this usage is *not* recommended. This class has been conceived to
     model the _type returned by the 'measure' operation on a qubit_.
     """
+
     pass

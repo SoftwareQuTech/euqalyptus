@@ -67,20 +67,24 @@ class checkbaseir:
     is present before calling the decorated function.
     INTERNALS: This decorator is based on the example found at
     https://stackoverflow.com/questions/30104047/how-can-i-decorate-an-instance-method-with-a-decorator-class.
-    This implementation relies on python "descriptors" (see https://docs.python.org/3/glossary.html#term-descriptor
-    and https://docs.python.org/3/reference/datamodel.html#descriptors) which allows to define a "custom"
-    behavior when trying to access an attribute (specifically, a function) of a class.
-    By applying this decorator on a function, it will turn the decorated function (attribute) into a "descriptor",
-    since it will define the "__get__" method.
-    When python needs to access the decorated attribute of the object, it will look into the instance's dictionary
-    for the attribute (function) name *before actually operating the attribute* (calling the function). Since the
-    attribute is now a descriptor, it will invoke the '__get__' function to get the real attribute. In this class,
-    we simply perform a "partial initialization" of the '__call__' method, setting the instance of the involved
+    This implementation relies on python "descriptors" (see
+    https://docs.python.org/3/glossary.html#term-descriptor and
+    https://docs.python.org/3/reference/datamodel.html#descriptors) which allows to define
+    a "custom" behavior when trying to access an attribute (specifically, a function) of
+    a class. By applying this decorator on a function, it will turn the decorated function
+    (attribute) into a "descriptor", since it will define the "__get__" method.
+    When python needs to access the decorated attribute of the object, it will look into
+    the instance's dictionary for the attribute (function) name *before actually operating
+    the attribute* (calling the function). Since the attribute is now a descriptor, it will
+    invoke the '__get__' function to get the real attribute. In this class, we simply perform
+    a "partial initialization" of the '__call__' method, setting the instance of the involved
     object as an argument of the '__call__' method.
-    Finally, when the python runtime will invoke the returned attribute (a partially initialize function call), it
-    will do it through the "__call__" method, since the decorated function has been annotated. In this place we can
-    make the check about the presence of the "ir" attribute.
+    Finally, when the python runtime will invoke the returned attribute (a partially initialize
+    function call), it will do it through the "__call__" method, since the decorated function
+    has been annotated. In this place we can make the check about the presence of the "ir"
+    attribute.
     """
+
     def __init__(self, to_ir_func: Callable):
         # Constructor of the decorator. We simply keep a reference of the decorated function
         self._to_ir_func = to_ir_func
@@ -104,4 +108,3 @@ class checkbaseir:
         # partial initialization of that method; this will simply set an argument on the "__call__"
         # function, so we can "save" the instance of the object on which we are applying the call.
         return partial(self.__call__, instance)
-

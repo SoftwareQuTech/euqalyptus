@@ -10,10 +10,7 @@ from qoala.types.classical.integer import Int32, UInt32
 
 
 class TestNumbersSemantics:
-    numeric_test_data = [
-        (10, 20, Int32, QoalaInteger),
-        (11.1, 22.2, Float, QoalaFloat)
-    ]
+    numeric_test_data = [(10, 20, Int32, QoalaInteger), (11.1, 22.2, Float, QoalaFloat)]
 
     @pytest.fixture(autouse=True, scope="function")
     def setup_debug_info(self, request):
@@ -25,13 +22,15 @@ class TestNumbersSemantics:
         else:
             dbg_info.function_name = request.node.name
 
-    @pytest.mark.parametrize("val_a, val_b, numeric_type, internal_type", numeric_test_data)
+    @pytest.mark.parametrize(
+        "val_a, val_b, numeric_type, internal_type", numeric_test_data
+    )
     def test_basic_numeric_semantics(
-            self,
-            val_a: int | float,
-            val_b: int | float,
-            numeric_type: Int32 | Float,
-            internal_type: QoalaInteger | QoalaFloat,
+        self,
+        val_a: int | float,
+        val_b: int | float,
+        numeric_type: Int32 | Float,
+        internal_type: QoalaInteger | QoalaFloat,
     ):
         int_a = numeric_type(val_a)
         int_b = numeric_type(val_b)
@@ -100,7 +99,13 @@ class TestNumbersSemantics:
     def test_wrong_array_initialization(self):
         with pytest.raises(InvalidArrayArgumentError) as ex:
             _ = IntArray(10.2)
-        assert str(ex.value) == "Array of type 'IntArray' can only hold values of type 'int'"
+        assert (
+            str(ex.value)
+            == "Array of type 'IntArray' can only hold values of type 'int'"
+        )
         with pytest.raises(InvalidArrayArgumentError) as ex:
             _ = FloatArray(10)
-        assert str(ex.value) == "Array of type 'FloatArray' can only hold values of type 'float'"
+        assert (
+            str(ex.value)
+            == "Array of type 'FloatArray' can only hold values of type 'float'"
+        )

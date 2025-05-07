@@ -9,6 +9,7 @@ from qoala.types.quantum.qubit import LocalQubit
 
 
 class TestQuantumSyntax:
+
     @pytest.fixture(autouse=True, scope="function")
     def setup_debug_info(self, request):
         # For allowing debug info
@@ -59,20 +60,9 @@ class TestQuantumSyntax:
         # Arguments for the operations can be either a "python" immediate
         # or a qoala value. In the former case, the rotation will immediately
         # create a qoala immediate to store the value.
-        qubit.rot_X(
-            n=10,
-            d=30
-        )
-        qubit.rot_Y(
-            n=10,
-            d=d_val,
-            angle=10.5
-        )
-        qubit.rot_Z(
-            n=n_val,
-            d=d_val,
-            angle=angle_val
-        )
+        qubit.rot_X(n=10, d=30)
+        qubit.rot_Y(n=10, d=d_val, angle=10.5)
+        qubit.rot_Z(n=n_val, d=d_val, angle=angle_val)
 
         qubit.cnot(qubit_b)
         qubit.cphase(qubit_b)
@@ -81,4 +71,3 @@ class TestQuantumSyntax:
 
         assert isinstance(qubit, QoalaQubit)
         assert isinstance(measurement, QubitMeasure)
-

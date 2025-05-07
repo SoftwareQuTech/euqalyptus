@@ -7,6 +7,7 @@ class QoalaQuantumType(QoalaType, ABC):
     """
     Base class for qoala quantum types
     """
+
     pass
 
 

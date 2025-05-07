@@ -2,10 +2,16 @@ from typing import Self, Optional
 
 from qoala.ast.value import QoalaInteger, Signedness
 from qoala.errors import NotUnsignedIntegerArgumentError, NotIntegerArgumentError
-from qoala.types.classical import QoalaClassicalType, _Internal_Value_Type, _NumericOperandsOverload
+from qoala.types.classical import (
+    QoalaClassicalType,
+    _Internal_Value_Type,
+    _NumericOperandsOverload,
+)
 
 
-class QoalaIntegerType(QoalaClassicalType[_Internal_Value_Type], _NumericOperandsOverload):
+class QoalaIntegerType(
+    QoalaClassicalType[_Internal_Value_Type], _NumericOperandsOverload
+):
     pass
 
 
@@ -44,10 +50,10 @@ class Int32(_SignedIntegerType[int]):
         return QoalaInteger(**kwargs)
 
     def __init__(
-            self,
-            immediate: int = 0,
-            other: Optional[Self] = None,
-            # TODO - The next arguments are used when creating an Int32 from other types
+        self,
+        immediate: int = 0,
+        other: Optional[Self] = None,
+        # TODO - The next arguments are used when creating an Int32 from other types
     ):
         """
         Creates a new instance of a 32 bits-wide *signed* integer.
@@ -64,7 +70,7 @@ class Int32(_SignedIntegerType[int]):
             copies" of an integer.
         """
         # Nothing to do here
-        ...
+        pass
 
 
 Int = Int32
@@ -100,10 +106,10 @@ class UInt32(_UnsignedIntegerType[int]):
         return QoalaInteger(**kwargs)
 
     def __init__(
-            self,
-            immediate: int = 0,
-            other: Optional[Self] = 0,
-            # TODO - The next arguments are used when creating an UInt32 from other types
+        self,
+        immediate: int = 0,
+        other: Optional[Self] = 0,
+        # TODO - The next arguments are used when creating an UInt32 from other types
     ):
         """
         Creates a new instance of a 32 bits-wide *unsigned* integer.
@@ -134,4 +140,5 @@ class Bit(QoalaClassicalType[int]):
     qoala.types.classical.integer package to declare and create a value of this
     type, this is a use case that it is *not* encouraged.
     """
+
     pass
