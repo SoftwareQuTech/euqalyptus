@@ -20,6 +20,14 @@ class QoalaExpression(ABC):
 
     @abstractmethod
     def compile(self, ctx: Context) -> None:
+        """
+        Compiles the operation,
+
+        Parameters
+        ----------
+        ctx: Context
+            The QNet Context object for creating QNet instructions.
+        """
         pass
 
     @property
@@ -35,6 +43,21 @@ class QoalaExpression(ABC):
 
     @abstractmethod
     def can_evaluate_to(self, cls) -> bool:
+        """
+        Returns whether this instance can be evaluated to a given type.
+
+        Parameters
+        ----------
+        cls:
+            A subtype of ``QoalaValue``. The potential type to check if this
+            instance can evaluate to.
+
+        Returns
+        -------
+        bool:
+            ``true`` if this instance can evaluate to the given type, ``false``
+            otherwise.
+        """
         pass
 
 

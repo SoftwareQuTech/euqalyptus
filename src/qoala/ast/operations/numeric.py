@@ -146,6 +146,13 @@ class Multiply(BaseBinaryArithOp):
 @dataclass(init=False)
 @with_arith_operators
 class Divide(BaseBinaryArithOp):
+    """
+    Represents a "divide" operation, which accepts 2 operands.
+    This divide operation can accept operands that can *both* evaluate to either
+    ``QoalaInteger`` or ``QoalaFloat``. The result of this operation (what does this
+    operation can evaluate to) is of the same type of *both* of the given operands.
+    """
+
     def __init__(self, *operands: QoalaExpression):
         super().__init__(*operands)
         QoalaProgram.add_to_body(self)
