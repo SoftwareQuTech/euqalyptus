@@ -5,7 +5,7 @@ dependencies = [
     "pytest >= 8.0.0",
     "qoala-mlir == 0.0.1"
 ]
-requires-python = ">=3.11"
+requires-python = ">=3.10, <3.13"
 authors = [
     {name = "Bart van der Vecht", email ="b.vanderVecht@tudelft.nl"},
     {name = "Diego Rivera", email ="d.a.g.a.rivera@tudelft.nl"}
