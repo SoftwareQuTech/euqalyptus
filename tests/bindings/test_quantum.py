@@ -1,5 +1,7 @@
 import pytest
 
+from pathlib import Path
+
 from qoala import QoalaProgram, QoalaModule
 from qoala.errors import NotYetCompiledError
 from qoala.operations import Remote
@@ -358,35 +360,36 @@ class TestQoalaQnetPythonBindingsQuantum:
   }
 }
 """
+        current_path: Path = Path(__file__).resolve()
         assert str(module.asm) == expected_asm
-        expected_dbg_asm = """module {
+        expected_dbg_asm = f"""module {{
   qnet.remote @Bob loc(#loc1)
-  qnet.func @quantum_entanglement_program_b() {
-    %0 = qnet.eprs  {remote = @Bob} : !qnet.qubit loc(#loc2)
-    %1 = qnet.eprs  {remote = @Bob} : !qnet.qubit loc(#loc2)
-    %2 = qnet.eprs  {remote = @Bob} : !qnet.qubit loc(#loc2)
-    %3 = qnet.recv_floats  {length = 2 : i32, remote = @Bob} : tensor<2xf32> loc(#loc3)
+  qnet.func @quantum_entanglement_program_b() {{
+    %0 = qnet.eprs  {{remote = @Bob}} : !qnet.qubit loc(#loc2)
+    %1 = qnet.eprs  {{remote = @Bob}} : !qnet.qubit loc(#loc2)
+    %2 = qnet.eprs  {{remote = @Bob}} : !qnet.qubit loc(#loc2)
+    %3 = qnet.recv_floats  {{length = 2 : i32, remote = @Bob}} : tensor<2xf32> loc(#loc3)
     %c0 = arith.constant 0 : index loc(#loc3)
     %extracted = tensor.extract %3[%c0] : tensor<2xf32> loc(#loc4)
     %4 = qnet.rot_x %2, %extracted : !qnet.qubit loc(#loc5)
-    %5 = qnet.recv_floats  {length = 2 : i32, remote = @Bob} : tensor<2xf32> loc(#loc6)
+    %5 = qnet.recv_floats  {{length = 2 : i32, remote = @Bob}} : tensor<2xf32> loc(#loc6)
     %c1 = arith.constant 1 : index loc(#loc6)
     %extracted_0 = tensor.extract %5[%c1] : tensor<2xf32> loc(#loc7)
     %6 = qnet.rot_y %4, %extracted_0 : !qnet.qubit loc(#loc8)
     %7 = qnet.measure %6 : i1 loc(#loc9)
     qnet.return loc(#loc)
-  } loc(#loc)
-} loc(#loc)
-#loc = loc("/home/diego/code/qoala-compiler/tests/bindings/test_quantum.py":106:0)
-#loc1 = loc("/home/diego/code/qoala-compiler/tests/bindings/test_quantum.py":108:4)
-#loc2 = loc("/home/diego/code/qoala-compiler/tests/bindings/test_quantum.py":109:17)
-#loc3 = loc("/home/diego/code/qoala-compiler/tests/bindings/test_quantum.py":110:9)
-#loc4 = loc("/home/diego/code/qoala-compiler/tests/bindings/test_quantum.py":111:19)
-#loc5 = loc("/home/diego/code/qoala-compiler/tests/bindings/test_quantum.py":111:4)
-#loc6 = loc("/home/diego/code/qoala-compiler/tests/bindings/test_quantum.py":112:9)
-#loc7 = loc("/home/diego/code/qoala-compiler/tests/bindings/test_quantum.py":113:19)
-#loc8 = loc("/home/diego/code/qoala-compiler/tests/bindings/test_quantum.py":113:4)
-#loc9 = loc("/home/diego/code/qoala-compiler/tests/bindings/test_quantum.py":114:8)
+  }} loc(#loc)
+}} loc(#loc)
+#loc = loc("{str(current_path)}":108:0)
+#loc1 = loc("{str(current_path)}":110:4)
+#loc2 = loc("{str(current_path)}":111:17)
+#loc3 = loc("{str(current_path)}":112:9)
+#loc4 = loc("{str(current_path)}":113:19)
+#loc5 = loc("{str(current_path)}":113:4)
+#loc6 = loc("{str(current_path)}":114:9)
+#loc7 = loc("{str(current_path)}":115:19)
+#loc8 = loc("{str(current_path)}":115:4)
+#loc9 = loc("{str(current_path)}":116:8)
 """
         assert str(module.asm_dbg) == expected_dbg_asm
 
