@@ -1,7 +1,8 @@
 from abc import ABC
 from dataclasses import dataclass
 from enum import Enum, auto
-from typing import Generic, TypeVar, Self, Optional, Type, List, Union
+from typing import Generic, TypeVar, Optional, Type, List, Union
+from typing_extensions import Self
 
 import qnet.dialects.arith as arith
 import qnet.dialects.tensor as tensor

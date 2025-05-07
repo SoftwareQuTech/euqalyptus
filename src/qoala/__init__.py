@@ -3,7 +3,8 @@ from abc import ABC, abstractmethod
 from collections.abc import Callable
 from functools import partial
 from threading import Lock
-from typing import List, Self, Any, Dict, Tuple
+from typing import List, Any, Dict, Tuple
+from typing_extensions import Self
 
 import qoala.utils.debug_info as dbg_info
 from qoala.ast import QoalaExpression

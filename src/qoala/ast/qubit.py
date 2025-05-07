@@ -1,7 +1,7 @@
 import math
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
-from typing import Self
+from typing_extensions import Self
 
 import qnet.dialects.qnet as qnet
 from qnet.ir import Context, Location

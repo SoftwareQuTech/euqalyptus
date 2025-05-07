@@ -1,5 +1,6 @@
 from dataclasses import dataclass
-from inspect import stack, getsourcefile, getsourcelines
+from inspect import *
+from traceback import *
 from typing import Callable
 
 
@@ -33,10 +34,19 @@ def get_debug_info_for_function_name(func_name: str) -> DebugInfo:
         )
     else:
         frame_info = matching_frames[0]
-    return DebugInfo(
-        frame_info.filename,
-        frame_info.positions.lineno,
-        frame_info.positions.end_lineno,
-        frame_info.positions.col_offset,
-        frame_info.positions.end_col_offset,
-    )
+        if hasattr(frame_info, "positions"):
+            return DebugInfo(
+                frame_info.filename,
+                frame_info.positions.lineno,
+                frame_info.positions.end_lineno,
+                frame_info.positions.col_offset,
+                frame_info.positions.end_col_offset,
+            )
+        else:
+            return DebugInfo(
+                frame_info.filename,
+                frame_info.lineno,
+                0,
+                0,
+                0
+            )

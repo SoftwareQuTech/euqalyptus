@@ -1,4 +1,5 @@
 import pytest
+from sys import version_info
 
 from pathlib import Path
 
@@ -374,7 +375,7 @@ class TestQoalaQnetPythonBindingsQuantum:
 """
         current_path: Path = Path(__file__).resolve()
         assert str(module.asm) == expected_asm
-        expected_dbg_asm = f"""module {{
+        expected_dbg_asm_a = f"""module {{
   qnet.remote @Bob loc(#loc1)
   qnet.func @quantum_entanglement_program_b() {{
     %0 = qnet.eprs  {{remote = @Bob}} : !qnet.qubit loc(#loc2)
@@ -392,18 +393,49 @@ class TestQoalaQnetPythonBindingsQuantum:
     qnet.return loc(#loc)
   }} loc(#loc)
 }} loc(#loc)
-#loc = loc("{str(current_path)}":95:0)
-#loc1 = loc("{str(current_path)}":97:4)
-#loc2 = loc("{str(current_path)}":98:17)
-#loc3 = loc("{str(current_path)}":99:9)
-#loc4 = loc("{str(current_path)}":100:19)
-#loc5 = loc("{str(current_path)}":100:4)
-#loc6 = loc("{str(current_path)}":101:9)
-#loc7 = loc("{str(current_path)}":102:19)
-#loc8 = loc("{str(current_path)}":102:4)
-#loc9 = loc("{str(current_path)}":103:8)
+#loc = loc("{str(current_path)}":96:0)
+#loc1 = loc("{str(current_path)}":98:4)
+#loc2 = loc("{str(current_path)}":99:17)
+#loc3 = loc("{str(current_path)}":100:9)
+#loc4 = loc("{str(current_path)}":101:19)
+#loc5 = loc("{str(current_path)}":101:4)
+#loc6 = loc("{str(current_path)}":102:9)
+#loc7 = loc("{str(current_path)}":103:19)
+#loc8 = loc("{str(current_path)}":103:4)
+#loc9 = loc("{str(current_path)}":104:8)
 """
-        assert str(module.asm_dbg) == expected_dbg_asm
+        expected_dbg_asm_b = f"""module {{
+  qnet.remote @Bob loc(#loc1)
+  qnet.func @quantum_entanglement_program_b() {{
+    %0 = qnet.eprs  {{remote = @Bob}} : !qnet.qubit loc(#loc2)
+    %1 = qnet.eprs  {{remote = @Bob}} : !qnet.qubit loc(#loc2)
+    %2 = qnet.eprs  {{remote = @Bob}} : !qnet.qubit loc(#loc2)
+    %3 = qnet.recv_floats  {{length = 2 : i32, remote = @Bob}} : tensor<2xf32> loc(#loc3)
+    %c0 = arith.constant 0 : index loc(#loc3)
+    %extracted = tensor.extract %3[%c0] : tensor<2xf32> loc(#loc4)
+    %4 = qnet.rot_x %2, %extracted : !qnet.qubit loc(#loc4)
+    %5 = qnet.recv_floats  {{length = 2 : i32, remote = @Bob}} : tensor<2xf32> loc(#loc5)
+    %c1 = arith.constant 1 : index loc(#loc5)
+    %extracted_0 = tensor.extract %5[%c1] : tensor<2xf32> loc(#loc6)
+    %6 = qnet.rot_y %4, %extracted_0 : !qnet.qubit loc(#loc6)
+    %7 = qnet.measure %6 : i1 loc(#loc7)
+    qnet.return loc(#loc)
+  }} loc(#loc)
+}} loc(#loc)
+#loc = loc("{str(current_path)}":96:0)
+#loc1 = loc("{str(current_path)}":98:0)
+#loc2 = loc("{str(current_path)}":99:0)
+#loc3 = loc("{str(current_path)}":100:0)
+#loc4 = loc("{str(current_path)}":101:0)
+#loc5 = loc("{str(current_path)}":102:0)
+#loc6 = loc("{str(current_path)}":103:0)
+#loc7 = loc("{str(current_path)}":104:0)
+"""
+        if version_info.minor >= 11:
+            assert str(module.asm_dbg) == expected_dbg_asm_a
+        else:
+            # In python 3.10, we don't have informaiton about the column
+            assert str(module.asm_dbg) == expected_dbg_asm_b
 
     @pytest.mark.skip(
         reason="Using multiple entangled qubits using array syntax is not supported yet"

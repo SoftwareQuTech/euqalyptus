@@ -1,4 +1,4 @@
-from typing import Self
+from typing_extensions import Self
 
 from qoala.ast.value import QoalaFloat
 from qoala.types.classical import (
