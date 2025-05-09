@@ -20,7 +20,7 @@ def quantum_base_gates_program():
     qubit = LocalQubit()
     qubit_b = LocalQubit()
 
-    qubit.rot_X(n=10, d=30)
+    qubit.rot_X(n=10, d=2)
     qubit.rot_Y(n=10, d=d_val, angle=10.5)
     qubit.rot_Z(n=n_val, d=d_val, angle=angle_val)
 
@@ -28,6 +28,17 @@ def quantum_base_gates_program():
 
     measurement_a = qubit.measure()
     measurement_b = qubit_b.measure()
+
+
+@QoalaProgram
+def quantum_base_gates_program_b():
+
+    qubit = LocalQubit()
+
+    qubit.rot_X(n=2, d=3)
+    qubit.rot_Y(n=1, d=0)
+
+    measurement_a = qubit.measure()
 
 
 @QoalaProgram
@@ -137,7 +148,7 @@ class TestQoalaQnetPythonBindingsQuantum:
     %cst = arith.constant 2.120000e+01 : f32
     %0 = qnet.new_qubit : !qnet.qubit
     %1 = qnet.new_qubit : !qnet.qubit
-    %cst_0 = arith.constant 0.0306796152 : f32
+    %cst_0 = arith.constant 7.85398149 : f32
     %2 = qnet.rot_x %0, %cst_0 : !qnet.qubit
     %cst_1 = arith.constant 1.050000e+01 : f32
     %3 = qnet.rot_y %2, %cst_1 : !qnet.qubit
@@ -145,6 +156,30 @@ class TestQoalaQnetPythonBindingsQuantum:
     %qout0, %qout1 = qnet.cnot %4, %1 : !qnet.qubit, !qnet.qubit
     %5 = qnet.measure %qout0 : i1
     %6 = qnet.measure %qout1 : i1
+    qnet.return
+  }
+}
+"""
+        assert str(module.asm) == expected_asm
+
+    def test_base_gates_program_to_qoala_qnet_b(self):
+        with pytest.raises(NotYetCompiledError) as ex:
+            _, _ = quantum_base_gates_program_b.module
+        assert (
+            str(ex.value)
+            == "The program has not been compiled yet. Did you invoke 'compile()' on it?"
+        )
+        _, module = quantum_base_gates_program_b.compile()
+        assert isinstance(module, QoalaModule)
+        print(str(module))
+        expected_asm="""module {
+  qnet.func @quantum_base_gates_program_b() {
+    %0 = qnet.new_qubit : !qnet.qubit
+    %cst = arith.constant 0.785398185 : f32
+    %1 = qnet.rot_x %0, %cst : !qnet.qubit
+    %cst_0 = arith.constant 3.14159274 : f32
+    %2 = qnet.rot_y %1, %cst_0 : !qnet.qubit
+    %3 = qnet.measure %2 : i1
     qnet.return
   }
 }
@@ -393,16 +428,16 @@ class TestQoalaQnetPythonBindingsQuantum:
     qnet.return loc(#loc)
   }} loc(#loc)
 }} loc(#loc)
-#loc = loc("{str(current_path)}":96:0)
-#loc1 = loc("{str(current_path)}":98:4)
-#loc2 = loc("{str(current_path)}":99:17)
-#loc3 = loc("{str(current_path)}":100:9)
-#loc4 = loc("{str(current_path)}":101:19)
-#loc5 = loc("{str(current_path)}":101:4)
-#loc6 = loc("{str(current_path)}":102:9)
-#loc7 = loc("{str(current_path)}":103:19)
-#loc8 = loc("{str(current_path)}":103:4)
-#loc9 = loc("{str(current_path)}":104:8)
+#loc = loc("{str(current_path)}":107:0)
+#loc1 = loc("{str(current_path)}":109:4)
+#loc2 = loc("{str(current_path)}":110:17)
+#loc3 = loc("{str(current_path)}":111:9)
+#loc4 = loc("{str(current_path)}":112:19)
+#loc5 = loc("{str(current_path)}":112:4)
+#loc6 = loc("{str(current_path)}":113:9)
+#loc7 = loc("{str(current_path)}":114:19)
+#loc8 = loc("{str(current_path)}":114:4)
+#loc9 = loc("{str(current_path)}":115:8)
 """
         expected_dbg_asm_b = f"""module {{
   qnet.remote @Bob loc(#loc1)
@@ -422,14 +457,14 @@ class TestQoalaQnetPythonBindingsQuantum:
     qnet.return loc(#loc)
   }} loc(#loc)
 }} loc(#loc)
-#loc = loc("{str(current_path)}":96:0)
-#loc1 = loc("{str(current_path)}":98:0)
-#loc2 = loc("{str(current_path)}":99:0)
-#loc3 = loc("{str(current_path)}":100:0)
-#loc4 = loc("{str(current_path)}":101:0)
-#loc5 = loc("{str(current_path)}":102:0)
-#loc6 = loc("{str(current_path)}":103:0)
-#loc7 = loc("{str(current_path)}":104:0)
+#loc = loc("{str(current_path)}":107:0)
+#loc1 = loc("{str(current_path)}":109:0)
+#loc2 = loc("{str(current_path)}":110:0)
+#loc3 = loc("{str(current_path)}":111:0)
+#loc4 = loc("{str(current_path)}":112:0)
+#loc5 = loc("{str(current_path)}":113:0)
+#loc6 = loc("{str(current_path)}":114:0)
+#loc7 = loc("{str(current_path)}":115:0)
 """
         if version_info.minor >= 11:
             assert str(module.asm_dbg) == expected_dbg_asm_a

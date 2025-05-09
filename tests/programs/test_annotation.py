@@ -1,5 +1,3 @@
-import pytest
-
 from qoala import QoalaProgram
 from qoala.ast.operations.arrays import GetItem, SetItem
 from qoala.ast.operations.numeric import Add, Subtract, Multiply, Divide
@@ -287,7 +285,7 @@ class TestQoalaDecorator:
         assert isinstance(program_local_qubit_with_complex_gates._body[5], QoalaFloat)
         assert (
             program_local_qubit_with_complex_gates._body[5].value
-            == 0.030679615757712823
+            == 2.9258361585343192e-08
         )
         assert isinstance(program_local_qubit_with_complex_gates._body[6], RotateX)
         assert (

@@ -119,7 +119,7 @@ class QbitBaseOperations(QoalaQubit, ABC):
             # In this case, we know that n and d are given
             if isinstance(n, int) and isinstance(d, int):
                 # angle can be computed at compile time
-                angle_result = float(n * math.pi / (math.pow(2, n)))
+                angle_result = float(n * math.pi / (math.pow(2, d)))
                 angle_val = QoalaNumericValue.from_immediate(angle_result, dbg_info)
             else:
                 # n and d are given, but, at least, one of them is not an
