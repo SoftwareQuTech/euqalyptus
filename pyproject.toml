@@ -2,7 +2,6 @@
 name = "qoala-compiler"
 version = "0.0.1"
 dependencies = [
-    "pytest >= 8.0.0",
     "qoala-mlir == 0.0.1",
     "typing-extensions"
 ]
@@ -23,6 +22,7 @@ where = ["src"]
 
 [project.optional-dependencies]
 dev = [
+    "pytest >7.0.0, <8.0.0",
     "build",
     "twine",
     "pylint",
