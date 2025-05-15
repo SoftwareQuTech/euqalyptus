@@ -171,7 +171,6 @@ class TestQoalaQnetPythonBindingsQuantum:
         )
         _, module = quantum_base_gates_program_b.compile()
         assert isinstance(module, QoalaModule)
-        print(str(module))
         expected_asm="""module {
   qnet.func @quantum_base_gates_program_b() {
     %0 = qnet.new_qubit : !qnet.qubit
