@@ -2,9 +2,7 @@ from typing import Generic, TypeVar, Type
 
 from qoala.ast.value import QoalaArray, QoalaExpression
 from qoala.errors import InvalidArrayArgumentError
-from qoala.types.classical import QoalaClassicalType
-from qoala.types.classical.floats import Float, Double
-from qoala.types.classical.integer import Int, Int32
+from qoala.types.classical import QoalaClassicalType, Float, Double, Int, Int32
 
 _Qoala_Base_Type = TypeVar("_Qoala_Base_Type", bound=QoalaClassicalType)
 _Native_Base_Type = TypeVar("_Native_Base_Type", int, float)
@@ -14,18 +12,18 @@ class _Array(Generic[_Qoala_Base_Type, _Native_Base_Type]):
     """
     Internal class used to group all the common behavior of numeric arrays
     """
+
     def __new__(cls, *elements, **kwargs):
         return QoalaArray[_Qoala_Base_Type, _Native_Base_Type](*elements, **kwargs)
 
     @staticmethod
-    def _assert_elements(
-            *elements: QoalaExpression,
-            base_type: Type,
-            array_type: Type
-    ):
+    def _assert_elements(*elements: QoalaExpression, base_type: Type, array_type: Type):
         # Here we can assert that the elements are expressions
         # whether they can evaluate to a Double or not, is a semantic check
-        if any(not isinstance(element, (base_type, QoalaExpression)) for element in elements):
+        if any(
+            not isinstance(element, (base_type, QoalaExpression))
+            for element in elements
+        ):
             raise InvalidArrayArgumentError(array_type.__name__, base_type.__name__)
 
     def store(self, new_element: _Qoala_Base_Type | _Native_Base_Type) -> None:
@@ -49,11 +47,11 @@ class _Array(Generic[_Qoala_Base_Type, _Native_Base_Type]):
     def __getitem__(self, item) -> _Qoala_Base_Type:
         """
         "Brackets" operator for the qoala arrays. This method allows using qoala arrays
-        using the indexing operator int the same way as an ordinatry python array:
+        using the indexing operator int the same way as an ordinary python array:
         array = IntArray(10, 20, 30)
         value = array[1] ## This access is allowed by this method
         """
-        ...
+        pass
 
     # Arrays are fixed-length by default (unless you use `store`)
     # so there is no __setitem__ overload
@@ -65,11 +63,8 @@ class IntArray(_Array[Int, int]):
     of the array *cannot* be changed, and the values stored in the array cannot be
     changed either
     """
-    def __new__(
-            cls,
-            *elements,
-            **kwargs
-    ):
+
+    def __new__(cls, *elements, **kwargs):
         kwargs["base_type"] = int
         kwargs["base_size"] = 32
         if "length" not in kwargs:
@@ -83,9 +78,7 @@ class IntArray(_Array[Int, int]):
         return super().__new__(cls, *elements, **kwargs)
 
     def __init__(
-            self,
-            *elements: Int | Int32 | int,
-            base: QoalaArray[Int, int] | None = None
+        self, *elements: Int | Int32 | int, base: QoalaArray[Int, int] | None = None
     ):
         """
         Creates a new IntArray instance with the given elements
@@ -110,11 +103,8 @@ class FloatArray(_Array[Float, float]):
     it means that the size of the array *cannot* be changed, and the values stored in the
     array cannot be changed either
     """
-    def __new__(
-            cls,
-            *elements,
-            **kwargs
-    ):
+
+    def __new__(cls, *elements, **kwargs):
         kwargs["base_type"] = float
         kwargs["base_size"] = 32
         if "length" not in kwargs:
@@ -128,9 +118,9 @@ class FloatArray(_Array[Float, float]):
         return super().__new__(cls, *elements, **kwargs)
 
     def __init__(
-            self,
-            *elements: Float | Double | float,
-            base: QoalaArray[Float, float] | None = None
+        self,
+        *elements: Float | Double | float,
+        base: QoalaArray[Float, float] | None = None,
     ):
         """
         Creates a new FloatArray instance with the given elements

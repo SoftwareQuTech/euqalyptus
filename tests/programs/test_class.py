@@ -10,11 +10,13 @@ from qoala.types.classical.integer import Int
 
 
 class EmptyProgram(QoalaProgramBase):
+
     def main(self, args: List[Any]) -> int:
         pass
 
 
 class ArithmeticProgram(QoalaProgramBase):
+
     def main(self):
         int_a = Int(10)
         int_b = Int(20)
@@ -26,12 +28,14 @@ class ArithmeticProgram(QoalaProgramBase):
 
 
 class ProgramWithArg(QoalaProgramBase):
+
     def main(self, val_a: int, val_b: float):
         int_a = Int(val_a)
         int_b = Float(val_b)
 
 
 class ProgramWithArrayAccess(QoalaProgramBase):
+
     def main(self):
         int_a = Int(15)
         arr_a = IntArray(10, int_a)
@@ -40,6 +44,7 @@ class ProgramWithArrayAccess(QoalaProgramBase):
 
 
 class ProgramWithArrayMutation(QoalaProgramBase):
+
     def main(self):
         arr = FloatArray()
         arr_b = IntArray()
@@ -51,6 +56,7 @@ class ProgramWithArrayMutation(QoalaProgramBase):
 # Across all the tests of this file, we only make assertions on the AST, so we compile "lazily"
 # (do not transform the AST into Qoala HIR
 class TestQoalaClass:
+
     def test_mt_program(self):
         empty_program = EmptyProgram()
         empty_program.compile(list(), compile_lazy=True)
@@ -103,8 +109,14 @@ class TestQoalaClass:
         assert isinstance(program_with_array_access._body[2].members[1], QoalaInteger)
         assert isinstance(program_with_array_access._body[3], QoalaInteger)
         assert isinstance(program_with_array_access._body[4], GetItem)
-        assert program_with_array_access._body[4].base_array is program_with_array_access._body[2]
-        assert program_with_array_access._body[4].index is program_with_array_access._body[3]
+        assert (
+            program_with_array_access._body[4].base_array
+            is program_with_array_access._body[2]
+        )
+        assert (
+            program_with_array_access._body[4].index
+            is program_with_array_access._body[3]
+        )
 
     def test_program_with_array_mutation(self):
         program_with_array_mutation = ProgramWithArrayMutation()
@@ -121,9 +133,21 @@ class TestQoalaClass:
         assert program_with_array_mutation._body[1].length == 0
         assert isinstance(program_with_array_mutation._body[2], QoalaFloat)
         assert isinstance(program_with_array_mutation._body[3], SetItem)
-        assert program_with_array_mutation._body[3].base_array is program_with_array_mutation._body[0]
-        assert program_with_array_mutation._body[3].index is program_with_array_mutation._body[2]
+        assert (
+            program_with_array_mutation._body[3].base_array
+            is program_with_array_mutation._body[0]
+        )
+        assert (
+            program_with_array_mutation._body[3].index
+            is program_with_array_mutation._body[2]
+        )
         assert isinstance(program_with_array_mutation._body[4], QoalaInteger)
         assert isinstance(program_with_array_mutation._body[5], SetItem)
-        assert program_with_array_mutation._body[5].base_array is program_with_array_mutation._body[1]
-        assert program_with_array_mutation._body[5].index is program_with_array_mutation._body[4]
+        assert (
+            program_with_array_mutation._body[5].base_array
+            is program_with_array_mutation._body[1]
+        )
+        assert (
+            program_with_array_mutation._body[5].index
+            is program_with_array_mutation._body[4]
+        )

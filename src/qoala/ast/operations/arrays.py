@@ -2,6 +2,7 @@ from dataclasses import dataclass
 
 import qnet.dialects.arith as arith
 import qnet.dialects.tensor as tensor
+from qnet.extras.types import index
 from qnet.ir import Context, Location
 
 from qoala import QoalaProgram
@@ -9,7 +10,6 @@ from qoala.ast import checkbaseir
 from qoala.ast.operations import QoalaOperation, with_arith_operators
 from qoala.ast.value import QoalaExpression, QoalaInteger, QoalaArray
 from qoala.errors import OperationNotYetImplementedError
-from qoala.utils.binding_types import index
 from qoala.utils.debug_info import DebugInfo
 
 
@@ -32,9 +32,11 @@ class CastToIndex(QoalaOperation):
             filename=self.debug_info.filename,
             line=self.debug_info.line_start,
             col=self.debug_info.col_start,
-            context=ctx
+            context=ctx,
         )
-        self.ir_value = arith.index_cast(in_=self.index_val.ir_value, out=index(), loc=source_location)
+        self.ir_value = arith.index_cast(
+            in_=self.index_val.ir_value, out=index(), loc=source_location
+        )
 
 
 @dataclass(init=False)
@@ -43,7 +45,11 @@ class GetItem(QoalaOperation):
     base_array: QoalaArray
     index: QoalaExpression
 
-    def __init__(self, *operands: QoalaExpression, dbg_info: DebugInfo | None = None,):
+    def __init__(
+        self,
+        *operands: QoalaExpression,
+        dbg_info: DebugInfo | None = None,
+    ):
         if dbg_info is not None:
             self.debug_info = dbg_info
         super().__init__()
@@ -62,9 +68,13 @@ class GetItem(QoalaOperation):
             filename=self.debug_info.filename,
             line=self.debug_info.line_start,
             col=self.debug_info.col_start,
-            context=ctx
+            context=ctx,
         )
-        self.ir_value = tensor.extract(tensor=self.base_array.ir_value, indices=[self.index.ir_value], loc=source_location)
+        self.ir_value = tensor.extract(
+            tensor=self.base_array.ir_value,
+            indices=[self.index.ir_value],
+            loc=source_location,
+        )
 
 
 @dataclass(init=False)
@@ -81,7 +91,9 @@ class SetItem(QoalaOperation):
         QoalaProgram.add_to_body(self)
 
     def can_evaluate_to(self, cls) -> bool:
-        if self.index.can_evaluate_to(QoalaInteger) and self.base_array.can_evaluate_to(QoalaArray):
+        if self.index.can_evaluate_to(QoalaInteger) and self.base_array.can_evaluate_to(
+            QoalaArray
+        ):
             # TODO - We need to make sure that the type of 'base_array' is == cls
             return True
         else:
@@ -89,10 +101,10 @@ class SetItem(QoalaOperation):
 
     @checkbaseir
     def compile(self, ctx: Context) -> None:
-        source_location = Location.file(
+        _ = Location.file(
             filename=self.debug_info.filename,
             line=self.debug_info.line_start,
             col=self.debug_info.col_start,
-            context=ctx
+            context=ctx,
         )
         raise OperationNotYetImplementedError(SetItem.__name__)

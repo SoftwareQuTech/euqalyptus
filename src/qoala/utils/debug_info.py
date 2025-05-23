@@ -1,5 +1,6 @@
 from dataclasses import dataclass
-from inspect import stack, getsourcefile, getsourcelines
+from inspect import *
+from traceback import *
 from typing import Callable
 
 
@@ -21,20 +22,31 @@ def get_debug_info() -> DebugInfo:
 
 def get_debug_info_for_function(function: Callable) -> DebugInfo:
     filename = getsourcefile(function)
-    code, line_number = getsourcelines(function)
+    _, line_number = getsourcelines(function)
     return DebugInfo(filename, line_number, line_number, 0, 0)
 
 
 def get_debug_info_for_function_name(func_name: str) -> DebugInfo:
     matching_frames = [frame for frame in stack() if frame.function == func_name]
     if len(matching_frames) <= 0:
-        raise RuntimeError(f"Could not identify corresponding frame for function name '{func_name}'")
+        raise RuntimeError(
+            f"Could not identify corresponding frame for function name '{func_name}'"
+        )
     else:
         frame_info = matching_frames[0]
-    return DebugInfo(
-        frame_info.filename,
-        frame_info.positions.lineno,
-        frame_info.positions.end_lineno,
-        frame_info.positions.col_offset,
-        frame_info.positions.end_col_offset
-    )
+        if hasattr(frame_info, "positions"):
+            return DebugInfo(
+                frame_info.filename,
+                frame_info.positions.lineno,
+                frame_info.positions.end_lineno,
+                frame_info.positions.col_offset,
+                frame_info.positions.end_col_offset,
+            )
+        else:
+            return DebugInfo(
+                frame_info.filename,
+                frame_info.lineno,
+                0,
+                0,
+                0
+            )

@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from typing import List
 
 from qnet.dialects import qnet
-from qnet.ir import *
+from qnet.ir import Module, Context, Location, InsertionPoint, FunctionType, Block
 
 from qoala.ast import QoalaExpression
 from qoala.utils.debug_info import DebugInfo
@@ -10,6 +10,13 @@ from qoala.utils.debug_info import DebugInfo
 
 @dataclass(init=False)
 class QoalaModule:
+    """
+    Class representing a Qoala HIR module. An object of this class is returned when invoking
+    the `compile` method on the qoala program. This class contains the `asm` property to get
+    a string representation of the Qoala HIR module. The user can also access this
+    representation using the `str()` method.
+    """
+
     _body: List[QoalaExpression]
     _remotes: List[QoalaExpression]
     _module_dbg_info: DebugInfo
@@ -38,7 +45,8 @@ class QoalaModule:
     def remotes(self, new_remotes: List[QoalaExpression]):
         # Uniqueness of the remote names is ensured by the QoalaProgram class
         # We assume that all the remotes have unique identifiers
-        [self._remotes.append(new_remote) for new_remote in new_remotes]
+        for new_remote in new_remotes:
+            self._remotes.append(new_remote)
 
     @property
     def generic_asm(self) -> str:
@@ -69,7 +77,7 @@ class QoalaModule:
                 filename=self._module_dbg_info.filename,
                 line=self._module_dbg_info.line_start,
                 col=self._module_dbg_info.col_start,
-                context=ctx
+                context=ctx,
             )
             with base_location_info:
                 qnet.register_dialect(ctx)
@@ -81,7 +89,7 @@ class QoalaModule:
                     function = qnet.FuncOp(
                         name=f"{self._function_name}",
                         type=func_type,
-                        loc=base_location_info
+                        loc=base_location_info,
                     )
                     block = Block.create_at_start(function.body)
                     with InsertionPoint(block):

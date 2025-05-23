@@ -8,26 +8,27 @@ _cls = TypeVar("_cls", bound=QoalaExpression)
 
 
 class QoalaOperation(QoalaExpression, ABC):
+
     def __init__(self):
-        if not hasattr(self, 'debug_info'):
+        if not hasattr(self, "debug_info"):
             self.debug_info = get_debug_info()
         super().__init__()
 
     @staticmethod
     def create_expression_for_op(
-            op_class: Type[_cls],
-            *operands: QoalaExpression,
-            **kw_operands: QoalaExpression
+        op_class: Type[_cls], *operands: QoalaExpression, **kw_operands: QoalaExpression
     ) -> _cls:
         assert all(isinstance(operand, QoalaExpression) for operand in operands)
-        assert all(isinstance(kw_operands[kw_operand], QoalaExpression) for kw_operand in kw_operands)
+        assert all(
+            isinstance(kw_operands[kw_operand], QoalaExpression)
+            for kw_operand in kw_operands
+        )
         return op_class(*operands, **kw_operands)
 
 
 # Decorator reused from NetQASM repo
 def with_arith_operators(cls):
-    """A decorator for `QoalaExpression` classes which makes it behave like an arithmetic value.
-    """
+    """A decorator for `QoalaExpression` classes which makes it behave like an arithmetic value."""
 
     def operator_wrapper(method_name):
         """Return a new method for the class given a method name"""
@@ -37,10 +38,12 @@ def with_arith_operators(cls):
             other: QoalaExpression
             if not isinstance(args[0], QoalaExpression):
                 from qoala.ast.value import QoalaNumericValue
+
                 other = QoalaNumericValue.from_immediate(args[0], self.debug_info)
             else:
                 other = args[0]
             from qoala.ast.operations.numeric import ArithOperatorFactory
+
             return ArithOperatorFactory(self, other, operation=method_name)
 
         return operator_implementation
@@ -99,7 +102,7 @@ def with_arith_operators(cls):
         "imag",
         "numerator",
         "real",
-        "to_bytes"
+        "to_bytes",
     ]
     for dunder_method in dunder_methods:
         setattr(cls, dunder_method, operator_wrapper(dunder_method))

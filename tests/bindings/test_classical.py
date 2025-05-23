@@ -2,9 +2,7 @@ import pytest
 
 from qoala import QoalaProgram, QoalaModule
 from qoala.errors import NotYetCompiledError
-from qoala.types.classical.arrays import IntArray, FloatArray
-from qoala.types.classical.floats import Float
-from qoala.types.classical.integer import Int
+from qoala.types.classical import IntArray, FloatArray, Float, Int
 
 
 @QoalaProgram
@@ -104,10 +102,14 @@ def array_with_mutation_program():
 
 
 class TestQoalaQnetPythonBindingsClassical:
+
     def test_empty_program_to_qoala_qnet(self):
         with pytest.raises(NotYetCompiledError) as ex:
             _, _ = empty_program.module
-        assert str(ex.value) == "The program has not been compiled yet. Did you invoke 'compile()' on it?"
+        assert (
+            str(ex.value)
+            == "The program has not been compiled yet. Did you invoke 'compile()' on it?"
+        )
         _, module = empty_program.compile()
         assert isinstance(module, QoalaModule)
         expected_asm = """module {
@@ -121,7 +123,10 @@ class TestQoalaQnetPythonBindingsClassical:
     def test_simple_arith_program_to_qoala_qnet(self):
         with pytest.raises(NotYetCompiledError) as ex:
             _, _ = simple_arith_program.module
-        assert str(ex.value) == "The program has not been compiled yet. Did you invoke 'compile()' on it?"
+        assert (
+            str(ex.value)
+            == "The program has not been compiled yet. Did you invoke 'compile()' on it?"
+        )
         _, module = simple_arith_program.compile()
         assert isinstance(module, QoalaModule)
         # Note 1 - The qoala type "Int", creates a _signed_ integer of 32 bits width. We use this information
@@ -149,7 +154,10 @@ class TestQoalaQnetPythonBindingsClassical:
     def test_composed_arith_program_to_qoala_qnet(self):
         with pytest.raises(NotYetCompiledError) as ex:
             _, _ = simple_arith_program_composed.module
-        assert str(ex.value) == "The program has not been compiled yet. Did you invoke 'compile()' on it?"
+        assert (
+            str(ex.value)
+            == "The program has not been compiled yet. Did you invoke 'compile()' on it?"
+        )
         _, module = simple_arith_program_composed.compile()
         assert isinstance(module, QoalaModule)
         # Note 1 - The qoala type "Int", creates a _signed_ integer of 32 bits width. We use this information
@@ -179,7 +187,10 @@ class TestQoalaQnetPythonBindingsClassical:
     def test_arith_program_with_immediates_to_qoala_qnet(self):
         with pytest.raises(NotYetCompiledError) as ex:
             _, _ = simple_arith_program_immediates.module
-        assert str(ex.value) == "The program has not been compiled yet. Did you invoke 'compile()' on it?"
+        assert (
+            str(ex.value)
+            == "The program has not been compiled yet. Did you invoke 'compile()' on it?"
+        )
         _, module = simple_arith_program_immediates.compile()
         assert isinstance(module, QoalaModule)
         # Note 1 - The qoala type "Int", creates a _signed_ integer of 32 bits width. We use this information
@@ -209,7 +220,10 @@ class TestQoalaQnetPythonBindingsClassical:
     def test_arrays_program_to_qoala_qnet(self):
         with pytest.raises(NotYetCompiledError) as ex:
             _, _ = basic_arrays_program.module
-        assert str(ex.value) == "The program has not been compiled yet. Did you invoke 'compile()' on it?"
+        assert (
+            str(ex.value)
+            == "The program has not been compiled yet. Did you invoke 'compile()' on it?"
+        )
         _, module = basic_arrays_program.compile()
         assert isinstance(module, QoalaModule)
         # NOTE - According to the documentation "`tensor.extract` op reads a ranked tensor and returns one
@@ -265,7 +279,10 @@ class TestQoalaQnetPythonBindingsClassical:
     def test_arrays_with_mutation_program_to_qoala_qnet(self):
         with pytest.raises(NotYetCompiledError) as ex:
             _, _ = array_with_mutation_program.module
-        assert str(ex.value) == "The program has not been compiled yet. Did you invoke 'compile()' on it?"
+        assert (
+            str(ex.value)
+            == "The program has not been compiled yet. Did you invoke 'compile()' on it?"
+        )
         _, module = array_with_mutation_program.compile()
         assert isinstance(module, QoalaModule)
         expected_asm = """module {

@@ -1,7 +1,7 @@
 import math
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
-from typing import Self
+from typing_extensions import Self
 
 import qnet.dialects.qnet as qnet
 from qnet.ir import Context, Location
@@ -14,12 +14,13 @@ from qoala.ast.value import (
     QoalaNumericValue,
     ImmediateQIntOrExpression,
     ImmediateQFloatOrExpression,
-    QoalaFloatOrExpression
+    QoalaFloatOrExpression,
 )
 from qoala.utils.debug_info import DebugInfo, get_debug_info
 
 
 class QoalaQubit(QoalaExpression, ABC):
+
     @abstractmethod
     def measure(self) -> QoalaOperation:
         pass
@@ -50,28 +51,28 @@ class QoalaQubit(QoalaExpression, ABC):
 
     @abstractmethod
     def rot_X(
-            self,
-            n: ImmediateQIntOrExpression = 0,
-            d: ImmediateQIntOrExpression = 0,
-            angle: ImmediateQFloatOrExpression | None = None
+        self,
+        n: ImmediateQIntOrExpression = 0,
+        d: ImmediateQIntOrExpression = 0,
+        angle: ImmediateQFloatOrExpression | None = None,
     ) -> QoalaOperation:
         pass
 
     @abstractmethod
     def rot_Y(
-            self,
-            n: ImmediateQIntOrExpression = 0,
-            d: ImmediateQIntOrExpression = 0,
-            angle: ImmediateQFloatOrExpression | None = None
+        self,
+        n: ImmediateQIntOrExpression = 0,
+        d: ImmediateQIntOrExpression = 0,
+        angle: ImmediateQFloatOrExpression | None = None,
     ) -> QoalaOperation:
         pass
 
     @abstractmethod
     def rot_Z(
-            self,
-            n: ImmediateQIntOrExpression = 0,
-            d: ImmediateQIntOrExpression = 0,
-            angle: ImmediateQFloatOrExpression | None = None
+        self,
+        n: ImmediateQIntOrExpression = 0,
+        d: ImmediateQIntOrExpression = 0,
+        angle: ImmediateQFloatOrExpression | None = None,
     ) -> QoalaOperation:
         pass
 
@@ -94,15 +95,17 @@ class QoalaQubit(QoalaExpression, ABC):
 
 
 class QbitBaseOperations(QoalaQubit, ABC):
+
     @staticmethod
     def _process_angles(
-            n: ImmediateQIntOrExpression | None = None,
-            d: ImmediateQIntOrExpression | None = None,
-            angle: ImmediateQFloatOrExpression | None = None,
-            dbg_info: DebugInfo | None = None,
+        n: ImmediateQIntOrExpression | None = None,
+        d: ImmediateQIntOrExpression | None = None,
+        angle: ImmediateQFloatOrExpression | None = None,
+        dbg_info: DebugInfo | None = None,
     ) -> QoalaExpression:
         if dbg_info is None:
-            raise RuntimeError(f"Unknown debug info")
+            raise RuntimeError("Unknown debug info")
+        angle_val = None
         # First, we check if the angle was given
         if angle is not None:
             if isinstance(angle, float):
@@ -116,11 +119,13 @@ class QbitBaseOperations(QoalaQubit, ABC):
             # In this case, we know that n and d are given
             if isinstance(n, int) and isinstance(d, int):
                 # angle can be computed at compile time
-                angle_result = float(n * math.pi / (math.pow(2, n)))
+                angle_result = float(n * math.pi / (math.pow(2, d)))
                 angle_val = QoalaNumericValue.from_immediate(angle_result, dbg_info)
             else:
-                # n and d are given, but, at least, one of them is not an immediate -> angle is known at runtime
-                # moreover, if we encounter an immediate, we need to make it a float for simplicity of the later ops
+                # n and d are given, but, at least, one of them is not an
+                # immediate -> angle is known at runtime
+                # moreover, if we encounter an immediate, we need to make it
+                # a float for simplicity of the later ops
                 if isinstance(n, int):
                     n_val = QoalaNumericValue.from_immediate(float(n), dbg_info)
                 else:
@@ -148,70 +153,92 @@ class QbitBaseOperations(QoalaQubit, ABC):
         # However, here we need to model how the measure operation is compiled
         # Being this said, we need to return a "QubitMeasure" operation
         from qoala.ast.operations.quantum import QubitMeasure
+
         # TODO - Do we need to specify the base?
         return QubitMeasure(self)
 
     def X(self) -> QoalaOperation:
         from qoala.ast.operations.quantum import XGate
+
         return QoalaOperation.create_expression_for_op(XGate, self)
 
     def Y(self) -> QoalaOperation:
         from qoala.ast.operations.quantum import YGate
+
         return QoalaOperation.create_expression_for_op(YGate, self)
 
     def Z(self) -> QoalaOperation:
         from qoala.ast.operations.quantum import ZGate
+
         return QoalaOperation.create_expression_for_op(ZGate, self)
 
     def T(self) -> QoalaOperation:
         from qoala.ast.operations.quantum import TGate
+
         return QoalaOperation.create_expression_for_op(TGate, self)
 
     def H(self) -> QoalaOperation:
         from qoala.ast.operations.quantum import HGate
+
         return QoalaOperation.create_expression_for_op(HGate, self)
 
     def S(self) -> QoalaOperation:
         from qoala.ast.operations.quantum import SGate
+
         return QoalaOperation.create_expression_for_op(SGate, self)
 
     def rot_X(
-            self,
-            n: ImmediateQIntOrExpression = 0,
-            d: ImmediateQIntOrExpression = 0,
-            angle: ImmediateQFloatOrExpression | None = None
+        self,
+        n: ImmediateQIntOrExpression = 0,
+        d: ImmediateQIntOrExpression = 0,
+        angle: ImmediateQFloatOrExpression | None = None,
     ) -> QoalaOperation:
         angle_val = QbitBaseOperations._process_angles(n, d, angle, self.debug_info)
         from qoala.ast.operations.quantum import RotateX
-        return QoalaOperation.create_expression_for_op(RotateX, qubit=self, angle=angle_val)
+
+        return QoalaOperation.create_expression_for_op(
+            RotateX, qubit=self, angle=angle_val
+        )
 
     def rot_Y(
-            self,
-            n: ImmediateQIntOrExpression = 0,
-            d: ImmediateQIntOrExpression = 0,
-            angle: ImmediateQFloatOrExpression | None = None
+        self,
+        n: ImmediateQIntOrExpression = 0,
+        d: ImmediateQIntOrExpression = 0,
+        angle: ImmediateQFloatOrExpression | None = None,
     ) -> QoalaOperation:
         angle_val = QbitBaseOperations._process_angles(n, d, angle, self.debug_info)
         from qoala.ast.operations.quantum import RotateY
-        return QoalaOperation.create_expression_for_op(RotateY, qubit=self, angle=angle_val)
+
+        return QoalaOperation.create_expression_for_op(
+            RotateY, qubit=self, angle=angle_val
+        )
 
     def rot_Z(
-            self,
-            n: ImmediateQIntOrExpression = 0,
-            d: ImmediateQIntOrExpression = 0,
-            angle: ImmediateQFloatOrExpression | None = None
+        self,
+        n: ImmediateQIntOrExpression = 0,
+        d: ImmediateQIntOrExpression = 0,
+        angle: ImmediateQFloatOrExpression | None = None,
     ) -> QoalaOperation:
         angle_val = QbitBaseOperations._process_angles(n, d, angle, self.debug_info)
         from qoala.ast.operations.quantum import RotateZ
-        return QoalaOperation.create_expression_for_op(RotateZ, qubit=self, angle=angle_val)
+
+        return QoalaOperation.create_expression_for_op(
+            RotateZ, qubit=self, angle=angle_val
+        )
 
     def cnot(self, target: Self) -> QoalaOperation:
         from qoala.ast.operations.quantum import CNotGate
-        return QoalaOperation.create_expression_for_op(CNotGate, qubit=self, target=target)
+
+        return QoalaOperation.create_expression_for_op(
+            CNotGate, qubit=self, target=target
+        )
 
     def cphase(self, target: Self) -> QoalaOperation:
         from qoala.ast.operations.quantum import CPhaseGate
-        return QoalaOperation.create_expression_for_op(CPhaseGate, qubit=self, target=target)
+
+        return QoalaOperation.create_expression_for_op(
+            CPhaseGate, qubit=self, target=target
+        )
 
     def cz(self, target: Self) -> QoalaOperation:
         return self.cphase(target)
@@ -222,6 +249,7 @@ class QbitBaseOperations(QoalaQubit, ABC):
 
 
 class QoalaLocalQubit(QbitBaseOperations):
+
     def __init__(self):
         super().__init__()
         self.debug_info = get_debug_info()
@@ -236,7 +264,7 @@ class QoalaLocalQubit(QbitBaseOperations):
             filename=self.debug_info.filename,
             line=self.debug_info.line_start,
             col=self.debug_info.col_start,
-            context=ctx
+            context=ctx,
         )
         self.ir_value = qnet.new_qubit(loc=source_location)
 
@@ -264,6 +292,6 @@ class QoalaEprs(QbitBaseOperations):
             filename=self.debug_info.filename,
             line=self.debug_info.line_start,
             col=self.debug_info.col_start,
-            context=ctx
+            context=ctx,
         )
         self.ir_value = qnet.eprs(remote=self.remote_name, loc=source_location)

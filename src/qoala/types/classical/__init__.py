@@ -2,7 +2,7 @@ from typing import TypeVar, Generic
 
 from qoala.types import QoalaType
 
-_Internal_Value_Type = TypeVar('_Internal_Value_Type')
+_Internal_Value_Type = TypeVar("_Internal_Value_Type")
 
 
 class QoalaClassicalType(Generic[_Internal_Value_Type], QoalaType):
@@ -15,6 +15,7 @@ class QoalaClassicalType(Generic[_Internal_Value_Type], QoalaType):
     any operation applied on 1 or more instances (values) of this class
     (type) `will yield a new instance` (value) of the same type.
     """
+
     pass
 
 
@@ -58,3 +59,8 @@ class _NumericOperandsOverload:
 
     def __itruediv__(self, other):
         pass
+
+
+from .integer import Int, Int32, UInt32, Bit
+from .floats import Float, Double
+from .arrays import IntArray, FloatArray
