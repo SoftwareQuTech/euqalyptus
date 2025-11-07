@@ -1,4 +1,4 @@
-from qoala.ast.operations.quantum import (
+from qoala.ast.operations.communication import (
     RecvIntsOp,
     RecvFloatsOp,
     SendIntsOp,
