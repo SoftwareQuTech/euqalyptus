@@ -6,7 +6,7 @@ from pathlib import Path
 from qoala import QoalaProgram, QoalaModule
 from qoala.errors import NotYetCompiledError
 from qoala.operations import Remote
-from qoala.operations.quantum import recv_int, recv_ints, recv_floats, send_floats, send_ints
+from qoala.operations.communication import recv_int, recv_ints, recv_floats, send_floats, send_ints
 from qoala.types.classical import IntArray, FloatArray
 from qoala.types.quantum import Entangle
 
