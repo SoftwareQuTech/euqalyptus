@@ -1,5 +1,5 @@
 from qoala import QoalaProgram
-from qoala.ast.operations.quantum import DeclaredRemote
+from qoala.ast.operations.communication import DeclaredRemote
 
 
 class Remote:
