@@ -56,3 +56,27 @@ class FloatToInt(QoalaOperation):
             context=ctx,
         )
         self.ir_value = arith.fptoui(i32(), self.operand.ir_value, loc=source_location)
+
+
+@dataclass(init=False)
+class BitToInt(QoalaOperation):
+    operand: QoalaExpression
+
+    def __init__(self, *operands):
+        super().__init__()
+        assert len(operands) == 1
+        self.operand = operands[0]
+        QoalaProgram.add_to_body(self)
+
+    def can_evaluate_to(self, cls) -> bool:
+        return cls == QoalaInteger
+
+    @checkbaseir
+    def compile(self, ctx: Context) -> None:
+        source_location = Location.file(
+            filename=self.debug_info.filename,
+            line=self.debug_info.line_start,
+            col=self.debug_info.col_start,
+            context=ctx,
+        )
+        self.ir_value = arith.extsi(i32(), self.operand.ir_value, loc=source_location)

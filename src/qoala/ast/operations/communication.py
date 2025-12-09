@@ -171,7 +171,8 @@ class BaseSendOp(QoalaOperation):
                 # If the argument is an array, we will simply "open" the array...
                 # If an already-packed array is the ONLY argument, this wastefully creates a new tensor
                 # This is generic enough to support mixed arrays and other values, but it's the bes we can do so far
-                _ = [self.values.append(array_val) for array_val in val.members]
+                for array_val in val.members:
+                    self.values.append(array_val)
                 continue
             elif isinstance(val, base_type):
                 val_to_add = QoalaNumericValue.from_immediate(val, self.debug_info)
