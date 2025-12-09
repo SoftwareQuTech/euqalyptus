@@ -1,6 +1,6 @@
 import pytest
 from sys import version_info
-
+from inspect import currentframe, getframeinfo
 from pathlib import Path
 
 from qoala import QoalaProgram, QoalaModule
@@ -155,12 +155,12 @@ class TestQoalaQnetPythonBindingsQuantum:
         assert isinstance(module, QoalaModule)
         expected_asm = """module {
   qnet.remote @Alice
-  qnet.func @classical_send_array_of_values() {
+  qnet.func @classical_send_measurement_values() {
     %0 = qnet.new_qubit : !qnet.qubit
     %1 = qnet.measure %0 : i1
     %2 = arith.extsi %1 : i1 to i32
-    %from_elements_3 = tensor.from_elements %2 : tensor<1xf32>
-    qnet.send_ints %from_elements_3 {remote = @Alice} : tensor<1xi32>
+    %from_elements = tensor.from_elements %2 : tensor<1xi32>
+    qnet.send_ints %from_elements {remote = @Alice} : tensor<1xi32>
     qnet.return
   }
 }
@@ -327,16 +327,16 @@ class TestQoalaQnetPythonBindingsQuantum:
     qnet.return loc(#loc)
   }} loc(#loc)
 }} loc(#loc)
-#loc = loc("{str(current_path)}":61:0)
-#loc1 = loc("{str(current_path)}":63:4)
-#loc2 = loc("{str(current_path)}":64:17)
-#loc3 = loc("{str(current_path)}":65:9)
-#loc4 = loc("{str(current_path)}":66:19)
-#loc5 = loc("{str(current_path)}":66:4)
-#loc6 = loc("{str(current_path)}":67:9)
-#loc7 = loc("{str(current_path)}":68:19)
-#loc8 = loc("{str(current_path)}":68:4)
-#loc9 = loc("{str(current_path)}":69:8)
+#loc = loc("{str(current_path)}":69:0)
+#loc1 = loc("{str(current_path)}":71:4)
+#loc2 = loc("{str(current_path)}":72:17)
+#loc3 = loc("{str(current_path)}":73:9)
+#loc4 = loc("{str(current_path)}":74:19)
+#loc5 = loc("{str(current_path)}":74:4)
+#loc6 = loc("{str(current_path)}":75:9)
+#loc7 = loc("{str(current_path)}":76:19)
+#loc8 = loc("{str(current_path)}":76:4)
+#loc9 = loc("{str(current_path)}":77:8)
 """
         expected_dbg_asm_b = f"""module {{
   qnet.remote @Bob loc(#loc1)
