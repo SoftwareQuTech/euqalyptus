@@ -6,7 +6,13 @@ from pathlib import Path
 from qoala import QoalaProgram, QoalaModule
 from qoala.errors import NotYetCompiledError
 from qoala.operations import Remote
-from qoala.operations.communication import recv_int, recv_ints, recv_floats, send_floats, send_ints
+from qoala.operations.communication import (
+    recv_int,
+    recv_ints,
+    recv_floats,
+    send_floats,
+    send_ints,
+)
 from qoala.types.classical import IntArray, FloatArray
 from qoala.types.quantum import Entangle, LocalQubit
 
@@ -100,14 +106,13 @@ def quantum_entanglement_program_c():
     q[t2[4]].H()
 
 
-
 class TestQoalaQnetPythonBindingsQuantum:
     def test_classical_remote_communication(self):
         with pytest.raises(NotYetCompiledError) as ex:
             _, _ = classical_remote_communication.module
         assert (
-                str(ex.value)
-                == "The program has not been compiled yet. Did you invoke 'compile()' on it?"
+            str(ex.value)
+            == "The program has not been compiled yet. Did you invoke 'compile()' on it?"
         )
         _, module = classical_remote_communication.compile()
         assert isinstance(module, QoalaModule)
@@ -130,8 +135,8 @@ class TestQoalaQnetPythonBindingsQuantum:
         with pytest.raises(NotYetCompiledError) as ex:
             _, _ = classical_send_immediate_values.module
         assert (
-                str(ex.value)
-                == "The program has not been compiled yet. Did you invoke 'compile()' on it?"
+            str(ex.value)
+            == "The program has not been compiled yet. Did you invoke 'compile()' on it?"
         )
         _, module = classical_send_immediate_values.compile()
         assert isinstance(module, QoalaModule)
@@ -156,8 +161,8 @@ class TestQoalaQnetPythonBindingsQuantum:
         with pytest.raises(NotYetCompiledError) as ex:
             _, _ = classical_send_measurement_values_as_int.module
         assert (
-                str(ex.value)
-                == "The program has not been compiled yet. Did you invoke 'compile()' on it?"
+            str(ex.value)
+            == "The program has not been compiled yet. Did you invoke 'compile()' on it?"
         )
         _, module = classical_send_measurement_values_as_int.compile()
         assert isinstance(module, QoalaModule)
@@ -179,8 +184,8 @@ class TestQoalaQnetPythonBindingsQuantum:
         with pytest.raises(NotYetCompiledError) as ex:
             _, _ = classical_send_measurement_values_as_float.module
         assert (
-                str(ex.value)
-                == "The program has not been compiled yet. Did you invoke 'compile()' on it?"
+            str(ex.value)
+            == "The program has not been compiled yet. Did you invoke 'compile()' on it?"
         )
         _, module = classical_send_measurement_values_as_float.compile()
         assert isinstance(module, QoalaModule)
@@ -203,8 +208,8 @@ class TestQoalaQnetPythonBindingsQuantum:
         with pytest.raises(NotYetCompiledError) as ex:
             _, _ = classical_send_array_of_values.module
         assert (
-                str(ex.value)
-                == "The program has not been compiled yet. Did you invoke 'compile()' on it?"
+            str(ex.value)
+            == "The program has not been compiled yet. Did you invoke 'compile()' on it?"
         )
         _, module = classical_send_array_of_values.compile()
         assert isinstance(module, QoalaModule)
@@ -231,8 +236,8 @@ class TestQoalaQnetPythonBindingsQuantum:
         with pytest.raises(NotYetCompiledError) as ex:
             _, _ = classical_send_immediates_and_array_of_values.module
         assert (
-                str(ex.value)
-                == "The program has not been compiled yet. Did you invoke 'compile()' on it?"
+            str(ex.value)
+            == "The program has not been compiled yet. Did you invoke 'compile()' on it?"
         )
         _, module = classical_send_immediates_and_array_of_values.compile()
         assert isinstance(module, QoalaModule)
@@ -261,8 +266,8 @@ class TestQoalaQnetPythonBindingsQuantum:
         with pytest.raises(NotYetCompiledError) as ex:
             _, _ = quantum_entanglement_program.module
         assert (
-                str(ex.value)
-                == "The program has not been compiled yet. Did you invoke 'compile()' on it?"
+            str(ex.value)
+            == "The program has not been compiled yet. Did you invoke 'compile()' on it?"
         )
         _, module = quantum_entanglement_program.compile()
         assert isinstance(module, QoalaModule)
@@ -308,8 +313,8 @@ class TestQoalaQnetPythonBindingsQuantum:
         with pytest.raises(NotYetCompiledError) as ex:
             _, _ = quantum_entanglement_program_b.module
         assert (
-                str(ex.value)
-                == "The program has not been compiled yet. Did you invoke 'compile()' on it?"
+            str(ex.value)
+            == "The program has not been compiled yet. Did you invoke 'compile()' on it?"
         )
         _, module = quantum_entanglement_program_b.compile()
         assert isinstance(module, QoalaModule)
@@ -410,8 +415,8 @@ class TestQoalaQnetPythonBindingsQuantum:
         with pytest.raises(NotYetCompiledError) as ex:
             _, _ = quantum_entanglement_program_c.module
         assert (
-                str(ex.value)
-                == "The program has not been compiled yet. Did you invoke 'compile()' on it?"
+            str(ex.value)
+            == "The program has not been compiled yet. Did you invoke 'compile()' on it?"
         )
         _, module = quantum_entanglement_program_c.compile()
         assert isinstance(module, QoalaModule)

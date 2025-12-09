@@ -43,10 +43,4 @@ def get_debug_info_for_function_name(func_name: str) -> DebugInfo:
                 frame_info.positions.end_col_offset,
             )
         else:
-            return DebugInfo(
-                frame_info.filename,
-                frame_info.lineno,
-                0,
-                0,
-                0
-            )
+            return DebugInfo(frame_info.filename, frame_info.lineno, 0, 0, 0)
