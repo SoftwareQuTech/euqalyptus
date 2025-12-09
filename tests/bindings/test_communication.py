@@ -8,7 +8,7 @@ from qoala.errors import NotYetCompiledError
 from qoala.operations import Remote
 from qoala.operations.communication import recv_int, recv_ints, recv_floats, send_floats, send_ints
 from qoala.types.classical import IntArray, FloatArray
-from qoala.types.quantum import Entangle
+from qoala.types.quantum import Entangle, LocalQubit
 
 
 @QoalaProgram
@@ -16,6 +16,14 @@ def classical_remote_communication():
     remote = Remote("Bob")
     ints = recv_ints(remote, 10)
     int_b = ints[0] + ints[5]
+
+
+@QoalaProgram
+def classical_send_measurement_values():
+    remote = Remote("Alice")
+    qubit = LocalQubit()
+    measurement = qubit.measure()
+    send_ints(remote, measurement)
 
 
 @QoalaProgram
@@ -130,6 +138,29 @@ class TestQoalaQnetPythonBindingsQuantum:
     %cst_0 = arith.constant 2.710000e+00 : f32
     %from_elements_1 = tensor.from_elements %cst, %cst_0 : tensor<2xf32>
     qnet.send_floats %from_elements_1 {remote = @Alice} : tensor<2xf32>
+    qnet.return
+  }
+}
+"""
+        assert str(module.asm) == expected_asm
+
+    def test_classical_send_measurement(self):
+        with pytest.raises(NotYetCompiledError) as ex:
+            _, _ = classical_send_measurement_values.module
+        assert (
+                str(ex.value)
+                == "The program has not been compiled yet. Did you invoke 'compile()' on it?"
+        )
+        _, module = classical_send_measurement_values.compile()
+        assert isinstance(module, QoalaModule)
+        expected_asm = """module {
+  qnet.remote @Alice
+  qnet.func @classical_send_array_of_values() {
+    %0 = qnet.new_qubit : !qnet.qubit
+    %1 = qnet.measure %0 : i1
+    %2 = arith.extsi %1 : i1 to i32
+    %from_elements_3 = tensor.from_elements %2 : tensor<1xf32>
+    qnet.send_ints %from_elements_3 {remote = @Alice} : tensor<1xi32>
     qnet.return
   }
 }
