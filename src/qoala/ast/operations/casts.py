@@ -79,4 +79,4 @@ class BitToInt(QoalaOperation):
             col=self.debug_info.col_start,
             context=ctx,
         )
-        self.ir_value = arith.extsi(i32(), self.operand.ir_value, loc=source_location)
+        self.ir_value = arith.extui(i32(), self.operand.ir_value, loc=source_location)

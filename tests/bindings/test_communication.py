@@ -19,11 +19,19 @@ def classical_remote_communication():
 
 
 @QoalaProgram
-def classical_send_measurement_values():
+def classical_send_measurement_values_as_int():
     remote = Remote("Alice")
     qubit = LocalQubit()
     measurement = qubit.measure()
     send_ints(remote, measurement)
+
+
+@QoalaProgram
+def classical_send_measurement_values_as_float():
+    remote = Remote("Alice")
+    qubit = LocalQubit()
+    measurement = qubit.measure()
+    send_floats(remote, measurement)
 
 
 @QoalaProgram
@@ -144,23 +152,47 @@ class TestQoalaQnetPythonBindingsQuantum:
 """
         assert str(module.asm) == expected_asm
 
-    def test_classical_send_measurement(self):
+    def test_classical_send_measurement_as_int(self):
         with pytest.raises(NotYetCompiledError) as ex:
-            _, _ = classical_send_measurement_values.module
+            _, _ = classical_send_measurement_values_as_int.module
         assert (
                 str(ex.value)
                 == "The program has not been compiled yet. Did you invoke 'compile()' on it?"
         )
-        _, module = classical_send_measurement_values.compile()
+        _, module = classical_send_measurement_values_as_int.compile()
         assert isinstance(module, QoalaModule)
         expected_asm = """module {
   qnet.remote @Alice
-  qnet.func @classical_send_measurement_values() {
+  qnet.func @classical_send_measurement_values_as_int() {
     %0 = qnet.new_qubit : !qnet.qubit
     %1 = qnet.measure %0 : i1
-    %2 = arith.extsi %1 : i1 to i32
+    %2 = arith.extui %1 : i1 to i32
     %from_elements = tensor.from_elements %2 : tensor<1xi32>
     qnet.send_ints %from_elements {remote = @Alice} : tensor<1xi32>
+    qnet.return
+  }
+}
+"""
+        assert str(module.asm) == expected_asm
+
+    def test_classical_send_measurement_as_float(self):
+        with pytest.raises(NotYetCompiledError) as ex:
+            _, _ = classical_send_measurement_values_as_float.module
+        assert (
+                str(ex.value)
+                == "The program has not been compiled yet. Did you invoke 'compile()' on it?"
+        )
+        _, module = classical_send_measurement_values_as_float.compile()
+        assert isinstance(module, QoalaModule)
+        expected_asm = """module {
+  qnet.remote @Alice
+  qnet.func @classical_send_measurement_values_as_float() {
+    %0 = qnet.new_qubit : !qnet.qubit
+    %1 = qnet.measure %0 : i1
+    %2 = arith.extui %1 : i1 to i32
+    %3 = arith.uitofp %2 : i32 to f32
+    %from_elements = tensor.from_elements %3 : tensor<1xf32>
+    qnet.send_floats %from_elements {remote = @Alice} : tensor<1xf32>
     qnet.return
   }
 }
@@ -327,16 +359,16 @@ class TestQoalaQnetPythonBindingsQuantum:
     qnet.return loc(#loc)
   }} loc(#loc)
 }} loc(#loc)
-#loc = loc("{str(current_path)}":69:0)
-#loc1 = loc("{str(current_path)}":71:4)
-#loc2 = loc("{str(current_path)}":72:17)
-#loc3 = loc("{str(current_path)}":73:9)
-#loc4 = loc("{str(current_path)}":74:19)
-#loc5 = loc("{str(current_path)}":74:4)
-#loc6 = loc("{str(current_path)}":75:9)
-#loc7 = loc("{str(current_path)}":76:19)
-#loc8 = loc("{str(current_path)}":76:4)
-#loc9 = loc("{str(current_path)}":77:8)
+#loc = loc("{str(current_path)}":77:0)
+#loc1 = loc("{str(current_path)}":79:4)
+#loc2 = loc("{str(current_path)}":80:17)
+#loc3 = loc("{str(current_path)}":81:9)
+#loc4 = loc("{str(current_path)}":82:19)
+#loc5 = loc("{str(current_path)}":82:4)
+#loc6 = loc("{str(current_path)}":83:9)
+#loc7 = loc("{str(current_path)}":84:19)
+#loc8 = loc("{str(current_path)}":84:4)
+#loc9 = loc("{str(current_path)}":85:8)
 """
         expected_dbg_asm_b = f"""module {{
   qnet.remote @Bob loc(#loc1)
