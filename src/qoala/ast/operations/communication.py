@@ -10,6 +10,8 @@ from qoala import QoalaProgram
 from qoala.ast import checkbaseir, QoalaExpression
 from qoala.ast.operations import QoalaOperation
 from qoala.ast.operations.arrays import GetItem
+from qoala.ast.operations.casts import BitToInt
+from qoala.ast.operations.quantum import QubitMeasure
 from qoala.ast.value import (
     QoalaInteger,
     QoalaFloat,
@@ -174,6 +176,11 @@ class BaseSendOp(QoalaOperation):
                 for array_val in val.members:
                     self.values.append(array_val)
                 continue
+            elif isinstance(val, QubitMeasure):
+                # Measure yields an i1 value, we need to extend it to an i32 before we can send it
+                cast_op = BitToInt(val)
+                # Then we need to add the casted value, not the original one
+                val_to_add = cast_op
             elif isinstance(val, base_type):
                 val_to_add = QoalaNumericValue.from_immediate(val, self.debug_info)
             elif val.can_evaluate_to(qoala_type):
