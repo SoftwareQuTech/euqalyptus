@@ -71,14 +71,14 @@ class SendFloats:
     def __new__(
         cls,
         remote_name: Remote | str,
-        *args: FloatArray | QoalaFloatingPointType | float,
+        *args: FloatArray | QoalaFloatingPointType | QoalaIntegerType | float,
     ):
         return SendFloatsOp(*args, remote_name=remote_name)
 
     def __init__(
         self,
         remote_name: Remote | str,
-        *args: FloatArray | QoalaFloatingPointType | float,
+        *args: FloatArray | QoalaFloatingPointType | QoalaIntegerType | float,
     ):
         # Nothing to do here
         pass

@@ -10,6 +10,8 @@ from qoala import QoalaProgram
 from qoala.ast import checkbaseir, QoalaExpression
 from qoala.ast.operations import QoalaOperation
 from qoala.ast.operations.arrays import GetItem
+from qoala.ast.operations.casts import BitToInt, IntToFloat
+from qoala.ast.operations.quantum import QubitMeasure
 from qoala.ast.value import (
     QoalaInteger,
     QoalaFloat,
@@ -171,8 +173,28 @@ class BaseSendOp(QoalaOperation):
                 # If the argument is an array, we will simply "open" the array...
                 # If an already-packed array is the ONLY argument, this wastefully creates a new tensor
                 # This is generic enough to support mixed arrays and other values, but it's the bes we can do so far
-                _ = [self.values.append(array_val) for array_val in val.members]
+                for array_val in val.members:
+                    self.values.append(array_val)
                 continue
+            elif isinstance(val, QubitMeasure):
+                # Measure yields an i1 value, we need to extend it to an i32 before we can send it
+                cast_op = BitToInt(val)
+                if qoala_type is QoalaInteger:
+                    # Nothing extra to add in this case
+                    final_casted_val = cast_op
+                elif qoala_type is QoalaFloat:
+                    # At this point, "cast_op" is an i32, and we are sending a float, so we
+                    # still need to insert an extra cast
+                    float_cast = IntToFloat(cast_op)
+                    # And in this case, the final casted value is the f32 value
+                    final_casted_val = float_cast
+                else:
+                    raise UnknownTypeError(
+                        f"Send operation: target qoala type '{qoala_type.__name__}' cannot be "
+                        f"sent with operation '{self.__class__.__name__}'"
+                    )
+                # Then we need to add the casted value, not the original one
+                val_to_add = final_casted_val
             elif isinstance(val, base_type):
                 val_to_add = QoalaNumericValue.from_immediate(val, self.debug_info)
             elif val.can_evaluate_to(qoala_type):

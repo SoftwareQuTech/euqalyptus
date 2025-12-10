@@ -3,7 +3,11 @@ import pytest
 import qoala.utils.debug_info as dbg_info
 from qoala.ast.operations.numeric import Add, Subtract, Multiply, Divide
 from qoala.ast.value import QoalaInteger, QoalaFloat, Signedness
-from qoala.errors import InvalidArrayArgumentError, NotUnsignedIntegerArgumentError, NotIntegerArgumentError
+from qoala.errors import (
+    InvalidArrayArgumentError,
+    NotUnsignedIntegerArgumentError,
+    NotIntegerArgumentError,
+)
 from qoala.types.classical.arrays import IntArray, FloatArray
 from qoala.types.classical.floats import Float
 from qoala.types.classical.integer import Int32, UInt32

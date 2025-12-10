@@ -2,7 +2,7 @@ from qnet.ir import *
 from qnet.dialects import qnet
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     with Context() as ctx, Location.unknown():
         # We first register the "qnet" dialect
         qnet.register_dialect(ctx)
