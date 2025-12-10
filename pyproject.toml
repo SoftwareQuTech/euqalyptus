@@ -2,7 +2,7 @@
 name = "qoala-compiler"
 version = "0.0.1"
 dependencies = [
-    "qoala-mlir == 0.0.1",
+    "qoala-mlir",
     "typing-extensions"
 ]
 requires-python = ">=3.10, <3.13"
