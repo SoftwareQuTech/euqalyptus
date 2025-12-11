@@ -66,7 +66,7 @@ class BaseRecvOp(QoalaArray[_Qoala_Base_Type, _Native_Base_Type]):
         self.base_type = base_type
         self.index_op = None
         self.get_op = None
-        if length == 1 and not QoalaProgram.singular_classical_comm_ops_flag:
+        if length == 1 and not QoalaProgram.compile_singular_comm_ops():
             # A tricky case. We need to insert operations to manually get the only
             # value of this array... ONLY if we are not creating singular versions of this op
             # We need the index 0
@@ -79,7 +79,7 @@ class BaseRecvOp(QoalaArray[_Qoala_Base_Type, _Native_Base_Type]):
         # by the constructor of the parent class.
 
     def __getitem__(self, item_index: QoalaExpression | int) -> QoalaExpression:
-        if QoalaProgram.singular_classical_comm_ops_flag:
+        if QoalaProgram.compile_singular_comm_ops():
             if not isinstance(item_index, int):
                 raise ValueUnknownAtCompileTimeError("The displacement value of an expanded recv operation "
                                                      "must be known at compile time.")
@@ -119,7 +119,7 @@ class BaseRecvOp(QoalaArray[_Qoala_Base_Type, _Native_Base_Type]):
             if remote is None:
                 raise UnknownRemoteError(self.remote)
             remote_name = self.remote
-        if QoalaProgram.singular_classical_comm_ops_flag:
+        if QoalaProgram.compile_singular_comm_ops():
             for i in range(self.length):
                 if self.base_type == int:
                     self.ir_value = qnet.recv_int(
@@ -260,7 +260,7 @@ class BaseSendOp(QoalaOperation):
             remote_name = self.remote.remote_name
         else:
             remote_name = self.remote
-        if QoalaProgram.singular_classical_comm_ops_flag:
+        if QoalaProgram.compile_singular_comm_ops():
             for element in elements:
                 if self.base_type == int:
                     self.ir_value = qnet.send_int(

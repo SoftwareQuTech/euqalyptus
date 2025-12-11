@@ -1,4 +1,4 @@
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import List
 
 from qnet.dialects import qnet
@@ -6,17 +6,6 @@ from qnet.ir import Module, Context, Location, InsertionPoint, FunctionType, Blo
 
 from qoala.ast import QoalaExpression
 from qoala.utils.debug_info import DebugInfo
-
-
-@dataclass
-class _CompilationOptions:
-    lazy_compilation: bool = False
-    use_singular_classical_comm_ops: bool = False
-
-
-@dataclass
-class CompilationContext:
-    options: _CompilationOptions = field(default_factory=_CompilationOptions)
 
 
 @dataclass(init=False)
@@ -34,7 +23,6 @@ class QoalaModule:
     _function_name: str
     _qir_module: Module
     _is_initialized: bool
-    _compilation_context: CompilationContext
 
     def __init__(self, function_name: str, module_dbg_info: DebugInfo):
         self._body = []
@@ -42,17 +30,12 @@ class QoalaModule:
         self._module_dbg_info = module_dbg_info
         self._is_initialized = False
         self._remotes = []
-        self._compilation_context = CompilationContext()
 
     def clear_body(self):
         self._body.clear()
 
     def add_element_to_body(self, elem: QoalaExpression):
         self._body.append(elem)
-
-    @property
-    def compilation_context(self) -> CompilationContext:
-        return self._compilation_context
 
     @property
     def remotes(self):
