@@ -321,6 +321,7 @@ class QoalaReferenceInsideArray(QoalaExpression):
     The aforementioned behavior is useful when dealing with operations that are "expanded", and
     the IR value references is only known when generating the IR (*after* generating the AST).
     """
+
     def __init__(self, base_expression: QoalaArray, idx: int):
         super().__init__()
         self._base_expression = base_expression

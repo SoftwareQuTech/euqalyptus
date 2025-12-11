@@ -26,7 +26,6 @@ class CompilationContext:
     options: _CompilationOptions = field(default_factory=_CompilationOptions)
 
 
-
 class QoalaProgram:
     """
     Function decorator used to mark methods as qoala programs.
@@ -64,7 +63,9 @@ class QoalaProgram:
     @classmethod
     def compile_singular_comm_ops(cls, new_flag_value: Optional[bool] = None) -> bool:
         if new_flag_value is not None:
-            cls._compilation_context.options.use_singular_classical_comm_ops = new_flag_value
+            cls._compilation_context.options.use_singular_classical_comm_ops = (
+                new_flag_value
+            )
         return cls._compilation_context.options.use_singular_classical_comm_ops
 
     @property
@@ -105,7 +106,12 @@ class QoalaProgram:
         return self.compile(*args, **kwargs)
 
     def compile(
-        self, /, *args: Any, compile_lazy: bool = False, singular_comm_ops: bool = False, **kwargs: Any
+        self,
+        /,
+        *args: Any,
+        compile_lazy: bool = False,
+        singular_comm_ops: bool = False,
+        **kwargs: Any,
     ) -> Tuple[int, QoalaModule]:
         """
         Compiles the decorated program, generating a ``QoalaModule`` object containing the HIR representation

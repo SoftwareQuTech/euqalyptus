@@ -161,7 +161,9 @@ class TestQoalaQnetSingularPythonBindingsQuantum:
             str(ex.value)
             == "The program has not been compiled yet. Did you invoke 'compile()' on it?"
         )
-        _, module = classical_send_measurement_values_as_int.compile(singular_comm_ops=True)
+        _, module = classical_send_measurement_values_as_int.compile(
+            singular_comm_ops=True
+        )
         assert isinstance(module, QoalaModule)
         expected_asm = """module {
   qnet.remote @Alice
@@ -183,7 +185,9 @@ class TestQoalaQnetSingularPythonBindingsQuantum:
             str(ex.value)
             == "The program has not been compiled yet. Did you invoke 'compile()' on it?"
         )
-        _, module = classical_send_measurement_values_as_float.compile(singular_comm_ops=True)
+        _, module = classical_send_measurement_values_as_float.compile(
+            singular_comm_ops=True
+        )
         assert isinstance(module, QoalaModule)
         expected_asm = """module {
   qnet.remote @Alice
@@ -234,7 +238,9 @@ class TestQoalaQnetSingularPythonBindingsQuantum:
             str(ex.value)
             == "The program has not been compiled yet. Did you invoke 'compile()' on it?"
         )
-        _, module = classical_send_immediates_and_array_of_values.compile(singular_comm_ops=True)
+        _, module = classical_send_immediates_and_array_of_values.compile(
+            singular_comm_ops=True
+        )
         assert isinstance(module, QoalaModule)
         expected_asm = """module {
   qnet.remote @Alice

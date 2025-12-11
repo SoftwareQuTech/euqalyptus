@@ -19,8 +19,11 @@ from qoala.ast.value import (
     QoalaArray,
     QoalaNumericValue,
 )
-from qoala.errors import (UnknownTypeError, UnknownRemoteError,
-                          ValueUnknownAtCompileTimeError)
+from qoala.errors import (
+    UnknownTypeError,
+    UnknownRemoteError,
+    ValueUnknownAtCompileTimeError,
+)
 
 
 @dataclass(init=False)
@@ -81,8 +84,10 @@ class BaseRecvOp(QoalaArray[_Qoala_Base_Type, _Native_Base_Type]):
     def __getitem__(self, item_index: QoalaExpression | int) -> QoalaExpression:
         if QoalaProgram.compile_singular_comm_ops():
             if not isinstance(item_index, int):
-                raise ValueUnknownAtCompileTimeError("The displacement value of an expanded recv operation "
-                                                     "must be known at compile time.")
+                raise ValueUnknownAtCompileTimeError(
+                    "The displacement value of an expanded recv operation "
+                    "must be known at compile time."
+                )
             return QoalaReferenceInsideArray(self, item_index)
         else:
             return super().__getitem__(item_index)
