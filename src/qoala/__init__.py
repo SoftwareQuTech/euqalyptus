@@ -119,6 +119,9 @@ class QoalaProgram:
         The returned ``QoalaModule`` object can be printed (using python's ``print`` function) to object a
         text-based representation of the HIR that can be fed into the ``qoala-opt`` tool for further optimization
         and compilation.
+        Note: Using the ``singular_comm_ops`` option generates send/recv_int_float operations that handle 1
+        value at a time. This has the implication of generating *no tensor values*. This heavily simplifies
+        the optimization process, avoiding lowering tensors/vectors to other types.
         Arguments:
             compile_lazy (bool): Whether to compile the program without generating HIR.
                 Useful for testing the internal structure of the compilation (pseudo-AST).
