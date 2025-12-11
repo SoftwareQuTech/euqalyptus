@@ -99,8 +99,6 @@ def quantum_entanglement_program_c():
 
 class TestQoalaQnetSingularPythonBindingsQuantum:
     def test_classical_remote_communication(self):
-        # TODO - This test case might be tricky to implement.
-        #  * How do we keep track of the "array usages" of the unfolded recv_ints?
         with pytest.raises(NotYetCompiledError) as ex:
             _, _ = classical_remote_communication.module
         assert (
@@ -112,18 +110,18 @@ class TestQoalaQnetSingularPythonBindingsQuantum:
         expected_asm = """module {
   qnet.remote @Bob
   qnet.func @classical_remote_communication() {
-    %0 = qnet.recv_int {remote = @Bob} : i32
-    %1 = qnet.recv_int {remote = @Bob} : i32
-    %2 = qnet.recv_int {remote = @Bob} : i32
-    %3 = qnet.recv_int {remote = @Bob} : i32
-    %4 = qnet.recv_int {remote = @Bob} : i32
+    %0 = qnet.recv_int  {remote = @Bob} : i32
+    %1 = qnet.recv_int  {remote = @Bob} : i32
+    %2 = qnet.recv_int  {remote = @Bob} : i32
+    %3 = qnet.recv_int  {remote = @Bob} : i32
+    %4 = qnet.recv_int  {remote = @Bob} : i32
     %5 = arith.addi %0, %3 : i32
-    %6 = qnet.recv_float {remote = @Bob} : f32
-    %7 = qnet.recv_float {remote = @Bob} : f32
-    %8 = qnet.recv_float {remote = @Bob} : f32
-    %9 = qnet.recv_float {remote = @Bob} : f32
-    %10 = qnet.recv_float {remote = @Bob} : f32
-    %11 = arith.addi %8, %10 : f32
+    %6 = qnet.recv_float  {remote = @Bob} : f32
+    %7 = qnet.recv_float  {remote = @Bob} : f32
+    %8 = qnet.recv_float  {remote = @Bob} : f32
+    %9 = qnet.recv_float  {remote = @Bob} : f32
+    %10 = qnet.recv_float  {remote = @Bob} : f32
+    %11 = arith.addf %8, %10 : f32
     qnet.return
   }
 }
