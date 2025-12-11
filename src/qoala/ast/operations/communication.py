@@ -66,9 +66,9 @@ class BaseRecvOp(QoalaArray[_Qoala_Base_Type, _Native_Base_Type]):
         self.base_type = base_type
         self.index_op = None
         self.get_op = None
-        if length == 1:
+        if length == 1 and not QoalaProgram.singular_classical_comm_ops_flag:
             # A tricky case. We need to insert operations to manually get the only
-            # qubit of this entanglement pair
+            # value of this array... ONLY if we are not creating singular versions of this op
             # We need the index 0
             self.index_op = QoalaNumericValue.from_immediate(
                 0, dbg_info=self.debug_info, is_index=True
