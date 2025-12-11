@@ -8,6 +8,7 @@ from qnet.ir import Context, Location, IntegerAttr
 
 from qoala import QoalaProgram
 from qoala.ast import checkbaseir, QoalaExpression
+from qoala.ast.value import QoalaReferenceInsideArray
 from qoala.ast.operations import QoalaOperation
 from qoala.ast.operations.arrays import GetItem
 from qoala.ast.operations.casts import BitToInt, IntToFloat
@@ -18,7 +19,8 @@ from qoala.ast.value import (
     QoalaArray,
     QoalaNumericValue,
 )
-from qoala.errors import UnknownTypeError, UnknownRemoteError
+from qoala.errors import (UnknownTypeError, UnknownRemoteError,
+                          ValueUnknownAtCompileTimeError)
 
 
 @dataclass(init=False)
@@ -76,6 +78,15 @@ class BaseRecvOp(QoalaArray[_Qoala_Base_Type, _Native_Base_Type]):
         # We don't need to add this operation to the body, since it will be done
         # by the constructor of the parent class.
 
+    def __getitem__(self, item_index: QoalaExpression | int) -> QoalaExpression:
+        if QoalaProgram.singular_classical_comm_ops_flag:
+            if not isinstance(item_index, int):
+                raise ValueUnknownAtCompileTimeError("The displacement value of an expanded recv operation "
+                                                     "must be known at compile time.")
+            return QoalaReferenceInsideArray(self, item_index)
+        else:
+            return super().__getitem__(item_index)
+
     def can_evaluate_to(self, cls) -> bool:
         if self.length == 1:
             if self.base_type == int:
@@ -108,30 +119,47 @@ class BaseRecvOp(QoalaArray[_Qoala_Base_Type, _Native_Base_Type]):
             if remote is None:
                 raise UnknownRemoteError(self.remote)
             remote_name = self.remote
-        length_attr = IntegerAttr.get(i32(), self.length)
-        if self.base_type == int:
-            self.ir_value = qnet.recv_ints(
-                remote=remote_name,
-                cout=tensor_shape,
-                length=length_attr,
-                loc=source_location,
-            )
-        elif self.base_type == float:
-            self.ir_value = qnet.recv_floats(
-                remote=remote_name,
-                cout=tensor_shape,
-                length=length_attr,
-                loc=source_location,
-            )
+        if QoalaProgram.singular_classical_comm_ops_flag:
+            for i in range(self.length):
+                if self.base_type == int:
+                    self.ir_value = qnet.recv_int(
+                        remote=remote_name,
+                        loc=source_location,
+                    )
+                elif self.base_type == float:
+                    self.ir_value = qnet.recv_float(
+                        remote=remote_name,
+                        loc=source_location,
+                    )
+                else:
+                    raise UnknownTypeError(
+                        f"Cannot create recv operation for base type '{self.base_type}'"
+                    )
         else:
-            raise UnknownTypeError(
-                f"Cannot create recv operation for base type '{self.base_type}'"
-            )
-        if self.length == 1:
-            # In this case the IR of the Recv operation is the value of the extract operation
-            self.index_op.compile(ctx)
-            self.extract_op.compile(ctx)
-            self.ir_value = self.extract_op.ir_value
+            length_attr = IntegerAttr.get(i32(), self.length)
+            if self.base_type == int:
+                self.ir_value = qnet.recv_ints(
+                    remote=remote_name,
+                    cout=tensor_shape,
+                    length=length_attr,
+                    loc=source_location,
+                )
+            elif self.base_type == float:
+                self.ir_value = qnet.recv_floats(
+                    remote=remote_name,
+                    cout=tensor_shape,
+                    length=length_attr,
+                    loc=source_location,
+                )
+            else:
+                raise UnknownTypeError(
+                    f"Cannot create recv operation for base type '{self.base_type}'"
+                )
+            if self.length == 1:
+                # In this case the IR of the Recv operation is the value of the extract operation
+                self.index_op.compile(ctx)
+                self.extract_op.compile(ctx)
+                self.ir_value = self.extract_op.ir_value
 
 
 @dataclass(init=False)

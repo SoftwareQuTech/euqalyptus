@@ -71,6 +71,11 @@ class WrongEvaluationTypeError(QoalaCompilerError):
     def __init__(self, msg: str):
         super().__init__(msg)
 
+class ValueUnknownAtCompileTimeError(QoalaCompilerError):
+
+    def __init__(self, msg: str):
+        super().__init__(msg)
+
 
 class NotYetImplementedError(QoalaCompilerError):
 

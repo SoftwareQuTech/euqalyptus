@@ -312,6 +312,28 @@ class QoalaArray(
         )
 
 
+@with_arith_operators
+class QoalaReferenceInsideArray(QoalaExpression):
+    """
+    A simple reference to value inside a QoalaArray that will be resolved when generating the IR.
+    Being this said, this object *should not yield any additional IR operation*, but rather be
+    a "proxy" to the IR of another expression.
+    The aforementioned behavior is useful when dealing with operations that are "expanded", and
+    the IR value references is only known when generating the IR (*after* generating the AST).
+    """
+    def __init__(self, base_expression: QoalaArray, idx: int):
+        super().__init__()
+        self._base_expression = base_expression
+        self._index = idx
+        QoalaProgram.add_to_body(self)
+
+    def compile(self, ctx: Context) -> None:
+        self.ir_value = self._base_expression.ir_values[self._index]
+
+    def can_evaluate_to(self, cls) -> bool:
+        return self._base_expression.qoala_type == cls
+
+
 class QoalaBit(QoalaValue[int], ABC):
     """
     Represents the result of performing a measurement of the qubit.
