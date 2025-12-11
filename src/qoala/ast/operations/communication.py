@@ -255,29 +255,44 @@ class BaseSendOp(QoalaOperation):
             raise UnknownTypeError(
                 f"Base type '{self.base_type.__name__}' for arrays is not supported"
             )
-        tensor_shape = tensor.RankedTensorType.get(
-            shape=[len(elements)], element_type=hir_base_type, loc=source_location
-        )
-        tensor_values = tensor.from_elements(
-            elements=elements, result=tensor_shape, loc=source_location
-        )
 
         if isinstance(self.remote, DeclaredRemote):
             remote_name = self.remote.remote_name
         else:
             remote_name = self.remote
-        if self.base_type == int:
-            self.ir_value = qnet.send_ints(
-                cin=tensor_values, remote=remote_name, loc=source_location
-            )
-        elif self.base_type == float:
-            self.ir_value = qnet.send_floats(
-                cin=tensor_values, remote=remote_name, loc=source_location
-            )
+        if QoalaProgram.singular_classical_comm_ops_flag:
+            for element in elements:
+                if self.base_type == int:
+                    self.ir_value = qnet.send_int(
+                        cin=element, remote=remote_name, loc=source_location
+                    )
+                elif self.base_type == float:
+                    self.ir_value = qnet.send_float(
+                        cin=element, remote=remote_name, loc=source_location
+                    )
+                else:
+                    raise UnknownTypeError(
+                        f"Cannot create send operation for base type '{self.base_type}'"
+                    )
         else:
-            raise UnknownTypeError(
-                f"Cannot create send operation for base type '{self.base_type}'"
+            tensor_shape = tensor.RankedTensorType.get(
+                shape=[len(elements)], element_type=hir_base_type, loc=source_location
             )
+            tensor_values = tensor.from_elements(
+                elements=elements, result=tensor_shape, loc=source_location
+            )
+            if self.base_type == int:
+                self.ir_value = qnet.send_ints(
+                    cin=tensor_values, remote=remote_name, loc=source_location
+                )
+            elif self.base_type == float:
+                self.ir_value = qnet.send_floats(
+                    cin=tensor_values, remote=remote_name, loc=source_location
+                )
+            else:
+                raise UnknownTypeError(
+                    f"Cannot create send operation for base type '{self.base_type}'"
+                )
 
 
 @dataclass(init=False)
