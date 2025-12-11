@@ -42,6 +42,22 @@ class QoalaProgram:
         self._is_compiled = False
 
     @property
+    def compile_lazy_flag(self) -> bool:
+        return self._module.compilation_context.options.lazy_compilation
+
+    @compile_lazy_flag.setter
+    def compile_lazy_flag(self, compile_lazy_flag: bool):
+        self._module.compilation_context.options.lazy_compilation = compile_lazy_flag
+
+    @property
+    def singular_classical_comm_ops_flag(self) -> bool:
+        return self._module.compilation_context.options.use_singular_classical_comm_ops
+
+    @singular_classical_comm_ops_flag.setter
+    def singular_classical_comm_ops_flag(self, use_singular_comm_ops: bool):
+        self._module.compilation_context.options.use_singular_classical_comm_ops = use_singular_comm_ops
+
+    @property
     def _body(self):
         return self._module._body
 
@@ -79,8 +95,24 @@ class QoalaProgram:
         return self.compile(*args, **kwargs)
 
     def compile(
-        self, /, *args: Any, compile_lazy: bool = False, **kwargs: Any
+        self, /, *args: Any, compile_lazy: bool = False, singular_comm_ops: bool = False, **kwargs: Any
     ) -> Tuple[int, QoalaModule]:
+        """
+        Compiles the decorated program, generating a ``QoalaModule`` object containing the HIR representation
+        of the program.
+        The returned ``QoalaModule`` object can be printed (using python's ``print`` function) to object a
+        text-based representation of the HIR that can be fed into the ``qoala-opt`` tool for further optimization
+        and compilation.
+        Arguments:
+            compile_lazy (bool): Whether to compile the program without generating HIR.
+                Useful for testing the internal structure of the compilation (pseudo-AST).
+            singular_comm_ops (bool): Whether to generate singular versions of the classical
+                communication.
+        Returns:
+            A tuple containing an integer (the compilation result) and the compiled module
+            (a ``QoalaModule`` object)
+        """
+
         # TODO - Implement (if needed) more functionality than just invoking the function
         # To ease the insertion of the statement into the program body, we need to
         # keep a reference to the current instance of the QoalaProgram we are compiling.
@@ -92,6 +124,10 @@ class QoalaProgram:
             _compiler_lock.acquire()
             QoalaProgram._instance = self
             QoalaProgram._declared_remotes = {}
+            # We save the compilation options
+            self.compile_lazy_flag = compile_lazy
+            self.singular_classical_comm_ops_flag = singular_comm_ops
+
             # We clear the body of this qoala program.
             self._module.clear_body()
             ret_val = self._entry_fun(*args, **kwargs)
@@ -99,7 +135,7 @@ class QoalaProgram:
                 remote for _, remote in self._declared_remotes.items()
             ]
             self._is_compiled = True
-            if not compile_lazy:
+            if not self.compile_lazy_flag:
                 self.module.generate_qoala_hir()
             # We delete the reference to the QoalaProgram under compilation
             del QoalaProgram._instance

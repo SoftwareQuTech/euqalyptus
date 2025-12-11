@@ -1,6 +1,4 @@
 import pytest
-from sys import version_info
-from pathlib import Path
 
 from qoala import QoalaProgram, QoalaModule
 from qoala.errors import NotYetCompiledError
@@ -24,6 +22,13 @@ def classical_remote_communication():
 
 
 @QoalaProgram
+def classical_send_immediate_values():
+    remote = Remote("Alice")
+    send_ints("Alice", 10, 20)
+    send_floats(remote, 3.14, 2.71)
+
+
+@QoalaProgram
 def classical_send_measurement_values_as_int():
     remote = Remote("Alice")
     qubit = LocalQubit()
@@ -37,13 +42,6 @@ def classical_send_measurement_values_as_float():
     qubit = LocalQubit()
     measurement = qubit.measure()
     send_floats(remote, measurement)
-
-
-@QoalaProgram
-def classical_send_immediate_values():
-    remote = Remote("Alice")
-    send_ints("Alice", 10, 20)
-    send_floats(remote, 3.14, 2.71)
 
 
 @QoalaProgram
