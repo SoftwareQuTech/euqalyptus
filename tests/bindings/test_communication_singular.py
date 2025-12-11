@@ -217,18 +217,10 @@ class TestQoalaQnetSingularPythonBindingsQuantum:
     %cst = arith.constant 3.140000e+00 : f32
     %cst_0 = arith.constant 2.710000e+00 : f32
     %from_elements_1 = tensor.from_elements %cst, %cst_0 : tensor<2xf32>
-    %c0 = arith.constant 0 : index
-    %extracted = tensor.extract %from_elements[%c0] : tensor<2xi32>
-    %c1 = arith.constant 1 : index
-    %extracted_1 = tensor.extract %from_elements[%c1] : tensor<2xi32>
-    qnet.send_int %extracted {remote = @Alice} : i32
-    qnet.send_int %extracted_1 {remote = @Alice} : i32
-    %c0_0 = arith.constant 0 : index
-    %extracted_2 = tensor.extract %from_elements[%c0] : tensor<2xf32>
-    %c1_1 = arith.constant 1 : index
-    %extracted_3 = tensor.extract %from_elements[%c1] : tensor<2xf32>
-    qnet.send_float %extracted_2 {remote = @Alice} : f32
-    qnet.send_float %extracted_3 {remote = @Alice} : f32
+    qnet.send_int %c10_i32 {remote = @Alice} : i32
+    qnet.send_int %c20_i32 {remote = @Alice} : i32
+    qnet.send_float %cst {remote = @Alice} : f32
+    qnet.send_float %cst_0 {remote = @Alice} : f32
     qnet.return
   }
 }
@@ -253,22 +245,14 @@ class TestQoalaQnetSingularPythonBindingsQuantum:
     %cst = arith.constant 3.140000e+00 : f32
     %cst_0 = arith.constant 2.710000e+00 : f32
     %from_elements_1 = tensor.from_elements %cst, %cst_0 : tensor<2xf32>
-    %c0 = arith.constant 0 : index
-    %extracted = tensor.extract %from_elements[%c0] : tensor<2xi32>
-    %c1 = arith.constant 1 : index
-    %extracted_1 = tensor.extract %from_elements[%c1] : tensor<2xi32>
     %c30_i32 = arith.constant 30 : i32
-    qnet.send_int %extracted {remote = @Alice} : i32
-    qnet.send_int %extracted_1 {remote = @Alice} : i32
+    qnet.send_int %c10_i32 {remote = @Alice} : i32
+    qnet.send_int %c20_i32 {remote = @Alice} : i32
     qnet.send_int %c30_i32 {remote = @Alice} : i32
-    %c0_0 = arith.constant 0 : index
-    %extracted_2 = tensor.extract %from_elements[%c0] : tensor<2xf32>
-    %c1_1 = arith.constant 1 : index
-    %extracted_3 = tensor.extract %from_elements[%c1] : tensor<2xf32>
-    %cst_3 = arith.constant 1.565000e+01 : f32
-    qnet.send_float %extracted_2 {remote = @Alice} : f32
-    qnet.send_float %extracted_3 {remote = @Alice} : f32
-    qnet.send_float %cst_3 {remote = @Alice} : f32
+    %cst_2 = arith.constant 1.565000e+01 : f32
+    qnet.send_float %cst {remote = @Alice} : f32
+    qnet.send_float %cst_0 {remote = @Alice} : f32
+    qnet.send_float %cst_2 {remote = @Alice} : f32
     qnet.return
   }
 }
@@ -296,7 +280,7 @@ class TestQoalaQnetSingularPythonBindingsQuantum:
   qnet.remote @Bob
   qnet.func @quantum_entanglement_program() {
     %0 = qnet.eprs  {remote = @Bob} : !qnet.qubit
-    %1 = qnet.recv_int  {length = 1 : i32} : i32
+    %1 = qnet.recv_int  {remote = @Bob} : i32
     %cst = arith.constant 0.000000e+00 : f32
     %cst_0 = arith.constant 3.14159274 : f32
     %2 = arith.uitofp %1 : i32 to f32
@@ -304,17 +288,9 @@ class TestQoalaQnetSingularPythonBindingsQuantum:
     %4 = math.exp2 %cst : f32
     %5 = arith.divf %3, %4 : f32
     %6 = qnet.rot_x %0, %5 : !qnet.qubit
-    %7 = qnet.recv_float {length = 1 : i32} : i32
-    %c0_1 = arith.constant 0 : index
-    %extracted = tensor.extract %7[%c0_1] : tensor<1xi32>
-    %cst_3 = arith.constant 0.000000e+00 : f32
-    %cst_4 = arith.constant 3.14159274 : f32
-    %8 = arith.uitofp %extracted : i32 to f32
-    %9 = arith.mulf %8, %cst_4 : f32
-    %10 = math.exp2 %cst_3 : f32
-    %11 = arith.divf %9, %10 : f32
-    %12 = qnet.rot_y %6, %11 : !qnet.qubit
-    %13 = qnet.measure %12 : i1
+    %7 = qnet.recv_float  {remote = @Bob} : f32
+    %8 = qnet.rot_y %6, %7 : !qnet.qubit
+    %9 = qnet.measure %8 : i1
     qnet.return
   }
 }
