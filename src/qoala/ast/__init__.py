@@ -31,7 +31,7 @@ class QoalaExpression(ABC):
         pass
 
     @property
-    def ir_value(self) -> Operation | List[Operation] | None:
+    def ir_value(self) -> Operation | None:
         if len(self._ir_vals) <= 0:
             return None
         # We return the "most recent" value for this expression
@@ -40,6 +40,10 @@ class QoalaExpression(ABC):
     @ir_value.setter
     def ir_value(self, new_ir_val: Operation) -> None:
         self._ir_vals.append(new_ir_val)
+
+    @property
+    def ir_values(self) -> List[Operation]:
+        return self._ir_vals
 
     @abstractmethod
     def can_evaluate_to(self, cls) -> bool:

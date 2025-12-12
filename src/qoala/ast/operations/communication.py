@@ -8,6 +8,7 @@ from qnet.ir import Context, Location, IntegerAttr
 
 from qoala import QoalaProgram
 from qoala.ast import checkbaseir, QoalaExpression
+from qoala.ast.value import QoalaReferenceInsideArray
 from qoala.ast.operations import QoalaOperation
 from qoala.ast.operations.arrays import GetItem
 from qoala.ast.operations.casts import BitToInt, IntToFloat
@@ -18,7 +19,11 @@ from qoala.ast.value import (
     QoalaArray,
     QoalaNumericValue,
 )
-from qoala.errors import UnknownTypeError, UnknownRemoteError
+from qoala.errors import (
+    UnknownTypeError,
+    UnknownRemoteError,
+    ValueUnknownAtCompileTimeError,
+)
 
 
 @dataclass(init=False)
@@ -64,9 +69,9 @@ class BaseRecvOp(QoalaArray[_Qoala_Base_Type, _Native_Base_Type]):
         self.base_type = base_type
         self.index_op = None
         self.get_op = None
-        if length == 1:
+        if length == 1 and not QoalaProgram.compile_singular_comm_ops():
             # A tricky case. We need to insert operations to manually get the only
-            # qubit of this entanglement pair
+            # value of this array... ONLY if we are not creating singular versions of this op
             # We need the index 0
             self.index_op = QoalaNumericValue.from_immediate(
                 0, dbg_info=self.debug_info, is_index=True
@@ -75,6 +80,17 @@ class BaseRecvOp(QoalaArray[_Qoala_Base_Type, _Native_Base_Type]):
             self.extract_op = GetItem(self, self.index_op, dbg_info=self.debug_info)
         # We don't need to add this operation to the body, since it will be done
         # by the constructor of the parent class.
+
+    def __getitem__(self, item_index: QoalaExpression | int) -> QoalaExpression:
+        if QoalaProgram.compile_singular_comm_ops():
+            if not isinstance(item_index, int):
+                raise ValueUnknownAtCompileTimeError(
+                    "The displacement value of an expanded recv operation "
+                    "must be known at compile time."
+                )
+            return QoalaReferenceInsideArray(self, item_index)
+        else:
+            return super().__getitem__(item_index)
 
     def can_evaluate_to(self, cls) -> bool:
         if self.length == 1:
@@ -108,30 +124,47 @@ class BaseRecvOp(QoalaArray[_Qoala_Base_Type, _Native_Base_Type]):
             if remote is None:
                 raise UnknownRemoteError(self.remote)
             remote_name = self.remote
-        length_attr = IntegerAttr.get(i32(), self.length)
-        if self.base_type == int:
-            self.ir_value = qnet.recv_ints(
-                remote=remote_name,
-                cout=tensor_shape,
-                length=length_attr,
-                loc=source_location,
-            )
-        elif self.base_type == float:
-            self.ir_value = qnet.recv_floats(
-                remote=remote_name,
-                cout=tensor_shape,
-                length=length_attr,
-                loc=source_location,
-            )
+        if QoalaProgram.compile_singular_comm_ops():
+            for i in range(self.length):
+                if self.base_type == int:
+                    self.ir_value = qnet.recv_int(
+                        remote=remote_name,
+                        loc=source_location,
+                    )
+                elif self.base_type == float:
+                    self.ir_value = qnet.recv_float(
+                        remote=remote_name,
+                        loc=source_location,
+                    )
+                else:
+                    raise UnknownTypeError(
+                        f"Cannot create recv operation for base type '{self.base_type}'"
+                    )
         else:
-            raise UnknownTypeError(
-                f"Cannot create recv operation for base type '{self.base_type}'"
-            )
-        if self.length == 1:
-            # In this case the IR of the Recv operation is the value of the extract operation
-            self.index_op.compile(ctx)
-            self.extract_op.compile(ctx)
-            self.ir_value = self.extract_op.ir_value
+            length_attr = IntegerAttr.get(i32(), self.length)
+            if self.base_type == int:
+                self.ir_value = qnet.recv_ints(
+                    remote=remote_name,
+                    cout=tensor_shape,
+                    length=length_attr,
+                    loc=source_location,
+                )
+            elif self.base_type == float:
+                self.ir_value = qnet.recv_floats(
+                    remote=remote_name,
+                    cout=tensor_shape,
+                    length=length_attr,
+                    loc=source_location,
+                )
+            else:
+                raise UnknownTypeError(
+                    f"Cannot create recv operation for base type '{self.base_type}'"
+                )
+            if self.length == 1:
+                # In this case the IR of the Recv operation is the value of the extract operation
+                self.index_op.compile(ctx)
+                self.extract_op.compile(ctx)
+                self.ir_value = self.extract_op.ir_value
 
 
 @dataclass(init=False)
@@ -172,7 +205,8 @@ class BaseSendOp(QoalaOperation):
             if isinstance(val, QoalaArray):
                 # If the argument is an array, we will simply "open" the array...
                 # If an already-packed array is the ONLY argument, this wastefully creates a new tensor
-                # This is generic enough to support mixed arrays and other values, but it's the bes we can do so far
+                # This is generic enough to support mixed arrays and other values, but it's the best we can do so far.
+                # Despite this waste, it can easily be fixed in the opt tool, by applying folding of constants.
                 for array_val in val.members:
                     self.values.append(array_val)
                 continue
@@ -226,29 +260,44 @@ class BaseSendOp(QoalaOperation):
             raise UnknownTypeError(
                 f"Base type '{self.base_type.__name__}' for arrays is not supported"
             )
-        tensor_shape = tensor.RankedTensorType.get(
-            shape=[len(elements)], element_type=hir_base_type, loc=source_location
-        )
-        tensor_values = tensor.from_elements(
-            elements=elements, result=tensor_shape, loc=source_location
-        )
 
         if isinstance(self.remote, DeclaredRemote):
             remote_name = self.remote.remote_name
         else:
             remote_name = self.remote
-        if self.base_type == int:
-            self.ir_value = qnet.send_ints(
-                cin=tensor_values, remote=remote_name, loc=source_location
-            )
-        elif self.base_type == float:
-            self.ir_value = qnet.send_floats(
-                cin=tensor_values, remote=remote_name, loc=source_location
-            )
+        if QoalaProgram.compile_singular_comm_ops():
+            for element in elements:
+                if self.base_type == int:
+                    self.ir_value = qnet.send_int(
+                        cin=element, remote=remote_name, loc=source_location
+                    )
+                elif self.base_type == float:
+                    self.ir_value = qnet.send_float(
+                        cin=element, remote=remote_name, loc=source_location
+                    )
+                else:
+                    raise UnknownTypeError(
+                        f"Cannot create send operation for base type '{self.base_type}'"
+                    )
         else:
-            raise UnknownTypeError(
-                f"Cannot create send operation for base type '{self.base_type}'"
+            tensor_shape = tensor.RankedTensorType.get(
+                shape=[len(elements)], element_type=hir_base_type, loc=source_location
             )
+            tensor_values = tensor.from_elements(
+                elements=elements, result=tensor_shape, loc=source_location
+            )
+            if self.base_type == int:
+                self.ir_value = qnet.send_ints(
+                    cin=tensor_values, remote=remote_name, loc=source_location
+                )
+            elif self.base_type == float:
+                self.ir_value = qnet.send_floats(
+                    cin=tensor_values, remote=remote_name, loc=source_location
+                )
+            else:
+                raise UnknownTypeError(
+                    f"Cannot create send operation for base type '{self.base_type}'"
+                )
 
 
 @dataclass(init=False)

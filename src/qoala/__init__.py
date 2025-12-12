@@ -1,9 +1,10 @@
 import types as py_types
 from abc import ABC, abstractmethod
 from collections.abc import Callable
+from dataclasses import dataclass, field
 from functools import partial
 from threading import Lock
-from typing import List, Any, Dict, Tuple
+from typing import List, Any, Dict, Tuple, Optional
 from typing_extensions import Self
 
 import qoala.utils.debug_info as dbg_info
@@ -12,6 +13,17 @@ from qoala.errors import NotYetCompiledError, QuantumProgramNotImplementedError
 from qoala.module import QoalaModule
 
 _compiler_lock: Lock = Lock()
+
+
+@dataclass
+class _CompilationOptions:
+    lazy_compilation: bool = False
+    use_singular_classical_comm_ops: bool = False
+
+
+@dataclass
+class CompilationContext:
+    options: _CompilationOptions = field(default_factory=_CompilationOptions)
 
 
 class QoalaProgram:
@@ -33,6 +45,7 @@ class QoalaProgram:
 
     _instance: Self
     _declared_remotes: Dict[str, Any]
+    _compilation_context: CompilationContext
 
     def __init__(self, entry_fun: Callable):
         self._function_name = entry_fun.__name__
@@ -40,6 +53,20 @@ class QoalaProgram:
         self._module = QoalaModule(self._function_name, module_dbg_info)
         self._entry_fun = entry_fun
         self._is_compiled = False
+
+    @classmethod
+    def compile_lazy_flag(cls, new_flag_value: Optional[bool] = None) -> bool:
+        if new_flag_value is not None:
+            cls._compilation_context.options.lazy_compilation = new_flag_value
+        return cls._compilation_context.options.lazy_compilation
+
+    @classmethod
+    def compile_singular_comm_ops(cls, new_flag_value: Optional[bool] = None) -> bool:
+        if new_flag_value is not None:
+            cls._compilation_context.options.use_singular_classical_comm_ops = (
+                new_flag_value
+            )
+        return cls._compilation_context.options.use_singular_classical_comm_ops
 
     @property
     def _body(self):
@@ -79,8 +106,32 @@ class QoalaProgram:
         return self.compile(*args, **kwargs)
 
     def compile(
-        self, /, *args: Any, compile_lazy: bool = False, **kwargs: Any
+        self,
+        /,
+        *args: Any,
+        compile_lazy: bool = False,
+        singular_comm_ops: bool = False,
+        **kwargs: Any,
     ) -> Tuple[int, QoalaModule]:
+        """
+        Compiles the decorated program, generating a ``QoalaModule`` object containing the HIR representation
+        of the program.
+        The returned ``QoalaModule`` object can be printed (using python's ``print`` function) to object a
+        text-based representation of the HIR that can be fed into the ``qoala-opt`` tool for further optimization
+        and compilation.
+        Note: Using the ``singular_comm_ops`` option generates send/recv_int_float operations that handle 1
+        value at a time. This has the implication of generating *no tensor values*. This heavily simplifies
+        the optimization process, avoiding lowering tensors/vectors to other types.
+        Arguments:
+            compile_lazy (bool): Whether to compile the program without generating HIR.
+                Useful for testing the internal structure of the compilation (pseudo-AST).
+            singular_comm_ops (bool): Whether to generate singular versions of the classical
+                communication.
+        Returns:
+            A tuple containing an integer (the compilation result) and the compiled module
+            (a ``QoalaModule`` object)
+        """
+
         # TODO - Implement (if needed) more functionality than just invoking the function
         # To ease the insertion of the statement into the program body, we need to
         # keep a reference to the current instance of the QoalaProgram we are compiling.
@@ -92,6 +143,11 @@ class QoalaProgram:
             _compiler_lock.acquire()
             QoalaProgram._instance = self
             QoalaProgram._declared_remotes = {}
+            QoalaProgram._compilation_context = CompilationContext()
+            # We save the compilation options
+            self.compile_lazy_flag(compile_lazy)
+            self.compile_singular_comm_ops(singular_comm_ops)
+
             # We clear the body of this qoala program.
             self._module.clear_body()
             ret_val = self._entry_fun(*args, **kwargs)
@@ -99,7 +155,7 @@ class QoalaProgram:
                 remote for _, remote in self._declared_remotes.items()
             ]
             self._is_compiled = True
-            if not compile_lazy:
+            if not self.compile_lazy_flag():
                 self.module.generate_qoala_hir()
             # We delete the reference to the QoalaProgram under compilation
             del QoalaProgram._instance
