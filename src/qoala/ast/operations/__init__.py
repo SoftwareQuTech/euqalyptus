@@ -111,7 +111,7 @@ def with_bool_operators(cls):
                 other = QoalaNumericValue.from_immediate(args[0], self.debug_info)
             else:
                 other = args[0]
-            from qoala.ast.operations.numeric import BooleanOperatorFactory
+            from qoala.ast.operations.boolean import BooleanOperatorFactory
 
             return BooleanOperatorFactory(self, other, operation=method_name)
 
@@ -134,7 +134,7 @@ def with_bool_operators(cls):
         "__neg__",
         "__or__",
         "__rand__",
-        "__ror__"
+        "__ror__",
         "__rxor__",
         "__sub__",
         "__truediv__",

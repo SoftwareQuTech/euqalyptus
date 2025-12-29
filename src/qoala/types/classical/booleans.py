@@ -5,9 +5,7 @@ from qoala.errors import NotBooleanArgumentError
 from qoala.types.classical import QoalaClassicalType, _BooleanOperandsOverload
 
 
-class QoalaBooleanType(
-    QoalaClassicalType[bool], _BooleanOperandsOverload
-):
+class QoalaBooleanType(QoalaClassicalType[bool], _BooleanOperandsOverload):
     pass
 
 
@@ -30,11 +28,7 @@ class Bool(QoalaBooleanType):
 
         return QoalaBool(**kwargs)
 
-    def __init__(
-        self,
-        immediate: bool = False,
-        other: Optional[Self] = None
-    ):
+    def __init__(self, immediate: bool = False, other: Optional[Self] = None):
         """
         Creates a new instance of a 32 bits-wide *signed* integer.
 

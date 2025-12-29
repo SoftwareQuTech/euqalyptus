@@ -1,8 +1,8 @@
 import pytest
 
+import qoala.utils.debug_info as dbg_info
 from qoala import QoalaExpression
 from qoala.types.classical.booleans import Bool
-import qoala.utils.debug_info as dbg_info
 
 
 class TestBranchingSyntax:
@@ -24,7 +24,7 @@ class TestBranchingSyntax:
         assert isinstance(bool_true, QoalaExpression)
         assert isinstance(bool_false, QoalaExpression)
 
-    def test_boolean_arithmetic(self):
+    def test_boolean_operations(self):
         bool_true = Bool(True)
         bool_false = Bool(False)
 

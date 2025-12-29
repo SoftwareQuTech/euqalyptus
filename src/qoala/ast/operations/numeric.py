@@ -340,18 +340,3 @@ class ArithOperatorFactory:
             return Divide(*operands)
         else:
             raise UnknownOperationError(f"Operation '{operation}' is not supported")
-
-
-class BooleanOperatorFactory:
-    def __new__(cls, *operands, operation: str) -> QoalaExpression:
-        # TODO - Change the exception raising and create the respective classes that model
-        #  the bool operation in the AST
-        from qoala.errors import OperationNotYetImplementedError
-        if operation in ["__and__", "__rand__"]:
-            raise OperationNotYetImplementedError("And")
-        elif operation in ["__or__", "__ror__"]:
-            raise OperationNotYetImplementedError("Or")
-        elif operation in ["__xor__", "__rxor__"]:
-            raise OperationNotYetImplementedError("Xor")
-        else:
-            raise UnknownOperationError(f"Operation '{operation}' is not supported")

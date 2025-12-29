@@ -11,7 +11,11 @@ from qnet.ir import Context, Location
 
 from qoala import QoalaProgram
 from qoala.ast import QoalaExpression, checkbaseir
-from qoala.ast.operations import QoalaOperation, with_arith_operators, with_bool_operators
+from qoala.ast.operations import (
+    QoalaOperation,
+    with_arith_operators,
+    with_bool_operators,
+)
 from qoala.errors import UnknownTypeError, OperandMismatchError
 from qoala.utils.debug_info import DebugInfo, get_debug_info
 
@@ -201,7 +205,6 @@ class QoalaBool(QoalaValue[bool]):
 
     def can_evaluate_to(self, cls) -> bool:
         return cls == QoalaBool
-
 
 
 # FIXME - In the meantime, we will model arrays as if they were
