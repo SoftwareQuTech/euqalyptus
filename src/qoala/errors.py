@@ -32,6 +32,12 @@ class NotFloatArgumentError(InvalidArgumentError):
         super().__init__(f"'{cls_name}' type only supports positive integer values")
 
 
+class NotBooleanArgumentError(InvalidArgumentError):
+
+    def __init__(self, cls_name: str):
+        super().__init__(f"'{cls_name}' type only supports boolean values")
+
+
 class InvalidArrayArgumentError(InvalidArgumentError):
 
     def __init__(self, array_base_type: str, native_type: str):

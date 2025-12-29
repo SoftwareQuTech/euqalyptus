@@ -171,6 +171,36 @@ ImmediateQFloatOrExpression = QoalaFloatOrExpression | float
 ImmediateQIntOrExpression = QoalaIntegerOrExpression | int
 
 
+class QoalaBool(QoalaValue[bool]):
+    def __init__(
+        self,
+        value: int,
+        debug_info: DebugInfo | None = None,
+        other: Optional[Self] = None,
+    ):
+        super().__init__()
+        if other is not None:
+            if value is not None:
+                self.value = value
+            else:
+                self.value = other.value
+        else:
+            self.value = value
+        if debug_info is not None:
+            self.debug_info = debug_info
+        else:
+            self.debug_info = get_debug_info()
+        QoalaProgram.add_to_body(self)
+
+    def compile(self, ctx: Context) -> None:
+        # TODO - Implement this similar to QoalaInteger!!!
+        pass
+
+    def can_evaluate_to(self, cls) -> bool:
+        return cls == QoalaBool
+
+
+
 # FIXME - In the meantime, we will model arrays as if they were
 #         values. We might want to reconsider this decision in
 #         the future.
