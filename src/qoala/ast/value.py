@@ -174,7 +174,7 @@ ImmediateQIntOrExpression = QoalaIntegerOrExpression | int
 class QoalaBool(QoalaValue[bool]):
     def __init__(
         self,
-        value: int,
+        value: bool,
         debug_info: DebugInfo | None = None,
         other: Optional[Self] = None,
     ):
