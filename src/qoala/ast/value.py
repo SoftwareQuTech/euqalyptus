@@ -6,7 +6,7 @@ from typing_extensions import Self
 
 import qnet.dialects.arith as arith
 import qnet.dialects.tensor as tensor
-from qnet.extras.types import i32, ui32, f32, index
+from qnet.extras.types import i32, ui32, f32, index, bool as mlir_bool
 from qnet.ir import Context, Location
 
 from qoala import QoalaProgram
@@ -200,8 +200,17 @@ class QoalaBool(QoalaValue[bool]):
         QoalaProgram.add_to_body(self)
 
     def compile(self, ctx: Context) -> None:
-        # TODO - Implement this similar to QoalaInteger!!!
-        pass
+        integer_type = mlir_bool()
+        source_location = Location.file(
+            filename=self.debug_info.filename,
+            line=self.debug_info.line_start,
+            col=self.debug_info.col_start,
+            context=ctx,
+        )
+        self.ir_value = arith.constant(
+            value=self.value, result=integer_type, loc=source_location
+        )
+
 
     def can_evaluate_to(self, cls) -> bool:
         return cls == QoalaBool
