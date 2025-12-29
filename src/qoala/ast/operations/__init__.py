@@ -51,16 +51,11 @@ def with_arith_operators(cls):
     dunder_methods = [
         "__abs__",
         "__add__",
-        "__and__",
-        "__bool__",
         "__ceil__",
         "__divmod__",
-        "__eq__",
         "__float__",
         "__floor__",
         "__floordiv__",
-        "__ge__",
-        "__gt__",
         "__hash__",
         "__int__",
         "__invert__",
@@ -68,31 +63,23 @@ def with_arith_operators(cls):
         "__imul__",
         "__isub__",
         "__itruediv__",
-        "__le__",
         "__lshift__",
-        "__lt__",
         "__mod__",
         "__mul__",
-        "__ne__",
-        "__neg__",
-        "__or__",
         "__pos__",
         "__pow__",
         "__radd__",
-        "__rand__",
         "__rdivmod__",
         "__rfloordiv__",
         "__rlshift__",
         "__rmod__",
         "__rmul__",
-        "__ror__",
         "__round__",
         "__rpow__",
         "__rrshift__",
         "__rshift__",
         "__rsub__",
         "__rtruediv__",
-        "__rxor__",
         "__sub__",
         "__truediv__",
         "__xor__",
@@ -102,6 +89,58 @@ def with_arith_operators(cls):
         "imag",
         "numerator",
         "real",
+        "to_bytes",
+    ]
+    for dunder_method in dunder_methods:
+        setattr(cls, dunder_method, operator_wrapper(dunder_method))
+    return cls
+
+
+def with_bool_operators(cls):
+    """A decorator for `QoalaExpression` classes which makes it behave like a boolean value."""
+
+    def operator_wrapper(method_name):
+        """Return a new method for the class given a method name"""
+
+        def operator_implementation(self, *args, **kwargs):
+            """Check if the value is set, otherwise raise an error"""
+            other: QoalaExpression
+            if not isinstance(args[0], QoalaExpression):
+                from qoala.ast.value import QoalaNumericValue
+
+                other = QoalaNumericValue.from_immediate(args[0], self.debug_info)
+            else:
+                other = args[0]
+            from qoala.ast.operations.numeric import BooleanOperatorFactory
+
+            return BooleanOperatorFactory(self, other, operation=method_name)
+
+        return operator_implementation
+
+    dunder_methods = [
+        "__and__",
+        "__bool__",
+        "__eq__",
+        "__float__",
+        "__floor__",
+        "__floordiv__",
+        "__ge__",
+        "__gt__",
+        "__hash__",
+        "__int__",
+        "__le__",
+        "__lt__",
+        "__ne__",
+        "__neg__",
+        "__or__",
+        "__rand__",
+        "__ror__"
+        "__rxor__",
+        "__sub__",
+        "__truediv__",
+        "__xor__",
+        "bit_length",
+        "conjugate",
         "to_bytes",
     ]
     for dunder_method in dunder_methods:

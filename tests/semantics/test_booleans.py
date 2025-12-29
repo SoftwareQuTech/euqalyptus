@@ -31,7 +31,9 @@ class TestNumbersSemantics:
 
         bool_a = bool_true & bool_false
         bool_b = bool_true | bool_false
+        bool_c = bool_true ^ bool_true
 
         assert isinstance(bool_a, QoalaBool)
         assert isinstance(bool_b, QoalaBool)
+        assert isinstance(bool_c, QoalaBool)
 

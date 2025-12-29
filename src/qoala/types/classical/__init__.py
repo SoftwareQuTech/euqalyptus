@@ -91,6 +91,9 @@ class _BooleanOperandsOverload:
     def __or__(self, other):
         pass
 
+    def __xor__(self, other):
+        pass
+
 
 from .integer import Int, Int32, UInt32, Bit
 from .floats import Float, Double

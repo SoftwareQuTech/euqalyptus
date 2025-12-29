@@ -10,7 +10,7 @@ from qoala.ast import QoalaExpression, checkbaseir
 from qoala.ast.operations import QoalaOperation, with_arith_operators
 from qoala.ast.operations.casts import IntToFloat
 from qoala.ast.value import QoalaInteger, QoalaFloat
-from qoala.errors import WrongEvaluationTypeError
+from qoala.errors import WrongEvaluationTypeError, UnknownOperationError
 from qoala.utils.debug_info import get_debug_info
 
 
@@ -329,7 +329,6 @@ class Pow2(QoalaOperation):
 
 
 class ArithOperatorFactory:
-
     def __new__(cls, *operands, operation: str) -> QoalaExpression:
         if operation in ["__add__", "__radd__", "__iadd__"]:
             return Add(*operands)
@@ -339,3 +338,20 @@ class ArithOperatorFactory:
             return Multiply(*operands)
         elif operation in ["__truediv__", "__rtruediv_", "__itruediv__"]:
             return Divide(*operands)
+        else:
+            raise UnknownOperationError(f"Operation '{operation}' is not supported")
+
+
+class BooleanOperatorFactory:
+    def __new__(cls, *operands, operation: str) -> QoalaExpression:
+        # TODO - Change the exception raising and create the respective classes that model
+        #  the bool operation in the AST
+        from qoala.errors import OperationNotYetImplementedError
+        if operation in ["__and__", "__rand__"]:
+            raise OperationNotYetImplementedError("And")
+        elif operation in ["__or__", "__ror__"]:
+            raise OperationNotYetImplementedError("Or")
+        elif operation in ["__xor__", "__rxor__"]:
+            raise OperationNotYetImplementedError("Xor")
+        else:
+            raise UnknownOperationError(f"Operation '{operation}' is not supported")

@@ -66,6 +66,12 @@ class UnknownTypeError(QoalaCompilerError):
         super().__init__(msg)
 
 
+class UnknownOperationError(QoalaCompilerError):
+
+    def __init__(self, msg: str):
+        super().__init__(msg)
+
+
 class OperandMismatchError(QoalaCompilerError):
 
     def __init__(self, msg: str):

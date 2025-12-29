@@ -11,7 +11,7 @@ from qnet.ir import Context, Location
 
 from qoala import QoalaProgram
 from qoala.ast import QoalaExpression, checkbaseir
-from qoala.ast.operations import QoalaOperation, with_arith_operators
+from qoala.ast.operations import QoalaOperation, with_arith_operators, with_bool_operators
 from qoala.errors import UnknownTypeError, OperandMismatchError
 from qoala.utils.debug_info import DebugInfo, get_debug_info
 
@@ -42,7 +42,7 @@ class QoalaNumericValue(QoalaValue[_T], ABC):
     @classmethod
     def from_immediate(
         cls, value: _T, dbg_info: DebugInfo, is_index: bool = False
-    ) -> Union["QoalaInteger", "QoalaFloat"]:
+    ) -> Union["QoalaInteger", "QoalaFloat", "QoalaBool"]:
         if is_index:
             return QoalaInteger(
                 value=value,
@@ -57,6 +57,8 @@ class QoalaNumericValue(QoalaValue[_T], ABC):
             )
         elif isinstance(value, float):
             return QoalaFloat(value=value, width=32, debug_info=dbg_info)
+        elif isinstance(value, bool):
+            return QoalaBool(value=value, debug_info=dbg_info)
         else:
             raise UnknownTypeError(
                 f"A Qoala value could not be created from immediate '{value}'. "
@@ -171,6 +173,7 @@ ImmediateQFloatOrExpression = QoalaFloatOrExpression | float
 ImmediateQIntOrExpression = QoalaIntegerOrExpression | int
 
 
+@with_bool_operators
 class QoalaBool(QoalaValue[bool]):
     def __init__(
         self,
