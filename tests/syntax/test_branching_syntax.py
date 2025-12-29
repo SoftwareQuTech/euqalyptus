@@ -31,7 +31,11 @@ class TestBranchingSyntax:
         bool_a = bool_true & bool_false
         bool_b = bool_true | bool_false
         bool_c = bool_true ^ bool_true
+        bool_d = -bool_true
+        bool_e = ~bool_true
 
         assert isinstance(bool_a, QoalaExpression)
         assert isinstance(bool_b, QoalaExpression)
         assert isinstance(bool_c, QoalaExpression)
+        assert isinstance(bool_d, QoalaExpression)
+        assert isinstance(bool_e, QoalaExpression)

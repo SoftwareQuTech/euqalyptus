@@ -104,16 +104,22 @@ def with_bool_operators(cls):
 
         def operator_implementation(self, *args, **kwargs):
             """Check if the value is set, otherwise raise an error"""
-            other: QoalaExpression
-            if not isinstance(args[0], QoalaExpression):
-                from qoala.ast.value import QoalaNumericValue
-
-                other = QoalaNumericValue.from_immediate(args[0], self.debug_info)
-            else:
-                other = args[0]
             from qoala.ast.operations.boolean import BooleanOperatorFactory
+            if len(args) >= 1:
+                # Binary boolean operation, We use the first arg as the second operand.
+                # Any other extra operands will simply be ignored
+                other: QoalaExpression
+                if not isinstance(args[0], QoalaExpression):
+                    from qoala.ast.value import QoalaNumericValue
 
-            return BooleanOperatorFactory(self, other, operation=method_name)
+                    other = QoalaNumericValue.from_immediate(args[0], self.debug_info)
+                else:
+                    other = args[0]
+
+                return BooleanOperatorFactory(self, other, operation=method_name)
+            else:
+                # len(args) == 0 => The operation is unary => There is no "other" operand
+                return BooleanOperatorFactory(self, operation=method_name)
 
         return operator_implementation
 
@@ -126,6 +132,7 @@ def with_bool_operators(cls):
         "__floordiv__",
         "__ge__",
         "__gt__",
+        "__invert__",
         "__hash__",
         "__int__",
         "__le__",

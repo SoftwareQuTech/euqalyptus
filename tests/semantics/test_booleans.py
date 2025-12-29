@@ -1,7 +1,7 @@
 import pytest
 
 import qoala.utils.debug_info as dbg_info
-from qoala.ast.operations.boolean import And, Or, Xor
+from qoala.ast.operations.boolean import And, Or, Xor, Not
 from qoala.ast.value import QoalaBool
 from qoala.types.classical.booleans import Bool
 
@@ -26,14 +26,18 @@ class TestNumbersSemantics:
         assert isinstance(bool_false, QoalaBool)
         assert bool_false.value == False
 
-    def test_boolean_arithmetic(self):
+    def test_boolean_operations(self):
         bool_true = Bool(True)
         bool_false = Bool(False)
 
         bool_a = bool_true & bool_false
         bool_b = bool_true | bool_false
         bool_c = bool_true ^ bool_true
+        bool_d = -bool_true
+        bool_e = ~bool_true
 
         assert isinstance(bool_a, And)
         assert isinstance(bool_b, Or)
         assert isinstance(bool_c, Xor)
+        assert isinstance(bool_d, Not)
+        assert isinstance(bool_e, Not)

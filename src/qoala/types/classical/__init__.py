@@ -94,6 +94,13 @@ class _BooleanOperandsOverload:
     def __xor__(self, other):
         pass
 
+    # Unary boolean operators
+    def __neg__(self):
+        pass
+
+    def __invert__(self):
+        pass
+
 
 from .integer import Int, Int32, UInt32, Bit
 from .floats import Float, Double
