@@ -61,6 +61,30 @@ class _NumericOperandsOverload:
         pass
 
 
+class _BooleanOperandsOverload:
+    # We overload the dunder methods operators, so IDEs do not get confused because of
+    # the dynamic type of booleans, so instances of this class "can use" the overloaded
+    # operator. This is because the constructor of the concrete types return an instance
+    # of a subclass of QoalaExpression, rather than a Boolean instance
+    def __eq__(self, other):
+        pass
+
+    def __ne__(self, other):
+        pass
+
+    def __lt__(self, other):
+        pass
+    
+    def __gt__(self, other):
+        pass
+
+    def __le__(self, other):
+        pass
+
+    def __ge__(self, other):
+        pass
+
+
 from .integer import Int, Int32, UInt32, Bit
 from .floats import Float, Double
 from .arrays import IntArray, FloatArray
