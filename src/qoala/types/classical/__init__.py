@@ -60,12 +60,7 @@ class _NumericOperandsOverload:
     def __itruediv__(self, other):
         pass
 
-
-class _BooleanOperandsOverload:
-    # We overload the dunder methods operators, so IDEs do not get confused because of
-    # the dynamic type of booleans, so instances of this class "can use" the overloaded
-    # operator. This is because the constructor of the concrete types return an instance
-    # of a subclass of QoalaExpression, rather than a Boolean instance
+    # Overload of numeric operands that yield booleans
     def __eq__(self, other):
         pass
 
@@ -74,7 +69,7 @@ class _BooleanOperandsOverload:
 
     def __lt__(self, other):
         pass
-    
+
     def __gt__(self, other):
         pass
 
@@ -82,6 +77,18 @@ class _BooleanOperandsOverload:
         pass
 
     def __ge__(self, other):
+        pass
+
+
+class _BooleanOperandsOverload:
+    # We overload the dunder methods operators, so IDEs do not get confused because of
+    # the dynamic type of booleans, so instances of this class "can use" the overloaded
+    # operator. This is because the constructor of the concrete types return an instance
+    # of a subclass of QoalaExpression, rather than a Boolean instance
+    def __and__(self, other):
+        pass
+
+    def __or__(self, other):
         pass
 
 

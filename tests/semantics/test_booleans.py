@@ -24,3 +24,14 @@ class TestNumbersSemantics:
         assert bool_true.value == True
         assert isinstance(bool_false, QoalaBool)
         assert bool_false.value == False
+
+    def test_boolean_arithmetic(self):
+        bool_true = Bool(True)
+        bool_false = Bool(False)
+
+        bool_a = bool_true & bool_false
+        bool_b = bool_true | bool_false
+
+        assert isinstance(bool_a, QoalaBool)
+        assert isinstance(bool_b, QoalaBool)
+

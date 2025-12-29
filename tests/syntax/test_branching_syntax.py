@@ -23,3 +23,13 @@ class TestBranchingSyntax:
 
         assert isinstance(bool_true, QoalaExpression)
         assert isinstance(bool_false, QoalaExpression)
+
+    def test_boolean_arithmetic(self):
+        bool_true = Bool(True)
+        bool_false = Bool(False)
+
+        bool_a = bool_true & bool_false
+        bool_b = bool_true | bool_false
+
+        assert isinstance(bool_a, QoalaExpression)
+        assert isinstance(bool_b, QoalaExpression)
