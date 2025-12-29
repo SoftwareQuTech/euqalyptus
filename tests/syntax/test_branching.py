@@ -16,6 +16,7 @@ class TestBranchingSyntax:
             dbg_info.function_name = request.node.name[0:bracket_index]
         else:
             dbg_info.function_name = request.node.name
+
     def test_direct_boolean_creation(self):
         bool_true = Bool(True)
         bool_false = Bool(False)
