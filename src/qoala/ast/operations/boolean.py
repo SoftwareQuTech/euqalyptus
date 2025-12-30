@@ -181,9 +181,6 @@ class Not(BaseUnaryBoolOp):
 
 class BooleanOperatorFactory:
     def __new__(cls, *operands, operation: str) -> QoalaExpression:
-        # TODO - Change the exception raising and create the respective classes that model
-        #  the bool operation in the AST
-
         if operation in ["__and__", "__rand__"]:
             return And(*operands)
         elif operation in ["__or__", "__ror__"]:

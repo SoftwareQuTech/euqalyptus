@@ -55,14 +55,19 @@ class QoalaNumericValue(QoalaValue[_T], ABC):
                 is_index_type=True,
                 debug_info=dbg_info,
             )
+        # Weird stuff... In python, "True" and "False" are both "bool" and "int" types, so
+        # isinstance(True, bool) == True, and *also* isinstance(True, int) == True
+        # This is very C-ish, and kinda unexpected... In any case, to avoid casting bool
+        # immediates into QoalaIntegers (instead of QoalaBools), we first ask for bool
+        # type, then integer. This takes advantage that isinstance(1, bool) == False
+        elif isinstance(value, bool):
+            return QoalaBool(value=value, debug_info=dbg_info)
         elif isinstance(value, int):
             return QoalaInteger(
                 value=value, width=32, signedness=Signedness.SIGNED, debug_info=dbg_info
             )
         elif isinstance(value, float):
             return QoalaFloat(value=value, width=32, debug_info=dbg_info)
-        elif isinstance(value, bool):
-            return QoalaBool(value=value, debug_info=dbg_info)
         else:
             raise UnknownTypeError(
                 f"A Qoala value could not be created from immediate '{value}'. "

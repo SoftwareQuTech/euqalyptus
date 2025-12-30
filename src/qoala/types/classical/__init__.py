@@ -94,6 +94,15 @@ class _BooleanOperandsOverload:
     def __xor__(self, other):
         pass
 
+    def __rand__(self, other):
+        pass
+
+    def __ror__(self, other):
+        pass
+
+    def __rxor__(self, other):
+        pass
+
     # Unary boolean operators
     def __neg__(self):
         pass
