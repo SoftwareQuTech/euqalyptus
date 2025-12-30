@@ -105,6 +105,7 @@ def with_bool_operators(cls):
         def operator_implementation(self, *args, **kwargs):
             """Check if the value is set, otherwise raise an error"""
             from qoala.ast.operations.boolean import BooleanOperatorFactory
+
             if len(args) >= 1:
                 # Binary boolean operation, We use the first arg as the second operand.
                 # Any other extra operands will simply be ignored

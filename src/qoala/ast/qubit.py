@@ -1,6 +1,8 @@
 import math
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
+from typing import Optional
+
 from typing_extensions import Self
 
 import qnet.dialects.qnet as qnet
@@ -259,7 +261,7 @@ class QoalaLocalQubit(QbitBaseOperations):
         return cls == QoalaQubit
 
     @checkbaseir
-    def compile(self, ctx: Context) -> None:
+    def compile(self, ctx: Context, location: Optional[Location] = None) -> None:
         source_location = Location.file(
             filename=self.debug_info.filename,
             line=self.debug_info.line_start,
@@ -287,7 +289,7 @@ class QoalaEprs(QbitBaseOperations):
         return cls == QoalaQubit
 
     @checkbaseir
-    def compile(self, ctx: Context) -> None:
+    def compile(self, ctx: Context, location: Optional[Location] = None) -> None:
         source_location = Location.file(
             filename=self.debug_info.filename,
             line=self.debug_info.line_start,

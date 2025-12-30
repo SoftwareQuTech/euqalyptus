@@ -1,5 +1,6 @@
 from abc import ABC
 from dataclasses import dataclass
+from typing import Optional
 
 import qnet.dialects.arith as arith
 import qnet.dialects.math as math
@@ -77,7 +78,7 @@ class Add(BaseBinaryArithOp):
         )
 
     @checkbaseir
-    def compile(self, ctx: Context) -> None:
+    def compile(self, ctx: Context, location: Optional[Location] = None) -> None:
         # We can assume that both operands evaluate to the same type, since the constructor
         # in the super class will insert an upcast if needed
         source_location = Location.file(
@@ -118,7 +119,7 @@ class Subtract(BaseBinaryArithOp):
         )
 
     @checkbaseir
-    def compile(self, ctx: Context) -> None:
+    def compile(self, ctx: Context, location: Optional[Location] = None) -> None:
         # We can assume that both operands evaluate to the same type, since the constructor
         # in the super class will insert an upcast if needed
         source_location = Location.file(
@@ -160,7 +161,7 @@ class Multiply(BaseBinaryArithOp):
         )
 
     @checkbaseir
-    def compile(self, ctx: Context) -> None:
+    def compile(self, ctx: Context, location: Optional[Location] = None) -> None:
         # We can assume that both operands evaluate to the same type, since the constructor
         # in the super class will insert an upcast if needed
         source_location = Location.file(
@@ -208,7 +209,7 @@ class Divide(BaseBinaryArithOp):
         )
 
     @checkbaseir
-    def compile(self, ctx: Context) -> None:
+    def compile(self, ctx: Context, location: Optional[Location] = None) -> None:
         # We can assume that both operands evaluate to the same type, since the constructor
         # in the super class will insert an upcast if needed
         source_location = Location.file(
@@ -252,7 +253,7 @@ class Pow(QoalaOperation):
         )  # The base of the exponentiation dictates the type of the result
 
     @checkbaseir
-    def compile(self, ctx: Context) -> None:
+    def compile(self, ctx: Context, location: Optional[Location] = None) -> None:
         # TODO - In the meantime we assume both operands are of the same type
         #        In the future we could implement semantic checks to automatically cast one
         #        type to another one
@@ -310,7 +311,7 @@ class Pow2(QoalaOperation):
         return cls == QoalaFloat
 
     @checkbaseir
-    def compile(self, ctx: Context) -> None:
+    def compile(self, ctx: Context, location: Optional[Location] = None) -> None:
         source_location = Location.file(
             filename=self.debug_info.filename,
             line=self.debug_info.line_start,

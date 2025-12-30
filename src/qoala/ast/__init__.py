@@ -1,9 +1,9 @@
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from functools import partial
-from typing import Any, Callable, List, TypeVar
+from typing import Any, Callable, List, TypeVar, Optional
 
-from qnet.ir import Context, Operation
+from qnet.ir import Context, Operation, Location
 
 from qoala.utils.debug_info import DebugInfo
 
@@ -11,15 +11,9 @@ _T = TypeVar("_T")
 
 
 @dataclass(init=False)
-class QoalaExpression(ABC):
-    _ir_vals: List[Operation]
-    debug_info: DebugInfo
-
-    def __init__(self):
-        self._ir_vals = []
-
+class QoalaCompilable(ABC):
     @abstractmethod
-    def compile(self, ctx: Context) -> None:
+    def compile(self, ctx: Context, location: Optional[Location] = None) -> None:
         """
         Compiles the operation,
 
@@ -27,8 +21,21 @@ class QoalaExpression(ABC):
         ----------
         ctx: Context
             The QNet Context object for creating QNet instructions.
+        location: Optional[Location]
+            A location object to be used as the location in the original file by the
+            operations generated. Implementations of this method might ignore the
+            value passed here.
         """
         pass
+
+
+@dataclass(init=False)
+class QoalaExpression(QoalaCompilable, ABC):
+    _ir_vals: List[Operation]
+    debug_info: DebugInfo
+
+    def __init__(self):
+        self._ir_vals = []
 
     @property
     def ir_value(self) -> Operation | None:
@@ -63,36 +70,6 @@ class QoalaExpression(ABC):
             otherwise.
         """
         pass
-
-
-@dataclass(init=False)
-class QoalaBlock:
-    # TODO - Rethink the types of the arguments, since they can be the arguments of the main function.
-    _args: List[QoalaExpression]
-    _operations: List[QoalaExpression]
-    debug_info: DebugInfo
-
-    def __init__(self):
-        self._args = []
-        self._operations = []
-
-    @property
-    def operations(self) -> List[QoalaExpression]:
-        return self._operations
-
-
-@dataclass(init=False)
-class QoalaFunction:
-    # Functions do not have a list or arguments, since the *first block* will contain that information
-    _blocks: List[QoalaBlock]
-    debug_info: DebugInfo
-
-    def __init__(self):
-        self._blocks = []
-
-    @property
-    def blocks(self) -> List[QoalaBlock]:
-        return self._blocks
 
 
 class checkbaseir:

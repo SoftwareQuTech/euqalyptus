@@ -1,5 +1,6 @@
 from abc import ABC
 from dataclasses import dataclass
+from typing import Optional
 
 from qnet.dialects import arith
 from qnet.extras.types import bool as mlir_bool
@@ -21,8 +22,8 @@ class BaseUnaryBoolOp(QoalaOperation, ABC):
         # We "normalize" the operands, upcasting an integer to a float if needed
         assert len(operands) == 1
         if not (
-                operands[0].can_evaluate_to(QoalaBool)
-                or operands[0].can_evaluate_to(QoalaBool)
+            operands[0].can_evaluate_to(QoalaBool)
+            or operands[0].can_evaluate_to(QoalaBool)
         ):
             raise WrongEvaluationTypeError(
                 f"When constructing operation '{self.__class__.__name__}': "
@@ -43,8 +44,8 @@ class BaseBinaryBoolOp(QoalaOperation, ABC):
         # We "normalize" the operands, upcasting an integer to a float if needed
         assert len(operands) == 2
         if not (
-                operands[0].can_evaluate_to(QoalaBool)
-                or operands[0].can_evaluate_to(QoalaBool)
+            operands[0].can_evaluate_to(QoalaBool)
+            or operands[0].can_evaluate_to(QoalaBool)
         ):
             raise WrongEvaluationTypeError(
                 f"When constructing operation '{self.__class__.__name__}': "
@@ -52,8 +53,8 @@ class BaseBinaryBoolOp(QoalaOperation, ABC):
                 f"either Integer or Float"
             )
         elif not (
-                operands[1].can_evaluate_to(QoalaBool)
-                or operands[1].can_evaluate_to(QoalaBool)
+            operands[1].can_evaluate_to(QoalaBool)
+            or operands[1].can_evaluate_to(QoalaBool)
         ):
             raise WrongEvaluationTypeError(
                 f"When constructing operation '{self.__class__.__name__}': "
@@ -75,7 +76,7 @@ class And(BaseBinaryBoolOp):
         return cls == QoalaBool
 
     @checkbaseir
-    def compile(self, ctx: Context) -> None:
+    def compile(self, ctx: Context, location: Optional[Location] = None) -> None:
         source_location = Location.file(
             filename=self.debug_info.filename,
             line=self.debug_info.line_start,
@@ -103,7 +104,7 @@ class Or(BaseBinaryBoolOp):
         return cls == QoalaBool
 
     @checkbaseir
-    def compile(self, ctx: Context) -> None:
+    def compile(self, ctx: Context, location: Optional[Location] = None) -> None:
         source_location = Location.file(
             filename=self.debug_info.filename,
             line=self.debug_info.line_start,
@@ -131,7 +132,7 @@ class Xor(BaseBinaryBoolOp):
         return cls == QoalaBool
 
     @checkbaseir
-    def compile(self, ctx: Context) -> None:
+    def compile(self, ctx: Context, location: Optional[Location] = None) -> None:
         source_location = Location.file(
             filename=self.debug_info.filename,
             line=self.debug_info.line_start,
@@ -159,7 +160,7 @@ class Not(BaseUnaryBoolOp):
         return cls == QoalaBool
 
     @checkbaseir
-    def compile(self, ctx: Context) -> None:
+    def compile(self, ctx: Context, location: Optional[Location] = None) -> None:
         # There is no "bitwise negate" operation in arith, but we can xor with 0xFF
         if self.operand.can_evaluate_to(QoalaBool):
             bool_type = mlir_bool()
@@ -169,9 +170,7 @@ class Not(BaseUnaryBoolOp):
                 col=self.debug_info.col_start,
                 context=ctx,
             )
-            true_op = arith.constant(
-                value=True, result=bool_type, loc=source_location
-            )
+            true_op = arith.constant(value=True, result=bool_type, loc=source_location)
             self.ir_value = true_op
             self.ir_value = arith.xori(
                 self.operand.ir_value, true_op, loc=source_location

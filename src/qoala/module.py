@@ -2,9 +2,10 @@ from dataclasses import dataclass
 from typing import List
 
 from qnet.dialects import qnet
-from qnet.ir import Module, Context, Location, InsertionPoint, FunctionType, Block
+from qnet.ir import Module, Context, Location, InsertionPoint
 
 from qoala.ast import QoalaExpression
+from qoala.ast.model import QoalaFunction
 from qoala.utils.debug_info import DebugInfo
 
 
@@ -17,25 +18,33 @@ class QoalaModule:
     representation using the `str()` method.
     """
 
-    _body: List[QoalaExpression]
+    _functions: List[QoalaFunction]
     _remotes: List[QoalaExpression]
     _module_dbg_info: DebugInfo
-    _function_name: str
     _qir_module: Module
     _is_initialized: bool
 
-    def __init__(self, function_name: str, module_dbg_info: DebugInfo):
-        self._body = []
-        self._function_name = function_name
+    def __init__(self, module_dbg_info: DebugInfo):
+        self._functions = []
         self._module_dbg_info = module_dbg_info
         self._is_initialized = False
         self._remotes = []
 
-    def clear_body(self):
-        self._body.clear()
+    def clear(self):
+        self._functions.clear()
+
+    def add_function(self, name: str):
+        self._functions.append(QoalaFunction(name))
 
     def add_element_to_body(self, elem: QoalaExpression):
-        self._body.append(elem)
+        """
+        Appends the given expression to *the last block of the last function* in the module.
+        """
+        self._functions[-1].append_to_function(elem)
+
+    @property
+    def functions(self) -> List[QoalaFunction]:
+        return self._functions
 
     @property
     def remotes(self):
@@ -83,19 +92,12 @@ class QoalaModule:
                 qnet.register_dialect(ctx)
                 qir_module = Module.create(loc=base_location_info)
                 with InsertionPoint(qir_module.body):
+                    # Insert all remotes
                     for remote in self._remotes:
                         remote.compile(ctx)
-                    func_type = FunctionType.get(inputs=[], results=[], context=ctx)
-                    function = qnet.FuncOp(
-                        name=f"{self._function_name}",
-                        type=func_type,
-                        loc=base_location_info,
-                    )
-                    block = Block.create_at_start(function.body)
-                    with InsertionPoint(block):
-                        for operation in self._body:
-                            operation.compile(ctx)
-                        qnet.ReturnOp([], loc=base_location_info)
+                    # Insert each function
+                    for function in self._functions:
+                        function.compile(ctx, base_location_info)
                 # Before closing the context, we save the ASM we just created
                 self._qir_module = qir_module
         self._is_initialized = True

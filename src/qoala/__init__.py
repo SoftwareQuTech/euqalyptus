@@ -50,9 +50,10 @@ class QoalaProgram:
     def __init__(self, entry_fun: Callable):
         self._function_name = entry_fun.__name__
         module_dbg_info = dbg_info.get_debug_info_for_function(entry_fun)
-        self._module = QoalaModule(self._function_name, module_dbg_info)
         self._entry_fun = entry_fun
         self._is_compiled = False
+        # Create the module
+        self._module = QoalaModule(module_dbg_info)
 
     @classmethod
     def compile_lazy_flag(cls, new_flag_value: Optional[bool] = None) -> bool:
@@ -69,10 +70,6 @@ class QoalaProgram:
         return cls._compilation_context.options.use_singular_classical_comm_ops
 
     @property
-    def _body(self):
-        return self._module._body
-
-    @property
     def module(self):
         if not self._is_compiled:
             raise NotYetCompiledError(
@@ -83,6 +80,7 @@ class QoalaProgram:
 
     @classmethod
     def add_to_body(cls, item: QoalaExpression) -> None:
+        # TODO - RENAME THIS FUNCTION!
         if hasattr(QoalaProgram, "_instance"):
             QoalaProgram._instance._module.add_element_to_body(item)
 
@@ -149,12 +147,17 @@ class QoalaProgram:
             self.compile_singular_comm_ops(singular_comm_ops)
 
             # We clear the body of this qoala program.
-            self._module.clear_body()
+            self._module.clear()
+            # For the moment, we create the *only* function of the module
+            self._module.add_function(self._function_name)
+            # Then we start "executing" the entry function code, to generate the AST
             ret_val = self._entry_fun(*args, **kwargs)
+            # And add the remotes declarations
             self._module.remotes = [
                 remote for _, remote in self._declared_remotes.items()
             ]
             self._is_compiled = True
+            # Finally, we generate the QoalaHIR from the AST
             if not self.compile_lazy_flag():
                 self.module.generate_qoala_hir()
             # We delete the reference to the QoalaProgram under compilation

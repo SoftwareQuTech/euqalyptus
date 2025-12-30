@@ -1,7 +1,7 @@
 import math
 from abc import ABC
 from dataclasses import dataclass
-from typing import Type
+from typing import Type, Optional
 
 import qnet.dialects.qnet as qnet
 from qnet.ir import Context, Location
@@ -40,7 +40,7 @@ class QubitMeasure(_QubitBaseOperation, QoalaBit):
         QoalaProgram.add_to_body(self)
 
     @checkbaseir
-    def compile(self, ctx: Context) -> None:
+    def compile(self, ctx: Context, location: Optional[Location] = None) -> None:
         source_location = Location.file(
             filename=self.debug_info.filename,
             line=self.debug_info.line_start,
@@ -67,7 +67,7 @@ class RotateX(Rotate):
         super().__init__(qubit=qubit, angle=angle)
 
     @checkbaseir
-    def compile(self, ctx: Context) -> None:
+    def compile(self, ctx: Context, location: Optional[Location] = None) -> None:
         source_location = Location.file(
             filename=self.debug_info.filename,
             line=self.debug_info.line_start,
@@ -88,7 +88,7 @@ class RotateY(Rotate):
         super().__init__(qubit=qubit, angle=angle)
 
     @checkbaseir
-    def compile(self, ctx: Context) -> None:
+    def compile(self, ctx: Context, location: Optional[Location] = None) -> None:
         source_location = Location.file(
             filename=self.debug_info.filename,
             line=self.debug_info.line_start,
@@ -109,7 +109,7 @@ class RotateZ(Rotate):
         super().__init__(qubit=qubit, angle=angle)
 
     @checkbaseir
-    def compile(self, ctx: Context) -> None:
+    def compile(self, ctx: Context, location: Optional[Location] = None) -> None:
         source_location = Location.file(
             filename=self.debug_info.filename,
             line=self.debug_info.line_start,
@@ -144,7 +144,9 @@ def RotationAlias(base_clazz: Type, base_rotation: float):
                 super().__init__(qubit=operands[0], angle=rotation_angle)
 
             @checkbaseir
-            def compile(self, ctx: Context) -> None:
+            def compile(
+                self, ctx: Context, location: Optional[Location] = None
+            ) -> None:
                 super().compile(ctx)
 
         return _BaseEasyRotation
@@ -186,7 +188,7 @@ class HGate(_QubitBaseOperation):
         QoalaProgram.add_to_body(self)
 
     @checkbaseir
-    def compile(self, ctx: Context) -> None:
+    def compile(self, ctx: Context, location: Optional[Location] = None) -> None:
         source_location = Location.file(
             filename=self.debug_info.filename,
             line=self.debug_info.line_start,
@@ -207,7 +209,7 @@ class CNotGate(_QubitBaseOperation):
         QoalaProgram.add_to_body(self)
 
     @checkbaseir
-    def compile(self, ctx: Context) -> None:
+    def compile(self, ctx: Context, location: Optional[Location] = None) -> None:
         source_location = Location.file(
             filename=self.debug_info.filename,
             line=self.debug_info.line_start,
@@ -235,7 +237,7 @@ class CPhaseGate(_QubitBaseOperation):
         QoalaProgram.add_to_body(self)
 
     @checkbaseir
-    def compile(self, ctx: Context) -> None:
+    def compile(self, ctx: Context, location: Optional[Location] = None) -> None:
         source_location = Location.file(
             filename=self.debug_info.filename,
             line=self.debug_info.line_start,

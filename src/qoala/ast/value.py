@@ -45,7 +45,7 @@ class QoalaNumericValue(QoalaValue[_T], ABC):
 
     @classmethod
     def from_immediate(
-            cls, value: _T, dbg_info: DebugInfo, is_index: bool = False
+        cls, value: _T, dbg_info: DebugInfo, is_index: bool = False
     ) -> Union["QoalaInteger", "QoalaFloat", "QoalaBool"]:
         if is_index:
             return QoalaInteger(
@@ -79,13 +79,13 @@ class QoalaNumericValue(QoalaValue[_T], ABC):
 class QoalaInteger(QoalaNumericValue[int]):
 
     def __init__(
-            self,
-            value: int,
-            width: int,
-            signedness: Signedness,
-            debug_info: DebugInfo | None = None,
-            is_index_type: bool = False,
-            other: Optional[Self] = None,
+        self,
+        value: int,
+        width: int,
+        signedness: Signedness,
+        debug_info: DebugInfo | None = None,
+        is_index_type: bool = False,
+        other: Optional[Self] = None,
     ):
         super().__init__()
         if other is not None:
@@ -110,7 +110,7 @@ class QoalaInteger(QoalaNumericValue[int]):
         return cls == QoalaInteger
 
     @checkbaseir
-    def compile(self, ctx: Context) -> None:
+    def compile(self, ctx: Context, location: Optional[Location] = None) -> None:
         if self.is_index_type:
             integer_type = index()
         elif self.signedness == Signedness.SIGNED:
@@ -134,11 +134,11 @@ class QoalaInteger(QoalaNumericValue[int]):
 class QoalaFloat(QoalaNumericValue[float]):
 
     def __init__(
-            self,
-            value: float,
-            width: int,
-            debug_info: DebugInfo | None = None,
-            other: Optional[Self] = None,
+        self,
+        value: float,
+        width: int,
+        debug_info: DebugInfo | None = None,
+        other: Optional[Self] = None,
     ):
         super().__init__()
         if other is not None:
@@ -162,7 +162,7 @@ class QoalaFloat(QoalaNumericValue[float]):
         return cls == QoalaFloat
 
     @checkbaseir
-    def compile(self, ctx: Context) -> None:
+    def compile(self, ctx: Context, location: Optional[Location] = None) -> None:
         float_type = f32()
         source_location = Location.file(
             filename=self.debug_info.filename,
@@ -185,10 +185,10 @@ ImmediateQIntOrExpression = QoalaIntegerOrExpression | int
 @with_bool_operators
 class QoalaBool(QoalaValue[bool]):
     def __init__(
-            self,
-            value: bool,
-            debug_info: DebugInfo | None = None,
-            other: Optional[Self] = None,
+        self,
+        value: bool,
+        debug_info: DebugInfo | None = None,
+        other: Optional[Self] = None,
     ):
         super().__init__()
         if other is not None:
@@ -204,7 +204,7 @@ class QoalaBool(QoalaValue[bool]):
             self.debug_info = get_debug_info()
         QoalaProgram.add_to_body(self)
 
-    def compile(self, ctx: Context) -> None:
+    def compile(self, ctx: Context, location: Optional[Location] = None) -> None:
         bool_type = mlir_bool()
         source_location = Location.file(
             filename=self.debug_info.filename,
@@ -238,12 +238,12 @@ class QoalaArray(
     members: List[QoalaExpression]
 
     def __init__(
-            self,
-            *elements,
-            base_type: Type,
-            base_size: int,
-            length: int,
-            base_clone: Optional[Self],
+        self,
+        *elements,
+        base_type: Type,
+        base_size: int,
+        length: int,
+        base_clone: Optional[Self],
     ):
         super().__init__()
         self.members = []
@@ -293,7 +293,7 @@ class QoalaArray(
         QoalaProgram.add_to_body(self)
 
     def store(
-            self, new_element: QoalaExpression | _Native_Base_Type
+        self, new_element: QoalaExpression | _Native_Base_Type
     ) -> QoalaExpression:
         if isinstance(new_element, self.base_type):
             to_add = QoalaNumericValue.from_immediate(new_element, self.debug_info)
@@ -337,7 +337,7 @@ class QoalaArray(
         return cls == self.qoala_type
 
     @checkbaseir
-    def compile(self, ctx: Context) -> None:
+    def compile(self, ctx: Context, location: Optional[Location] = None) -> None:
         ir_values = [element.ir_value for element in self.members]
         if self.base_type is int:
             hir_base_type = i32()
@@ -377,7 +377,7 @@ class QoalaReferenceInsideArray(QoalaExpression):
         self._index = idx
         QoalaProgram.add_to_body(self)
 
-    def compile(self, ctx: Context) -> None:
+    def compile(self, ctx: Context, location: Optional[Location] = None) -> None:
         self.ir_value = self._base_expression.ir_values[self._index]
 
     def can_evaluate_to(self, cls) -> bool:

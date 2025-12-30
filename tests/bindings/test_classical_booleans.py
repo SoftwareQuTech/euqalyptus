@@ -54,8 +54,8 @@ class TestQoalaQnetPythonBindingsClassical:
         with pytest.raises(NotYetCompiledError) as ex:
             _, _ = simple_bool_program.module
         assert (
-                str(ex.value)
-                == "The program has not been compiled yet. Did you invoke 'compile()' on it?"
+            str(ex.value)
+            == "The program has not been compiled yet. Did you invoke 'compile()' on it?"
         )
         _, module = simple_bool_program.compile()
         assert isinstance(module, QoalaModule)
@@ -74,8 +74,8 @@ class TestQoalaQnetPythonBindingsClassical:
         with pytest.raises(NotYetCompiledError) as ex:
             _, _ = simple_bool_program_unary_ops.module
         assert (
-                str(ex.value)
-                == "The program has not been compiled yet. Did you invoke 'compile()' on it?"
+            str(ex.value)
+            == "The program has not been compiled yet. Did you invoke 'compile()' on it?"
         )
         _, module = simple_bool_program_unary_ops.compile()
         assert isinstance(module, QoalaModule)
@@ -98,8 +98,8 @@ class TestQoalaQnetPythonBindingsClassical:
         with pytest.raises(NotYetCompiledError) as ex:
             _, _ = simple_bool_program_binary_ops.module
         assert (
-                str(ex.value)
-                == "The program has not been compiled yet. Did you invoke 'compile()' on it?"
+            str(ex.value)
+            == "The program has not been compiled yet. Did you invoke 'compile()' on it?"
         )
         _, module = simple_bool_program_binary_ops.compile()
         assert isinstance(module, QoalaModule)
@@ -121,8 +121,8 @@ class TestQoalaQnetPythonBindingsClassical:
         with pytest.raises(NotYetCompiledError) as ex:
             _, _ = simple_bool_program_binary_ops_with_immediates.module
         assert (
-                str(ex.value)
-                == "The program has not been compiled yet. Did you invoke 'compile()' on it?"
+            str(ex.value)
+            == "The program has not been compiled yet. Did you invoke 'compile()' on it?"
         )
         _, module = simple_bool_program_binary_ops_with_immediates.compile()
         assert isinstance(module, QoalaModule)
@@ -147,8 +147,8 @@ class TestQoalaQnetPythonBindingsClassical:
         with pytest.raises(NotYetCompiledError) as ex:
             _, _ = complex_bool_condition.module
         assert (
-                str(ex.value)
-                == "The program has not been compiled yet. Did you invoke 'compile()' on it?"
+            str(ex.value)
+            == "The program has not been compiled yet. Did you invoke 'compile()' on it?"
         )
         _, module = complex_bool_condition.compile()
         assert isinstance(module, QoalaModule)

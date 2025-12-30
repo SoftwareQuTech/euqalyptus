@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from typing import Optional
 
 import qnet.dialects.arith as arith
 import qnet.dialects.tensor as tensor
@@ -27,7 +28,7 @@ class CastToIndex(QoalaOperation):
         return self.index_val.can_evaluate_to(QoalaInteger)
 
     @checkbaseir
-    def compile(self, ctx: Context) -> None:
+    def compile(self, ctx: Context, location: Optional[Location] = None) -> None:
         source_location = Location.file(
             filename=self.debug_info.filename,
             line=self.debug_info.line_start,
@@ -63,7 +64,7 @@ class GetItem(QoalaOperation):
         return self.base_array.members_can_evaluate_to(cls)
 
     @checkbaseir
-    def compile(self, ctx: Context) -> None:
+    def compile(self, ctx: Context, location: Optional[Location] = None) -> None:
         source_location = Location.file(
             filename=self.debug_info.filename,
             line=self.debug_info.line_start,
@@ -100,7 +101,7 @@ class SetItem(QoalaOperation):
             return False
 
     @checkbaseir
-    def compile(self, ctx: Context) -> None:
+    def compile(self, ctx: Context, location: Optional[Location] = None) -> None:
         _ = Location.file(
             filename=self.debug_info.filename,
             line=self.debug_info.line_start,

@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 from enum import IntEnum
+from typing import Optional
 
 from qnet.ir import Context, Location
 from qnet.dialects.arith import CmpIPredicate
@@ -23,7 +24,6 @@ class BranchCode(IntEnum):
     UNSIGNED_GREATER_THAN_OR_EQUAL = CmpIPredicate.uge
 
 
-
 @dataclass(init=False)
 class BranchingOp(QoalaOperation):
     condition: QoalaExpression
@@ -32,7 +32,13 @@ class BranchingOp(QoalaOperation):
     branch_true: bool
     branch_false: bool
 
-    def __init__(self, condition: QoalaExpression, branch_code: BranchCode, branch_true: bool, branch_false: bool):
+    def __init__(
+        self,
+        condition: QoalaExpression,
+        branch_code: BranchCode,
+        branch_true: bool,
+        branch_false: bool,
+    ):
         super().__init__()
         self.condition = condition
         self.branch_code = branch_code
@@ -48,7 +54,7 @@ class BranchingOp(QoalaOperation):
         # TODO - Implement this
         pass
 
-    def compile(self, ctx: Context) -> None:
+    def compile(self, ctx: Context, location: Optional[Location] = None) -> None:
         pass
 
     def can_evaluate_to(self, cls) -> bool:

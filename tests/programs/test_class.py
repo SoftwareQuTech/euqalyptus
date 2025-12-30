@@ -64,90 +64,105 @@ class TestQoalaClass:
         # was already compiled
         empty_program.compile(list(), compile_lazy=True)
 
-        assert len(empty_program._body) == 0
+        # We *expect* 1 function, with 1 block, which is empty
+        assert len(empty_program.module.functions) == 1
+        assert len(empty_program.module.functions[0].blocks) == 1
+        assert len(empty_program.module.functions[0].blocks[0].operations) == 0
 
     def test_basic_arith_program(self):
         arithmetic_program = ArithmeticProgram()
         arithmetic_program.compile(compile_lazy=True)
 
-        assert len(arithmetic_program._body) == 6
-        assert isinstance(arithmetic_program._body[0], QoalaInteger)
-        assert isinstance(arithmetic_program._body[1], QoalaInteger)
-        assert isinstance(arithmetic_program._body[2], Add)
-        assert arithmetic_program._body[2].operand_a is arithmetic_program._body[0]
-        assert arithmetic_program._body[2].operand_b is arithmetic_program._body[1]
-        assert isinstance(arithmetic_program._body[3], Subtract)
-        assert arithmetic_program._body[3].operand_a is arithmetic_program._body[1]
-        assert arithmetic_program._body[3].operand_b is arithmetic_program._body[0]
-        assert isinstance(arithmetic_program._body[4], Multiply)
-        assert arithmetic_program._body[4].operand_a is arithmetic_program._body[0]
-        assert arithmetic_program._body[4].operand_b is arithmetic_program._body[0]
-        assert isinstance(arithmetic_program._body[5], Divide)
-        assert arithmetic_program._body[5].operand_a is arithmetic_program._body[1]
-        assert arithmetic_program._body[5].operand_b is arithmetic_program._body[0]
+        # Basic check
+        assert len(arithmetic_program.module.functions) == 1
+        assert len(arithmetic_program.module.functions[0].blocks) == 1
+        assert len(arithmetic_program.module.functions[0].blocks[0].operations) == 6
+        program_body = arithmetic_program.module.functions[0].blocks[0].operations
+
+        assert isinstance(program_body[0], QoalaInteger)
+        assert isinstance(program_body[1], QoalaInteger)
+        assert isinstance(program_body[2], Add)
+        assert program_body[2].operand_a is program_body[0]
+        assert program_body[2].operand_b is program_body[1]
+        assert isinstance(program_body[3], Subtract)
+        assert program_body[3].operand_a is program_body[1]
+        assert program_body[3].operand_b is program_body[0]
+        assert isinstance(program_body[4], Multiply)
+        assert program_body[4].operand_a is program_body[0]
+        assert program_body[4].operand_b is program_body[0]
+        assert isinstance(program_body[5], Divide)
+        assert program_body[5].operand_a is program_body[1]
+        assert program_body[5].operand_b is program_body[0]
 
     def test_program_using_args(self):
         program_with_arg = ProgramWithArg()
         program_with_arg.compile(1, 2.5, compile_lazy=True)
 
-        assert len(program_with_arg._body) == 2
-        assert isinstance(program_with_arg._body[0], QoalaInteger)
-        assert isinstance(program_with_arg._body[1], QoalaFloat)
+        # Basic check
+        assert len(program_with_arg.module.functions) == 1
+        assert len(program_with_arg.module.functions[0].blocks) == 1
+        assert len(program_with_arg.module.functions[0].blocks[0].operations) == 2
+        program_body = program_with_arg.module.functions[0].blocks[0].operations
+
+        assert isinstance(program_body[0], QoalaInteger)
+        assert isinstance(program_body[1], QoalaFloat)
 
     def test_program_with_array_access(self):
         program_with_array_access = ProgramWithArrayAccess()
         program_with_array_access.compile(compile_lazy=True)
 
-        assert len(program_with_array_access._body) == 5
-        assert isinstance(program_with_array_access._body[0], QoalaInteger)
-        assert isinstance(program_with_array_access._body[1], QoalaInteger)
-        assert isinstance(program_with_array_access._body[2], QoalaArray)
-        assert program_with_array_access._body[2].base_type == int
-        assert program_with_array_access._body[2].base_size == 32
-        assert program_with_array_access._body[2].length == 2
-        assert isinstance(program_with_array_access._body[2].members[0], QoalaInteger)
-        assert isinstance(program_with_array_access._body[2].members[1], QoalaInteger)
-        assert isinstance(program_with_array_access._body[3], QoalaInteger)
-        assert isinstance(program_with_array_access._body[4], GetItem)
+        # Basic check
+        assert len(program_with_array_access.module.functions) == 1
+        assert len(program_with_array_access.module.functions[0].blocks) == 1
         assert (
-            program_with_array_access._body[4].base_array
-            is program_with_array_access._body[2]
+            len(program_with_array_access.module.functions[0].blocks[0].operations) == 5
         )
-        assert (
-            program_with_array_access._body[4].index
-            is program_with_array_access._body[3]
+        program_body = (
+            program_with_array_access.module.functions[0].blocks[0].operations
         )
+
+        assert isinstance(program_body[0], QoalaInteger)
+        assert isinstance(program_body[1], QoalaInteger)
+        assert isinstance(program_body[2], QoalaArray)
+        assert program_body[2].base_type == int
+        assert program_body[2].base_size == 32
+        assert program_body[2].length == 2
+        assert isinstance(program_body[2].members[0], QoalaInteger)
+        assert isinstance(program_body[2].members[1], QoalaInteger)
+        assert isinstance(program_body[3], QoalaInteger)
+        assert isinstance(program_body[4], GetItem)
+        assert program_body[4].base_array is program_body[2]
+        assert program_body[4].index is program_body[3]
 
     def test_program_with_array_mutation(self):
         program_with_array_mutation = ProgramWithArrayMutation()
         program_with_array_mutation.compile(compile_lazy=True)
 
-        assert len(program_with_array_mutation._body) == 6
-        assert isinstance(program_with_array_mutation._body[0], QoalaArray)
-        assert program_with_array_mutation._body[0].base_type == float
-        assert program_with_array_mutation._body[0].base_size == 32
-        assert program_with_array_mutation._body[0].length == 0
-        assert isinstance(program_with_array_mutation._body[1], QoalaArray)
-        assert program_with_array_mutation._body[1].base_type == int
-        assert program_with_array_mutation._body[1].base_size == 32
-        assert program_with_array_mutation._body[1].length == 0
-        assert isinstance(program_with_array_mutation._body[2], QoalaFloat)
-        assert isinstance(program_with_array_mutation._body[3], SetItem)
+        # Basic check
+        assert len(program_with_array_mutation.module.functions) == 1
+        assert len(program_with_array_mutation.module.functions[0].blocks) == 1
         assert (
-            program_with_array_mutation._body[3].base_array
-            is program_with_array_mutation._body[0]
+            len(program_with_array_mutation.module.functions[0].blocks[0].operations)
+            == 6
         )
-        assert (
-            program_with_array_mutation._body[3].index
-            is program_with_array_mutation._body[2]
+        program_body = (
+            program_with_array_mutation.module.functions[0].blocks[0].operations
         )
-        assert isinstance(program_with_array_mutation._body[4], QoalaInteger)
-        assert isinstance(program_with_array_mutation._body[5], SetItem)
-        assert (
-            program_with_array_mutation._body[5].base_array
-            is program_with_array_mutation._body[1]
-        )
-        assert (
-            program_with_array_mutation._body[5].index
-            is program_with_array_mutation._body[4]
-        )
+
+        assert len(program_body) == 6
+        assert isinstance(program_body[0], QoalaArray)
+        assert program_body[0].base_type == float
+        assert program_body[0].base_size == 32
+        assert program_body[0].length == 0
+        assert isinstance(program_body[1], QoalaArray)
+        assert program_body[1].base_type == int
+        assert program_body[1].base_size == 32
+        assert program_body[1].length == 0
+        assert isinstance(program_body[2], QoalaFloat)
+        assert isinstance(program_body[3], SetItem)
+        assert program_body[3].base_array is program_body[0]
+        assert program_body[3].index is program_body[2]
+        assert isinstance(program_body[4], QoalaInteger)
+        assert isinstance(program_body[5], SetItem)
+        assert program_body[5].base_array is program_body[1]
+        assert program_body[5].index is program_body[4]

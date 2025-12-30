@@ -62,4 +62,3 @@ class TestBranchingSyntax:
             with branch_false:
                 a = Int(20)
         b = a + 10
-

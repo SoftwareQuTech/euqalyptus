@@ -19,7 +19,7 @@ class If:
 class IfEq(If):
     def __new__(cls, *args, **kwargs):
         if len(args) >= 1:
-            kwargs['condition'] = args[0]
+            kwargs["condition"] = args[0]
         kwargs["branch_code"] = BranchCode.EQUAL
         kwargs["branch_true"] = False
         kwargs["branch_false"] = False

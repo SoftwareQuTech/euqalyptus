@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from typing import Optional
 
 from qnet.dialects import arith
 from qnet.extras.types import f32, i32
@@ -24,7 +25,7 @@ class IntToFloat(QoalaOperation):
         return cls == QoalaFloat
 
     @checkbaseir
-    def compile(self, ctx: Context) -> None:
+    def compile(self, ctx: Context, location: Optional[Location] = None) -> None:
         source_location = Location.file(
             filename=self.debug_info.filename,
             line=self.debug_info.line_start,
@@ -48,7 +49,7 @@ class FloatToInt(QoalaOperation):
         return cls == QoalaInteger
 
     @checkbaseir
-    def compile(self, ctx: Context) -> None:
+    def compile(self, ctx: Context, location: Optional[Location] = None) -> None:
         source_location = Location.file(
             filename=self.debug_info.filename,
             line=self.debug_info.line_start,
@@ -72,7 +73,7 @@ class BitToInt(QoalaOperation):
         return cls == QoalaInteger
 
     @checkbaseir
-    def compile(self, ctx: Context) -> None:
+    def compile(self, ctx: Context, location: Optional[Location] = None) -> None:
         source_location = Location.file(
             filename=self.debug_info.filename,
             line=self.debug_info.line_start,
