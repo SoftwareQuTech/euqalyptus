@@ -65,6 +65,36 @@ class QoalaExpression(ABC):
         pass
 
 
+@dataclass(init=False)
+class QoalaBlock:
+    # TODO - Rethink the types of the arguments, since they can be the arguments of the main function.
+    _args: List[QoalaExpression]
+    _operations: List[QoalaExpression]
+    debug_info: DebugInfo
+
+    def __init__(self):
+        self._args = []
+        self._operations = []
+
+    @property
+    def operations(self) -> List[QoalaExpression]:
+        return self._operations
+
+
+@dataclass(init=False)
+class QoalaFunction:
+    # Functions do not have a list or arguments, since the *first block* will contain that information
+    _blocks: List[QoalaBlock]
+    debug_info: DebugInfo
+
+    def __init__(self):
+        self._blocks = []
+
+    @property
+    def blocks(self) -> List[QoalaBlock]:
+        return self._blocks
+
+
 class checkbaseir:
     """
     Decorator used to "hook" the decorated function and check if the "ir" attribute
