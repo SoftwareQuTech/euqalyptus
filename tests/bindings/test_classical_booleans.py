@@ -11,6 +11,25 @@ def simple_bool_program():
     bool_b = Bool(False)
 
 
+@QoalaProgram
+def simple_bool_program_unary_ops():
+    bool_true = Bool(True)
+    bool_false = Bool(False)
+
+    bool_a = -bool_true
+    bool_b = ~bool_true
+
+
+@QoalaProgram
+def simple_bool_program_binary_ops():
+    bool_true = Bool(True)
+    bool_false = Bool(False)
+
+    bool_a = bool_true & bool_false
+    bool_b = bool_true | bool_false
+    bool_c = bool_true ^ bool_true
+
+
 class TestQoalaQnetPythonBindingsClassical:
     def test_simple_boolean_program_to_qoala_qnet(self):
         with pytest.raises(NotYetCompiledError) as ex:
@@ -26,6 +45,53 @@ class TestQoalaQnetPythonBindingsClassical:
   qnet.func @simple_bool_program() {
     %true = arith.constant true
     %false = arith.constant false
+    qnet.return
+  }
+}
+"""
+        assert str(module.asm) == expected_asm
+
+    def test_simple_boolean_program_unary_ops_to_qoala_qnet(self):
+        with pytest.raises(NotYetCompiledError) as ex:
+            _, _ = simple_bool_program_unary_ops.module
+        assert (
+            str(ex.value)
+            == "The program has not been compiled yet. Did you invoke 'compile()' on it?"
+        )
+        _, module = simple_bool_program_unary_ops.compile()
+        assert isinstance(module, QoalaModule)
+        # Note - MLIR does not offer a "boolean" type. values "true" and "false" are modeled as i1 values.
+        expected_asm = """module {
+  qnet.func @simple_bool_program_unary_ops() {
+    %true = arith.constant true
+    %false = arith.constant false
+    %true_0 = arith.constant true
+    %0 = arith.xori %true, %true_0 : i1
+    %true_1 = arith.constant true
+    %1 = arith.xori %true, %true_1 : i1
+    qnet.return
+  }
+}
+"""
+        assert str(module.asm) == expected_asm
+
+    def test_simple_boolean_program_binary_ops_to_qoala_qnet(self):
+        with pytest.raises(NotYetCompiledError) as ex:
+            _, _ = simple_bool_program_binary_ops.module
+        assert (
+            str(ex.value)
+            == "The program has not been compiled yet. Did you invoke 'compile()' on it?"
+        )
+        _, module = simple_bool_program_binary_ops.compile()
+        assert isinstance(module, QoalaModule)
+        # Note - MLIR does not offer a "boolean" type. values "true" and "false" are modeled as i1 values.
+        expected_asm = """module {
+  qnet.func @simple_bool_program_binary_ops() {
+    %true = arith.constant true
+    %false = arith.constant false
+    %0 = arith.andi %true, %false : i1
+    %1 = arith.ori %true, %false : i1
+    %2 = arith.xori %true, %true : i1
     qnet.return
   }
 }
