@@ -6,7 +6,7 @@ from qnet.extras.types import bool as mlir_bool
 from qnet.ir import Context, Location
 
 from qoala import QoalaProgram
-from qoala.ast import QoalaExpression
+from qoala.ast import QoalaExpression, checkbaseir
 from qoala.ast.operations import QoalaOperation, with_bool_operators
 from qoala.ast.value import QoalaBool
 from qoala.errors import UnknownOperationError, WrongEvaluationTypeError
@@ -74,6 +74,7 @@ class And(BaseBinaryBoolOp):
     def can_evaluate_to(self, cls) -> bool:
         return cls == QoalaBool
 
+    @checkbaseir
     def compile(self, ctx: Context) -> None:
         source_location = Location.file(
             filename=self.debug_info.filename,
@@ -101,6 +102,7 @@ class Or(BaseBinaryBoolOp):
     def can_evaluate_to(self, cls) -> bool:
         return cls == QoalaBool
 
+    @checkbaseir
     def compile(self, ctx: Context) -> None:
         source_location = Location.file(
             filename=self.debug_info.filename,
@@ -128,6 +130,7 @@ class Xor(BaseBinaryBoolOp):
     def can_evaluate_to(self, cls) -> bool:
         return cls == QoalaBool
 
+    @checkbaseir
     def compile(self, ctx: Context) -> None:
         source_location = Location.file(
             filename=self.debug_info.filename,
@@ -155,6 +158,7 @@ class Not(BaseUnaryBoolOp):
     def can_evaluate_to(self, cls) -> bool:
         return cls == QoalaBool
 
+    @checkbaseir
     def compile(self, ctx: Context) -> None:
         # There is no "bitwise negate" operation in arith, but we can xor with 0xFF
         if self.operand.can_evaluate_to(QoalaBool):
