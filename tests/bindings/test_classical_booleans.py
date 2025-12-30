@@ -30,6 +30,14 @@ def simple_bool_program_binary_ops():
     bool_c = bool_true ^ bool_true
 
 
+@QoalaProgram
+def complex_bool_condition():
+    bool_true = Bool(True)
+    bool_false = Bool(False)
+
+    bool_res = ~(bool_true & ~(bool_false ^ bool_true))
+
+
 class TestQoalaQnetPythonBindingsClassical:
     def test_simple_boolean_program_to_qoala_qnet(self):
         with pytest.raises(NotYetCompiledError) as ex:
@@ -92,6 +100,32 @@ class TestQoalaQnetPythonBindingsClassical:
     %0 = arith.andi %true, %false : i1
     %1 = arith.ori %true, %false : i1
     %2 = arith.xori %true, %true : i1
+    qnet.return
+  }
+}
+"""
+        assert str(module.asm) == expected_asm
+
+    def test_complex_bool_condition_to_qoala_qnet(self):
+        with pytest.raises(NotYetCompiledError) as ex:
+            _, _ = complex_bool_condition.module
+        assert (
+                str(ex.value)
+                == "The program has not been compiled yet. Did you invoke 'compile()' on it?"
+        )
+        _, module = complex_bool_condition.compile()
+        assert isinstance(module, QoalaModule)
+        # Note - MLIR does not offer a "boolean" type. values "true" and "false" are modeled as i1 values.
+        expected_asm = """module {
+  qnet.func @complex_bool_condition() {
+    %true = arith.constant true
+    %false = arith.constant false
+    %0 = arith.xori %false, %true : i1
+    %true_0 = arith.constant true
+    %1 = arith.xori %0, %true_0 : i1
+    %2 = arith.andi %true, %1 : i1
+    %true_1 = arith.constant true
+    %3 = arith.xori %2, %true_1 : i1
     qnet.return
   }
 }
