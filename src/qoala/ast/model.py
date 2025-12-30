@@ -45,9 +45,15 @@ class QoalaBlock(QoalaCompilable):
         return self._qnet_block
 
     def compile(self, ctx: Context, location: Optional[Location] = None) -> None:
-        # FIXME - THe block is *always* created at the start; this is not good when the
-        #  function needs to have mor ethan one block
-        block = Block.create_at_start(self._qnet_function.body)
+        if self._position == 0:
+            # If the block has position "0", we create it at the beginning of the body
+            # TODO - Deal with the arguments of the function, which need to match the block arguments
+            block = Block.create_at_start(self._qnet_function.body)
+        else:
+            # In any other case, we get the last block, and create a new one right after
+            # TODO - Add arguments top the block, when needed
+            last_block = self._qnet_function.body.blocks[-1]
+            block = last_block.create_after()
         self._qnet_block = block
         with InsertionPoint(block):
             for operation in self._operations:
