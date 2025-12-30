@@ -1,7 +1,9 @@
-from dataclasses import dataclass
 from abc import ABC
+from dataclasses import dataclass
 
-from qnet._mlir_libs._mlir.ir import Context
+from qnet.dialects import arith
+from qnet.extras.types import bool as mlir_bool
+from qnet.ir import Context, Location
 
 from qoala import QoalaProgram
 from qoala.ast import QoalaExpression
@@ -19,8 +21,8 @@ class BaseUnaryBoolOp(QoalaOperation, ABC):
         # We "normalize" the operands, upcasting an integer to a float if needed
         assert len(operands) == 1
         if not (
-            operands[0].can_evaluate_to(QoalaBool)
-            or operands[0].can_evaluate_to(QoalaBool)
+                operands[0].can_evaluate_to(QoalaBool)
+                or operands[0].can_evaluate_to(QoalaBool)
         ):
             raise WrongEvaluationTypeError(
                 f"When constructing operation '{self.__class__.__name__}': "
@@ -41,8 +43,8 @@ class BaseBinaryBoolOp(QoalaOperation, ABC):
         # We "normalize" the operands, upcasting an integer to a float if needed
         assert len(operands) == 2
         if not (
-            operands[0].can_evaluate_to(QoalaBool)
-            or operands[0].can_evaluate_to(QoalaBool)
+                operands[0].can_evaluate_to(QoalaBool)
+                or operands[0].can_evaluate_to(QoalaBool)
         ):
             raise WrongEvaluationTypeError(
                 f"When constructing operation '{self.__class__.__name__}': "
@@ -50,8 +52,8 @@ class BaseBinaryBoolOp(QoalaOperation, ABC):
                 f"either Integer or Float"
             )
         elif not (
-            operands[1].can_evaluate_to(QoalaBool)
-            or operands[1].can_evaluate_to(QoalaBool)
+                operands[1].can_evaluate_to(QoalaBool)
+                or operands[1].can_evaluate_to(QoalaBool)
         ):
             raise WrongEvaluationTypeError(
                 f"When constructing operation '{self.__class__.__name__}': "
@@ -73,7 +75,21 @@ class And(BaseBinaryBoolOp):
         return cls == QoalaBool
 
     def compile(self, ctx: Context) -> None:
-        pass
+        source_location = Location.file(
+            filename=self.debug_info.filename,
+            line=self.debug_info.line_start,
+            col=self.debug_info.col_start,
+            context=ctx,
+        )
+        if self.operand_a.can_evaluate_to(QoalaBool):
+            self.ir_value = arith.andi(
+                self.operand_a.ir_value, self.operand_b.ir_value, loc=source_location
+            )
+        else:
+            raise WrongEvaluationTypeError(
+                f"When creating an operation of type '{self.__class__.__name__}', "
+                f"the operands cannot be evaluated to any valid value."
+            )
 
 
 @with_bool_operators
@@ -86,8 +102,21 @@ class Or(BaseBinaryBoolOp):
         return cls == QoalaBool
 
     def compile(self, ctx: Context) -> None:
-        # TODO - Implement similar to Integer operations!
-        pass
+        source_location = Location.file(
+            filename=self.debug_info.filename,
+            line=self.debug_info.line_start,
+            col=self.debug_info.col_start,
+            context=ctx,
+        )
+        if self.operand_a.can_evaluate_to(QoalaBool):
+            self.ir_value = arith.ori(
+                self.operand_a.ir_value, self.operand_b.ir_value, loc=source_location
+            )
+        else:
+            raise WrongEvaluationTypeError(
+                f"When creating an operation of type '{self.__class__.__name__}', "
+                f"the operands cannot be evaluated to any valid value."
+            )
 
 
 @with_bool_operators
@@ -100,8 +129,21 @@ class Xor(BaseBinaryBoolOp):
         return cls == QoalaBool
 
     def compile(self, ctx: Context) -> None:
-        # TODO - Implement similar to Integer operations!
-        pass
+        source_location = Location.file(
+            filename=self.debug_info.filename,
+            line=self.debug_info.line_start,
+            col=self.debug_info.col_start,
+            context=ctx,
+        )
+        if self.operand_a.can_evaluate_to(QoalaBool):
+            self.ir_value = arith.xori(
+                self.operand_a.ir_value, self.operand_b.ir_value, loc=source_location
+            )
+        else:
+            raise WrongEvaluationTypeError(
+                f"When creating an operation of type '{self.__class__.__name__}', "
+                f"the operands cannot be evaluated to any valid value."
+            )
 
 
 @with_bool_operators
@@ -114,15 +156,33 @@ class Not(BaseUnaryBoolOp):
         return cls == QoalaBool
 
     def compile(self, ctx: Context) -> None:
-        # TODO - Implement similar to Integer operations!
-        pass
+        # There is no "bitwise negate" operation in arith, but we can xor with 0xFF
+        if self.operand.can_evaluate_to(QoalaBool):
+            bool_type = mlir_bool()
+            source_location = Location.file(
+                filename=self.debug_info.filename,
+                line=self.debug_info.line_start,
+                col=self.debug_info.col_start,
+                context=ctx,
+            )
+            true_op = arith.constant(
+                value=True, result=bool_type, loc=source_location
+            )
+            self.ir_value = true_op
+            self.ir_value = arith.xori(
+                self.operand.ir_value, true_op, loc=source_location
+            )
+        else:
+            raise WrongEvaluationTypeError(
+                f"When creating an operation of type '{self.__class__.__name__}', "
+                f"the operands cannot be evaluated to any valid value."
+            )
 
 
 class BooleanOperatorFactory:
     def __new__(cls, *operands, operation: str) -> QoalaExpression:
         # TODO - Change the exception raising and create the respective classes that model
         #  the bool operation in the AST
-        from qoala.errors import OperationNotYetImplementedError
 
         if operation in ["__and__", "__rand__"]:
             return And(*operands)
