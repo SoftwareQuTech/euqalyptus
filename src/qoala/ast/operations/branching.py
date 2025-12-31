@@ -41,7 +41,7 @@ class BranchingOp(QoalaOperation):
         super().__init__()
         self.condition = condition
         self.branch_code = branch_code
-        QoalaProgram.add_to_current_function_body(self)
+        QoalaProgram.add_to_current_function(self)
 
     def __enter__(self):
         self._branch_true = BlockPlaceholder()

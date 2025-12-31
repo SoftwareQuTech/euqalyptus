@@ -238,7 +238,7 @@ class BaseSendOp(QoalaOperation):
                     f"Send operation: value '{val}' cannot be converted to '{self.base_type}'"
                 )
             self.values.append(val_to_add)
-        QoalaProgram.add_to_current_function_body(self)
+        QoalaProgram.add_to_current_function(self)
 
     def can_evaluate_to(self, cls) -> bool:
         return False

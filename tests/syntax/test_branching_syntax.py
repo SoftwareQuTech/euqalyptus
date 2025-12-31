@@ -1,9 +1,10 @@
 import pytest
 
 import qoala.utils.debug_info as dbg_info
-from qoala import QoalaExpression, QoalaProgram
+from qoala import QoalaExpression
 from qoala.ast.model import BlockPlaceholder
-from qoala.operations.branching import if_eq
+from qoala.ast.operations.branching import BranchingOp
+from qoala.operations.branching import if_cond, if_eq, if_neq, if_lt, if_le, if_gt, if_ge
 from qoala.types.classical import Int
 from qoala.types.classical.booleans import Bool
 
@@ -54,16 +55,87 @@ class TestBranchingSyntax:
         else:
             dbg_info.function_name = request.node.name
 
+    def test_branching_simple_if(self):
+        bool_true = Bool(True)
+        branching = if_cond(bool_true)
+        assert isinstance(branching, BranchingOp)
+        with if_cond(Int(4) < 10) as (branch_true, branch_false):
+            with branch_true:
+                assert isinstance(branch_true, BlockPlaceholder)
+                a = Int(10)
+            with branch_false:
+                assert isinstance(branch_false, BlockPlaceholder)
+                a = Int(20)
+        b = a + 10
+
     def test_branching_equals(self):
-        # TODO - Complement this test with more meaningful asserts
-        @QoalaProgram
-        def qoala_program():
-            bool_true = Bool(True)
-            with if_eq(bool_true) as (branch_true, branch_false):
-                with branch_true:
-                    assert isinstance(branch_true, BlockPlaceholder)
-                    a = Int(10)
-                with branch_false:
-                    assert isinstance(branch_false, BlockPlaceholder)
-                    a = Int(20)
-            b = a + 10
+        branching = if_eq(Int(4), 10)
+        assert isinstance(branching, BranchingOp)
+        with if_eq(Int(4), 10) as (branch_true, branch_false):
+            with branch_true:
+                assert isinstance(branch_true, BlockPlaceholder)
+                a = Int(10)
+            with branch_false:
+                assert isinstance(branch_false, BlockPlaceholder)
+                a = Int(20)
+        b = a + 10
+
+    def test_branching_not_equals(self):
+        branching = if_neq(Int(4), 10)
+        assert isinstance(branching, BranchingOp)
+        with if_neq(Int(4), 10) as (branch_true, branch_false):
+            with branch_true:
+                assert isinstance(branch_true, BlockPlaceholder)
+                a = Int(10)
+            with branch_false:
+                assert isinstance(branch_false, BlockPlaceholder)
+                a = Int(20)
+        b = a + 10
+
+    def test_branching_less_than(self):
+        branching = if_lt(Int(4), 10)
+        assert isinstance(branching, BranchingOp)
+        with if_lt(Int(4), 10) as (branch_true, branch_false):
+            with branch_true:
+                assert isinstance(branch_true, BlockPlaceholder)
+                a = Int(10)
+            with branch_false:
+                assert isinstance(branch_false, BlockPlaceholder)
+                a = Int(20)
+        b = a + 10
+
+    def test_branching_less_than_or_equals(self):
+        branching = if_le(Int(4), 10)
+        assert isinstance(branching, BranchingOp)
+        with if_le(Int(4), 10) as (branch_true, branch_false):
+            with branch_true:
+                assert isinstance(branch_true, BlockPlaceholder)
+                a = Int(10)
+            with branch_false:
+                assert isinstance(branch_false, BlockPlaceholder)
+                a = Int(20)
+        b = a + 10
+
+    def test_branching_greater_than(self):
+        branching = if_gt(Int(4), 10)
+        assert isinstance(branching, BranchingOp)
+        with if_gt(Int(4), 10) as (branch_true, branch_false):
+            with branch_true:
+                assert isinstance(branch_true, BlockPlaceholder)
+                a = Int(10)
+            with branch_false:
+                assert isinstance(branch_false, BlockPlaceholder)
+                a = Int(20)
+        b = a + 10
+
+    def test_branching_greater_than_or_equals(self):
+        branching = if_ge(Int(4), 10)
+        assert isinstance(branching, BranchingOp)
+        with if_ge(Int(4), 10) as (branch_true, branch_false):
+            with branch_true:
+                assert isinstance(branch_true, BlockPlaceholder)
+                a = Int(10)
+            with branch_false:
+                assert isinstance(branch_false, BlockPlaceholder)
+                a = Int(20)
+        b = a + 10

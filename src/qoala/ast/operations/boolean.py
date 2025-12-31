@@ -70,7 +70,7 @@ class BaseBinaryBoolOp(QoalaOperation, ABC):
 class And(BaseBinaryBoolOp):
     def __init__(self, *operands: QoalaExpression):
         super().__init__(*operands)
-        QoalaProgram.add_to_current_function_body(self)
+        QoalaProgram.add_to_current_function(self)
 
     def can_evaluate_to(self, cls) -> bool:
         return cls == QoalaBool
@@ -98,7 +98,7 @@ class And(BaseBinaryBoolOp):
 class Or(BaseBinaryBoolOp):
     def __init__(self, *operands: QoalaExpression):
         super().__init__(*operands)
-        QoalaProgram.add_to_current_function_body(self)
+        QoalaProgram.add_to_current_function(self)
 
     def can_evaluate_to(self, cls) -> bool:
         return cls == QoalaBool
@@ -126,7 +126,7 @@ class Or(BaseBinaryBoolOp):
 class Xor(BaseBinaryBoolOp):
     def __init__(self, *operands: QoalaExpression):
         super().__init__(*operands)
-        QoalaProgram.add_to_current_function_body(self)
+        QoalaProgram.add_to_current_function(self)
 
     def can_evaluate_to(self, cls) -> bool:
         return cls == QoalaBool
@@ -154,7 +154,7 @@ class Xor(BaseBinaryBoolOp):
 class Not(BaseUnaryBoolOp):
     def __init__(self, *operands: QoalaExpression):
         super().__init__(*operands)
-        QoalaProgram.add_to_current_function_body(self)
+        QoalaProgram.add_to_current_function(self)
 
     def can_evaluate_to(self, cls) -> bool:
         return cls == QoalaBool

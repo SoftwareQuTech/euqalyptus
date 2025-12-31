@@ -79,9 +79,9 @@ class QoalaProgram:
             return self._module
 
     @classmethod
-    def add_to_current_function_body(cls, item: QoalaExpression) -> None:
+    def add_to_current_function(cls, item: QoalaExpression) -> None:
         if hasattr(cls, "_instance"):
-            cls._instance._module.add_element_to_last_function_body(item)
+            cls._instance._module.append_element_to_current_block(item)
 
     @classmethod
     def get_last_block_id(cls) -> int:

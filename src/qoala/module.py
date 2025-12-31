@@ -23,6 +23,7 @@ class QoalaModule:
     _module_dbg_info: DebugInfo
     _qir_module: Module
     _is_initialized: bool
+    _current_function: QoalaFunction
 
     def __init__(self, module_dbg_info: DebugInfo):
         self._functions = []
@@ -36,8 +37,12 @@ class QoalaModule:
     def add_function(self, name: str):
         self._functions.append(QoalaFunction(name))
 
-    def add_element_to_last_function_body(self, elem: QoalaExpression):
-        self._functions[-1].append_to_function(elem)
+    @property
+    def current_function(self) -> QoalaFunction:
+        return self._current_function
+
+    def append_element_to_current_block(self, elem: QoalaExpression):
+        self._functions[-1].append_to_current_block(elem)
 
     @property
     def functions(self) -> List[QoalaFunction]:

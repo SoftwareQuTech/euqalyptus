@@ -66,7 +66,7 @@ class Add(BaseBinaryArithOp):
 
     def __init__(self, *operands: QoalaExpression):
         super().__init__(*operands)
-        QoalaProgram.add_to_current_function_body(self)
+        QoalaProgram.add_to_current_function(self)
 
     def can_evaluate_to(self, cls) -> bool:
         # We can assume that both operands evaluate to the same type, since the constructor
@@ -107,7 +107,7 @@ class Subtract(BaseBinaryArithOp):
 
     def __init__(self, *operands: QoalaExpression):
         super().__init__(*operands)
-        QoalaProgram.add_to_current_function_body(self)
+        QoalaProgram.add_to_current_function(self)
 
     def can_evaluate_to(self, cls) -> bool:
         # We can assume that both operands evaluate to the same type, since the constructor
@@ -149,7 +149,7 @@ class Multiply(BaseBinaryArithOp):
 
     def __init__(self, *operands: QoalaExpression):
         super().__init__(*operands)
-        QoalaProgram.add_to_current_function_body(self)
+        QoalaProgram.add_to_current_function(self)
 
     def can_evaluate_to(self, cls) -> bool:
         # We can assume that both operands evaluate to the same type, since the constructor
@@ -197,7 +197,7 @@ class Divide(BaseBinaryArithOp):
 
     def __init__(self, *operands: QoalaExpression):
         super().__init__(*operands)
-        QoalaProgram.add_to_current_function_body(self)
+        QoalaProgram.add_to_current_function(self)
 
     def can_evaluate_to(self, cls) -> bool:
         # We can assume that both operands evaluate to the same type, since the constructor
@@ -245,7 +245,7 @@ class Pow(QoalaOperation):
         self.base = operands[0]
         self.exponent = operands[1]
         self.debug_info = get_debug_info()
-        QoalaProgram.add_to_current_function_body(self)
+        QoalaProgram.add_to_current_function(self)
 
     def can_evaluate_to(self, cls) -> bool:
         return (cls == QoalaInteger or cls == QoalaFloat) and self.base.can_evaluate_to(
@@ -305,7 +305,7 @@ class Pow2(QoalaOperation):
         else:
             self.exponent = operands[0]
         self.debug_info = get_debug_info()
-        QoalaProgram.add_to_current_function_body(self)
+        QoalaProgram.add_to_current_function(self)
 
     def can_evaluate_to(self, cls) -> bool:
         return cls == QoalaFloat

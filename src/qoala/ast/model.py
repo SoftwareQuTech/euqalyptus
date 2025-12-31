@@ -32,11 +32,9 @@ class BlockPlaceholder:
     def __enter__(self):
         # Assign the block ID to this placeholder
         from qoala import QoalaProgram
-        block_id = QoalaProgram.get_last_block_id()
-        if block_id < 0:
-            raise ValueUnknownAtCompileTimeError("Cannot allocate a new block_id; there is no valid instance "
-                                                 "of qoala program.")
-        self._last_block_id = block_id
+        self._last_block_id = QoalaProgram.get_last_block_id()
+        # If self._last_block_id == -1, then we're interpreting code *without* compiling it.
+        # This is the case when testing syntax
         # TODO - Assign this placeholder block in the QoalaProgram instance
         return self
 
@@ -105,6 +103,7 @@ class QoalaBlock(QoalaCompilable):
 class QoalaFunction(QoalaCompilable):
     # Functions do not have a list or arguments, since the *first block* will contain that information
     _blocks: List[QoalaBlock]
+    _current_block: QoalaBlock | BlockPlaceholder
     _function_name: str
     debug_info: DebugInfo
 
@@ -115,13 +114,14 @@ class QoalaFunction(QoalaCompilable):
         self.emplace_new_empty_block()
 
     def emplace_new_empty_block(self):
-        self._blocks.append(QoalaBlock(len(self._blocks)))
+        self._current_block = QoalaBlock(len(self._blocks))
+        self._blocks.append(self._current_block)
 
     @property
     def blocks(self) -> List[QoalaBlock]:
         return self._blocks
 
-    def append_to_function(self, expression: QoalaExpression):
+    def append_to_current_block(self, expression: QoalaExpression):
         self._blocks[-1].append_to_block(expression)
 
     def compile(self, ctx: Context, location: Optional[Location] = None) -> None:
