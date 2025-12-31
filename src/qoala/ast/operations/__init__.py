@@ -66,6 +66,7 @@ def with_arith_operators(cls):
         "__lshift__",
         "__mod__",
         "__mul__",
+        "__neg__",
         "__pos__",
         "__pow__",
         "__radd__",
@@ -90,6 +91,46 @@ def with_arith_operators(cls):
         "numerator",
         "real",
         "to_bytes",
+    ]
+    for dunder_method in dunder_methods:
+        setattr(cls, dunder_method, operator_wrapper(dunder_method))
+    return cls
+
+
+def with_order_operators(cls):
+    """A decorator for `QoalaExpression` classes which makes it react to order operators."""
+
+    def operator_wrapper(method_name):
+        """Return a new method for the class given a method name"""
+
+        def operator_implementation(self, *args, **kwargs):
+            """Check if the value is set, otherwise raise an error"""
+            from qoala.ast.operations.order import OrderOperatorFactory
+
+            if len(args) >= 1:
+                # Binary order operation, We use the first arg as the second operand.
+                # Any other extra operands will simply be ignored
+                other: QoalaExpression
+                if not isinstance(args[0], QoalaExpression):
+                    from qoala.ast.value import QoalaNumericValue
+
+                    other = QoalaNumericValue.from_immediate(args[0], self.debug_info)
+                else:
+                    other = args[0]
+
+                return OrderOperatorFactory(self, other, operation=method_name)
+            else:
+                # len(args) == 0 => The operation is unary => There is no "other" operand
+                return OrderOperatorFactory(self, operation=method_name)
+
+        return operator_implementation
+
+    dunder_methods = [
+        "__eq__",
+        "__ge__",
+        "__gt__",
+        "__le__",
+        "__lt__",
     ]
     for dunder_method in dunder_methods:
         setattr(cls, dunder_method, operator_wrapper(dunder_method))

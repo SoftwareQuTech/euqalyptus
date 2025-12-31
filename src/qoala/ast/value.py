@@ -14,6 +14,7 @@ from qoala.ast import QoalaExpression, checkbaseir
 from qoala.ast.operations import (
     QoalaOperation,
     with_arith_operators,
+    with_order_operators,
     with_bool_operators,
 )
 from qoala.errors import UnknownTypeError, OperandMismatchError
@@ -75,6 +76,7 @@ class QoalaNumericValue(QoalaValue[_T], ABC):
             )
 
 
+@with_order_operators
 @with_arith_operators
 class QoalaInteger(QoalaNumericValue[int]):
 
@@ -130,6 +132,7 @@ class QoalaInteger(QoalaNumericValue[int]):
         )
 
 
+@with_order_operators
 @with_arith_operators
 class QoalaFloat(QoalaNumericValue[float]):
 

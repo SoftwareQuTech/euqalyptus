@@ -8,7 +8,7 @@ from qnet.ir import Context, Location
 
 from qoala import QoalaProgram
 from qoala.ast import QoalaExpression, checkbaseir
-from qoala.ast.operations import QoalaOperation, with_arith_operators
+from qoala.ast.operations import QoalaOperation, with_arith_operators, with_order_operators
 from qoala.ast.operations.casts import IntToFloat
 from qoala.ast.value import QoalaInteger, QoalaFloat
 from qoala.errors import WrongEvaluationTypeError, UnknownOperationError
@@ -61,6 +61,8 @@ class BaseBinaryArithOp(QoalaOperation, ABC):
             self.operand_b = operands[1]
 
 
+@dataclass(init=False)
+@with_order_operators
 @with_arith_operators
 class Add(BaseBinaryArithOp):
 
@@ -102,6 +104,8 @@ class Add(BaseBinaryArithOp):
             )
 
 
+@dataclass(init=False)
+@with_order_operators
 @with_arith_operators
 class Subtract(BaseBinaryArithOp):
 
@@ -144,6 +148,7 @@ class Subtract(BaseBinaryArithOp):
 
 
 @dataclass(init=False)
+@with_order_operators
 @with_arith_operators
 class Multiply(BaseBinaryArithOp):
 
@@ -186,6 +191,7 @@ class Multiply(BaseBinaryArithOp):
 
 
 @dataclass(init=False)
+@with_order_operators
 @with_arith_operators
 class Divide(BaseBinaryArithOp):
     """
@@ -234,6 +240,7 @@ class Divide(BaseBinaryArithOp):
 
 
 @dataclass(init=False)
+@with_order_operators
 @with_arith_operators
 class Pow(QoalaOperation):
     base: QoalaExpression
@@ -292,6 +299,7 @@ class Pow(QoalaOperation):
 
 
 @dataclass(init=False)
+@with_order_operators
 @with_arith_operators
 class Pow2(QoalaOperation):
     exponent: QoalaExpression
