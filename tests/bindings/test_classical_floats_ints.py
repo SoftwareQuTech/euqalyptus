@@ -101,6 +101,15 @@ def array_with_mutation_program():
     float_array.store(Float(3.14))
 
 
+@QoalaProgram
+def simple_program_with_order_operators():
+    result_a = Int(10) < 20
+    result_b = Float(10.0) <= 20.0
+    result_c = Int(10) > 20
+    result_d = Float(10.0) >= 20.0
+    result_d = Int(10) >= Int(20)
+
+
 class TestQoalaQnetPythonBindingsClassical:
 
     def test_empty_program_to_qoala_qnet(self):
@@ -294,6 +303,40 @@ class TestQoalaQnetPythonBindingsClassical:
     %cst_0 = arith.constant 1.400000e+00 : f32
     %from_elements_1 = tensor.from_elements %cst, %cst_0 : tensor<2xf32>
     ;; TODO - Mutation not supported yet
+    qnet.return
+  }
+}
+"""
+        assert str(module.asm) == expected_asm
+
+    def test_arith_program_with_order_operators_to_qoala_qnet(self):
+        with pytest.raises(NotYetCompiledError) as ex:
+            _, _ = simple_program_with_order_operators.module
+        assert (
+            str(ex.value)
+            == "The program has not been compiled yet. Did you invoke 'compile()' on it?"
+        )
+        _, module = simple_program_with_order_operators.compile()
+        assert isinstance(module, QoalaModule)
+        # Note 1 - The qoala type "Int", creates a _signed_ integer of 32 bits width. We use this information
+        #          (the signedness) to create the MLIR arith builtin type using IntegerType.get_(un)signed(width).
+        expected_asm = """module {
+  qnet.func @simple_program_with_order_operators() {
+    %c10_i32 = arith.constant 10 : i32
+    %c20_i32 = arith.constant 20 : i32
+    %0 = arith.cmpi slt, %c10_i32, %c20_i32 : i32
+    %cst = arith.constant 1.000000e+01 : f32
+    %cst_0 = arith.constant 2.000000e+01 : f32
+    %1 = arith.cmpf ole, %cst, %cst_0 : f32
+    %c10_i32_1 = arith.constant 10 : i32
+    %c20_i32_2 = arith.constant 20 : i32
+    %2 = arith.cmpi sgt, %c10_i32_1, %c20_i32_2 : i32
+    %cst_3 = arith.constant 1.000000e+01 : f32
+    %cst_4 = arith.constant 2.000000e+01 : f32
+    %3 = arith.cmpf oge, %cst_3, %cst_4 : f32
+    %c10_i32_5 = arith.constant 10 : i32
+    %c20_i32_6 = arith.constant 20 : i32
+    %4 = arith.cmpi sge, %c10_i32_5, %c20_i32_6 : i32
     qnet.return
   }
 }
