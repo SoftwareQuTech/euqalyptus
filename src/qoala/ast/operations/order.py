@@ -2,6 +2,8 @@ from abc import ABC
 from dataclasses import dataclass
 from typing import Optional
 
+from qnet.dialects import arith
+from qnet.dialects.arith import CmpIPredicate, CmpFPredicate
 from qnet.ir import Context, Location
 
 from qoala import QoalaExpression, QoalaProgram
@@ -12,7 +14,7 @@ from qoala.errors import WrongEvaluationTypeError, UnknownOperationError
 
 
 @dataclass(init=False)
-class BaseBinaryBoolOp(QoalaOperation, ABC):
+class BaseBinaryOrderOp(QoalaOperation, ABC):
     operand_a: QoalaExpression
     operand_b: QoalaExpression
 
@@ -56,9 +58,39 @@ class BaseBinaryBoolOp(QoalaOperation, ABC):
             self.operand_a = operands[0]
             self.operand_b = operands[1]
 
+    def _compile_with_predicate(self, ctx: Context, int_predicate: CmpIPredicate, float_predicate: CmpFPredicate) -> None:
+        # We can assume that both operands evaluate to the same type, since the constructor
+        # in the super class will insert an upcast if needed
+        source_location = Location.file(
+            filename=self.debug_info.filename,
+            line=self.debug_info.line_start,
+            col=self.debug_info.col_start,
+            context=ctx,
+        )
+        if self.operand_a.can_evaluate_to(QoalaInteger):
+            self.ir_value = arith.cmpi(
+                predicate=int_predicate,
+                lhs=self.operand_a.ir_value,
+                rhs=self.operand_b.ir_value,
+                loc=source_location
+            )
+        elif self.operand_a.can_evaluate_to(QoalaFloat):
+            self.ir_value = arith.cmpf(
+                predicate=float_predicate,
+                lhs=self.operand_a.ir_value,
+                rhs=self.operand_b.ir_value,
+                loc=source_location
+            )
+        else:
+            raise WrongEvaluationTypeError(
+                f"When creating an operation of type '{self.__class__.__name__}', "
+                f"the operands cannot be evaluated to any valid value."
+            )
+
+
 
 # TODO - Do we need to inherit some operators on this type of value?
-class EqualsOp(BaseBinaryBoolOp):
+class EqualsOp(BaseBinaryOrderOp):
     def __init__(self, *operands: QoalaExpression):
         super().__init__(*operands)
         QoalaProgram.add_to_current_function(self)
@@ -67,12 +99,17 @@ class EqualsOp(BaseBinaryBoolOp):
         return cls == QoalaBool
 
     def compile(self, ctx: Context, location: Optional[Location] = None) -> None:
-        # TODO - Implement this!
-        pass
+        # When comparing floats, there are 2 versions of the comparison: OGE and UGE
+        # * OGE: *ORDERED* greater or equal than.
+        # * UGE: *UNORDERED* greater or equal than.
+        # - Unordered comparison will return "unordered" if one of the operands is Nan.
+        # - Ordered comparison will *fail* is one of the operands is NaN
+        # - No other differences apart from that.
+        self._compile_with_predicate(ctx, arith.CmpIPredicate.eq, arith.CmpFPredicate.OEQ)
 
 
 # TODO - Do we need to inherit some operators on this type of value?
-class GreaterThanOp(BaseBinaryBoolOp):
+class GreaterThanOp(BaseBinaryOrderOp):
     def __init__(self, *operands: QoalaExpression):
         super().__init__(*operands)
         QoalaProgram.add_to_current_function(self)
@@ -81,12 +118,17 @@ class GreaterThanOp(BaseBinaryBoolOp):
         return cls == QoalaBool
 
     def compile(self, ctx: Context, location: Optional[Location] = None) -> None:
-        # TODO - Implement this!
-        pass
+        # When comparing floats, there are 2 versions of the comparison: OGE and UGE
+        # * OGE: *ORDERED* greater or equal than.
+        # * UGE: *UNORDERED* greater or equal than.
+        # - Unordered comparison will return "unordered" if one of the operands is Nan.
+        # - Ordered comparison will *fail* is one of the operands is NaN
+        # - No other differences apart from that.
+        self._compile_with_predicate(ctx, arith.CmpIPredicate.sgt, arith.CmpFPredicate.OGT)
 
 
 # TODO - Do we need to inherit some operators on this type of value?
-class GreaterThanOrEqualsOp(BaseBinaryBoolOp):
+class GreaterThanOrEqualsOp(BaseBinaryOrderOp):
     def __init__(self, *operands: QoalaExpression):
         super().__init__(*operands)
         QoalaProgram.add_to_current_function(self)
@@ -95,12 +137,17 @@ class GreaterThanOrEqualsOp(BaseBinaryBoolOp):
         return cls == QoalaBool
 
     def compile(self, ctx: Context, location: Optional[Location] = None) -> None:
-        # TODO - Implement this!
-        pass
+        # When comparing floats, there are 2 versions of the comparison: OGE and UGE
+        # * OGE: *ORDERED* greater or equal than.
+        # * UGE: *UNORDERED* greater or equal than.
+        # - Unordered comparison will return "unordered" if one of the operands is Nan.
+        # - Ordered comparison will *fail* is one of the operands is NaN
+        # - No other differences apart from that.
+        self._compile_with_predicate(ctx, arith.CmpIPredicate.sge, arith.CmpFPredicate.OGE)
 
 
 # TODO - Do we need to inherit some operators on this type of value?
-class LessThanOp(BaseBinaryBoolOp):
+class LessThanOp(BaseBinaryOrderOp):
     def __init__(self, *operands: QoalaExpression):
         super().__init__(*operands)
         QoalaProgram.add_to_current_function(self)
@@ -109,12 +156,17 @@ class LessThanOp(BaseBinaryBoolOp):
         return cls == QoalaBool
 
     def compile(self, ctx: Context, location: Optional[Location] = None) -> None:
-        # TODO - Implement this!
-        pass
+        # When comparing floats, there are 2 versions of the comparison: OGE and UGE
+        # * OGE: *ORDERED* greater or equal than.
+        # * UGE: *UNORDERED* greater or equal than.
+        # - Unordered comparison will return "unordered" if one of the operands is Nan.
+        # - Ordered comparison will *fail* is one of the operands is NaN
+        # - No other differences apart from that.
+        self._compile_with_predicate(ctx, arith.CmpIPredicate.slt, arith.CmpFPredicate.OLT)
 
 
 # TODO - Do we need to inherit some operators on this type of value?
-class LessThanOrEqualsOp(BaseBinaryBoolOp):
+class LessThanOrEqualsOp(BaseBinaryOrderOp):
     def __init__(self, *operands: QoalaExpression):
         super().__init__(*operands)
         QoalaProgram.add_to_current_function(self)
@@ -123,8 +175,13 @@ class LessThanOrEqualsOp(BaseBinaryBoolOp):
         return cls == QoalaBool
 
     def compile(self, ctx: Context, location: Optional[Location] = None) -> None:
-        # TODO - Implement this!
-        pass
+        # When comparing floats, there are 2 versions of the comparison: OGE and UGE
+        # * OGE: *ORDERED* greater or equal than.
+        # * UGE: *UNORDERED* greater or equal than.
+        # - Unordered comparison will return "unordered" if one of the operands is Nan.
+        # - Ordered comparison will *fail* is one of the operands is NaN
+        # - No other differences apart from that.
+        self._compile_with_predicate(ctx, arith.CmpIPredicate.sle, arith.CmpFPredicate.OLE)
 
 
 class OrderOperatorFactory:
