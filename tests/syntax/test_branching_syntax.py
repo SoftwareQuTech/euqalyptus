@@ -1,7 +1,8 @@
 import pytest
 
 import qoala.utils.debug_info as dbg_info
-from qoala import QoalaExpression
+from qoala import QoalaExpression, QoalaProgram
+from qoala.ast.model import BlockPlaceholder
 from qoala.operations.branching import if_eq
 from qoala.types.classical import Int
 from qoala.types.classical.booleans import Bool
@@ -54,11 +55,15 @@ class TestBranchingSyntax:
             dbg_info.function_name = request.node.name
 
     def test_branching_equals(self):
-        # TODO - Complement this test with asserts and the type of the "branch blocks"
-        bool_true = Bool(True)
-        with if_eq(bool_true) as (branch_true, branch_false):
-            with branch_true:
-                a = Int(10)
-            with branch_false:
-                a = Int(20)
-        b = a + 10
+        # TODO - Complement this test with more meaningful asserts
+        @QoalaProgram
+        def qoala_program():
+            bool_true = Bool(True)
+            with if_eq(bool_true) as (branch_true, branch_false):
+                with branch_true:
+                    assert isinstance(branch_true, BlockPlaceholder)
+                    a = Int(10)
+                with branch_false:
+                    assert isinstance(branch_false, BlockPlaceholder)
+                    a = Int(20)
+            b = a + 10

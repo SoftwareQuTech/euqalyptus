@@ -6,6 +6,46 @@ from qnet.dialects import qnet
 from qnet.ir import Context, Location, Block, InsertionPoint, FunctionType
 
 from qoala.utils.debug_info import DebugInfo
+from qoala.errors import ValueUnknownAtCompileTimeError
+
+
+@dataclass(init=False)
+class BlockPlaceholder:
+    _operations: List[QoalaExpression]
+    _block_id: int
+    """
+    Placeholder for the "soon to be placed" blocks of a branching instruction.
+    This class is intended to just contain the 
+    """
+
+    def __init__(self):
+        self._operations = []
+        self._block_id = -1
+
+    @property
+    def operations(self) -> List[QoalaExpression]:
+        return self._operations
+
+    def append_to_block(self, expression: QoalaExpression):
+        self.operations.append(expression)
+
+    def __enter__(self):
+        # Assign the block ID to this placeholder
+        from qoala import QoalaProgram
+        block_id = QoalaProgram.get_last_block_id()
+        if block_id < 0:
+            raise ValueUnknownAtCompileTimeError("Cannot allocate a new block_id; there is no valid instance "
+                                                 "of qoala program.")
+        self._last_block_id = block_id
+        # TODO - Assign this placeholder block in the QoalaProgram instance
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        # Convert this placeholder into a real block
+        new_block = QoalaBlock(self._last_block_id)
+        for operation in self._operations:
+            new_block.append_to_block(operation)
+        # TODO - Insert the new block into the QoalaProgram instance
 
 
 @dataclass(init=False)

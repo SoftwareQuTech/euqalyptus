@@ -7,6 +7,7 @@ from qnet.dialects.arith import CmpIPredicate
 
 from qoala import QoalaExpression, QoalaProgram
 from qoala.ast.operations import QoalaOperation
+from qoala.ast.model import BlockPlaceholder
 
 
 class BranchCode(IntEnum):
@@ -29,29 +30,26 @@ class BranchingOp(QoalaOperation):
     condition: QoalaExpression
     branch_code: BranchCode
     # Branches need to be a *forward reference* to the place where the code will be
-    branch_true: bool
-    branch_false: bool
+    _branch_true: BlockPlaceholder
+    _branch_false: BlockPlaceholder
 
     def __init__(
         self,
         condition: QoalaExpression,
-        branch_code: BranchCode,
-        branch_true: bool,
-        branch_false: bool,
+        branch_code: BranchCode
     ):
         super().__init__()
         self.condition = condition
         self.branch_code = branch_code
-        self.branch_true = branch_true
-        self.branch_false = branch_false
         QoalaProgram.add_to_current_function_body(self)
 
     def __enter__(self):
-        # TODO - Implement this
-        return self.branch_true, self.branch_false
+        self._branch_true = BlockPlaceholder()
+        self._branch_false = BlockPlaceholder()
+        return self._branch_true, self._branch_false
 
     def __exit__(self, exc_type, exc_val, exc_tb):
-        # TODO - Implement this
+        # TODO - Implement this - Insert the "join" block in the function
         pass
 
     def compile(self, ctx: Context, location: Optional[Location] = None) -> None:

@@ -21,8 +21,6 @@ class IfEq(If):
         if len(args) >= 1:
             kwargs["condition"] = args[0]
         kwargs["branch_code"] = BranchCode.EQUAL
-        kwargs["branch_true"] = False
-        kwargs["branch_false"] = False
         return BranchingOp(**kwargs)
 
     def __init__(self, condition: Bool | bool):

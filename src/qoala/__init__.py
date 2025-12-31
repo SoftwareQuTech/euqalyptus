@@ -80,8 +80,14 @@ class QoalaProgram:
 
     @classmethod
     def add_to_current_function_body(cls, item: QoalaExpression) -> None:
-        if hasattr(QoalaProgram, "_instance"):
-            QoalaProgram._instance._module.add_element_to_last_function_body(item)
+        if hasattr(cls, "_instance"):
+            cls._instance._module.add_element_to_last_function_body(item)
+
+    @classmethod
+    def get_last_block_id(cls) -> int:
+        if hasattr(cls, "_instance"):
+            return len(cls._instance._module.functions[-1].blocks)
+        return -1
 
     @classmethod
     def get_declared_remote(cls, remote_name: str) -> Any:
