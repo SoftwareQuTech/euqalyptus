@@ -1,7 +1,15 @@
 import pytest
 
 import qoala.utils.debug_info as dbg_info
+from qoala.ast.operations.casts import IntToFloat
 from qoala.ast.operations.numeric import Add, Subtract, Multiply, Divide
+from qoala.ast.operations.order import (
+    EqualsOp,
+    LessThanOp,
+    GreaterThanOp,
+    LessThanOrEqualsOp,
+    GreaterThanOrEqualsOp
+)
 from qoala.ast.value import QoalaInteger, QoalaFloat, Signedness
 from qoala.errors import (
     InvalidArrayArgumentError,
@@ -10,7 +18,7 @@ from qoala.errors import (
 )
 from qoala.types.classical.arrays import IntArray, FloatArray
 from qoala.types.classical.floats import Float
-from qoala.types.classical.integer import Int32, UInt32
+from qoala.types.classical.integer import Int32, UInt32, Int
 
 
 class TestNumbersSemantics:
@@ -113,3 +121,136 @@ class TestNumbersSemantics:
             str(ex.value)
             == "Array of type 'FloatArray' can only hold values of type 'float'"
         )
+
+    def test_order_operations_no_immediate(self):
+        result_a = Int(10) < Int(20)
+        result_b = Int(10) <= Int(20)
+        result_c = Int(10) > Int(20)
+        result_d = Int(10) >= Int(20)
+        result_e = Int(10) == Int(20)
+
+        assert isinstance(result_a, LessThanOp)
+        assert isinstance(result_a.operand_a, QoalaInteger)
+        assert result_a.operand_a.value == 10
+        assert isinstance(result_a.operand_b, QoalaInteger)
+        assert result_a.operand_b.value == 20
+
+        assert isinstance(result_b, LessThanOrEqualsOp)
+        assert isinstance(result_b.operand_a, QoalaInteger)
+        assert result_b.operand_a.value == 10
+        assert isinstance(result_b.operand_b, QoalaInteger)
+        assert result_b.operand_b.value == 20
+
+        assert isinstance(result_c, GreaterThanOp)
+        assert isinstance(result_c.operand_a, QoalaInteger)
+        assert result_c.operand_a.value == 10
+        assert isinstance(result_c.operand_b, QoalaInteger)
+        assert result_c.operand_b.value == 20
+
+        assert isinstance(result_d, GreaterThanOrEqualsOp)
+        assert isinstance(result_d.operand_a, QoalaInteger)
+        assert result_d.operand_a.value == 10
+        assert isinstance(result_d.operand_b, QoalaInteger)
+        assert result_d.operand_b.value == 20
+
+        assert isinstance(result_e, EqualsOp)
+        assert isinstance(result_e.operand_a, QoalaInteger)
+        assert result_e.operand_a.value == 10
+        assert isinstance(result_e.operand_b, QoalaInteger)
+        assert result_e.operand_b.value == 20
+
+    def test_order_operations_immediate_right(self):
+        result_a = Int(10) < 20
+        result_b = Int(10) <= 20
+        result_c = Int(10) > 20
+        result_d = Int(10) >= 20
+        result_e = Int(10) == 20
+
+        assert isinstance(result_a, LessThanOp)
+        assert isinstance(result_a.operand_a, QoalaInteger)
+        assert result_a.operand_a.value == 10
+        assert isinstance(result_a.operand_b, QoalaInteger)
+        assert result_a.operand_b.value == 20
+
+        assert isinstance(result_b, LessThanOrEqualsOp)
+        assert isinstance(result_b.operand_a, QoalaInteger)
+        assert result_b.operand_a.value == 10
+        assert isinstance(result_b.operand_b, QoalaInteger)
+        assert result_b.operand_b.value == 20
+
+        assert isinstance(result_c, GreaterThanOp)
+        assert isinstance(result_c.operand_a, QoalaInteger)
+        assert result_c.operand_a.value == 10
+        assert isinstance(result_c.operand_b, QoalaInteger)
+        assert result_c.operand_b.value == 20
+
+        assert isinstance(result_d, GreaterThanOrEqualsOp)
+        assert isinstance(result_d.operand_a, QoalaInteger)
+        assert result_d.operand_a.value == 10
+        assert isinstance(result_d.operand_b, QoalaInteger)
+        assert result_d.operand_b.value == 20
+
+        assert isinstance(result_e, EqualsOp)
+        assert isinstance(result_e.operand_a, QoalaInteger)
+        assert result_e.operand_a.value == 10
+        assert isinstance(result_e.operand_b, QoalaInteger)
+        assert result_e.operand_b.value == 20
+
+    def test_order_operations_immediate_left(self):
+        result_a = 10 < Int(20)
+        result_b = 10 <= Int(20)
+        result_c = 10 > Int(20)
+        result_d = 10 >= Int(20)
+        result_e = 10 == Int(20)
+
+        # Since there is no (for example) "__rge__" dunder method, python
+        # will *invert* the inequality to apply the "__ge__" method, which
+        # receives the QoalaInteger type on the left:
+        # 10 < Int(20) -> Int(20) > 10 -> can apply QoalaInteger.__ge__
+        assert isinstance(result_a, GreaterThanOp)
+        assert isinstance(result_b, GreaterThanOrEqualsOp)
+        assert isinstance(result_c, LessThanOp)
+        assert isinstance(result_d, LessThanOrEqualsOp)
+        assert isinstance(result_e, EqualsOp)
+
+    def test_order_operations_mixed_types(self):
+        result_a = Float(10) < Int(20)
+        result_b = Float(10) <= Int(20)
+        result_c = Float(10) > Int(20)
+        result_d = Float(10) >= Int(20)
+        result_e = Float(10) == Int(20)
+
+        assert isinstance(result_a, LessThanOp)
+        assert isinstance(result_a.operand_a, QoalaFloat)
+        assert result_a.operand_a.value == 10
+        assert isinstance(result_a.operand_b, IntToFloat)
+        assert isinstance(result_a.operand_b.operand, QoalaInteger)
+        assert result_a.operand_b.operand.value == 20
+
+        assert isinstance(result_b, LessThanOrEqualsOp)
+        assert isinstance(result_b.operand_a, QoalaFloat)
+        assert result_b.operand_a.value == 10
+        assert isinstance(result_b.operand_b, IntToFloat)
+        assert isinstance(result_b.operand_b.operand, QoalaInteger)
+        assert result_b.operand_b.operand.value == 20
+
+        assert isinstance(result_c, GreaterThanOp)
+        assert isinstance(result_c.operand_a, QoalaFloat)
+        assert result_c.operand_a.value == 10
+        assert isinstance(result_c.operand_b, IntToFloat)
+        assert isinstance(result_c.operand_b.operand, QoalaInteger)
+        assert result_c.operand_b.operand.value == 20
+
+        assert isinstance(result_d, GreaterThanOrEqualsOp)
+        assert isinstance(result_d.operand_a, QoalaFloat)
+        assert result_d.operand_a.value == 10
+        assert isinstance(result_d.operand_b, IntToFloat)
+        assert isinstance(result_d.operand_b.operand, QoalaInteger)
+        assert result_d.operand_b.operand.value == 20
+
+        assert isinstance(result_e, EqualsOp)
+        assert isinstance(result_e.operand_a, QoalaFloat)
+        assert result_e.operand_a.value == 10
+        assert isinstance(result_e.operand_b, IntToFloat)
+        assert isinstance(result_e.operand_b.operand, QoalaInteger)
+        assert result_e.operand_b.operand.value == 20

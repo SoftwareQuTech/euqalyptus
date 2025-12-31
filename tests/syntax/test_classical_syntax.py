@@ -3,7 +3,7 @@ from typing import Generic, TypeVar
 import pytest
 
 import qoala.utils.debug_info as dbg_info
-from qoala.ast.value import QoalaExpression, QoalaInteger, QoalaFloat, QoalaArray
+from qoala.ast.value import QoalaExpression, QoalaInteger, QoalaFloat, QoalaArray, QoalaBool
 from qoala.types.classical.arrays import IntArray, FloatArray
 from qoala.types.classical.floats import Float, Double, QoalaFloatingPointType
 from qoala.types.classical.integer import Int32, UInt32, Int, QoalaIntegerType
@@ -211,3 +211,55 @@ class TestArrayClassicalSyntax:
 
         value = arr[0]
         assert isinstance(value, QoalaExpression)
+
+    def test_order_operations_no_immediate(self):
+        result_a = Int(10) < Int(20)
+        result_b = Int(10) <= Int(20)
+        result_c = Int(10) > Int(20)
+        result_d = Int(10) >= Int(20)
+        result_e = Int(10) == Int(20)
+
+        assert isinstance(result_a, QoalaExpression)
+        assert isinstance(result_b, QoalaExpression)
+        assert isinstance(result_c, QoalaExpression)
+        assert isinstance(result_d, QoalaExpression)
+        assert isinstance(result_e, QoalaExpression)
+
+    def test_order_operations_immediate_right(self):
+        result_a = Int(10) < 20
+        result_b = Int(10) <= 20
+        result_c = Int(10) > 20
+        result_d = Int(10) >= 20
+        result_e = Int(10) == 20
+
+        assert isinstance(result_a, QoalaExpression)
+        assert isinstance(result_b, QoalaExpression)
+        assert isinstance(result_c, QoalaExpression)
+        assert isinstance(result_d, QoalaExpression)
+        assert isinstance(result_e, QoalaExpression)
+
+    def test_order_operations_immediate_left(self):
+        result_a = 10 < Int(20)
+        result_b = 10 <= Int(20)
+        result_c = 10 > Int(20)
+        result_d = 10 >= Int(20)
+        result_e = 10 == Int(20)
+
+        assert isinstance(result_a, QoalaExpression)
+        assert isinstance(result_b, QoalaExpression)
+        assert isinstance(result_c, QoalaExpression)
+        assert isinstance(result_d, QoalaExpression)
+        assert isinstance(result_e, QoalaExpression)
+
+    def test_order_operations_mixed_types(self):
+        result_a = Float(10) < Int(20)
+        result_b = Float(10) <= Int(20)
+        result_c = Float(10) > Int(20)
+        result_d = Float(10) >= Int(20)
+        result_e = Float(10) == Int(20)
+
+        assert isinstance(result_a, QoalaExpression)
+        assert isinstance(result_b, QoalaExpression)
+        assert isinstance(result_c, QoalaExpression)
+        assert isinstance(result_d, QoalaExpression)
+        assert isinstance(result_e, QoalaExpression)
