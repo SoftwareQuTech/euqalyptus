@@ -255,7 +255,7 @@ class QoalaLocalQubit(QbitBaseOperations):
     def __init__(self):
         super().__init__()
         self.debug_info = get_debug_info()
-        QoalaProgram.add_to_body(self)
+        QoalaProgram.add_to_current_function_body(self)
 
     def can_evaluate_to(self, cls) -> bool:
         return cls == QoalaQubit
@@ -283,7 +283,7 @@ class QoalaEprs(QbitBaseOperations):
         # We assume the remote was declared before using the name (symbol)
         self.remote_name = name
         self.debug_info = get_debug_info()
-        QoalaProgram.add_to_body(self)
+        QoalaProgram.add_to_current_function_body(self)
 
     def can_evaluate_to(self, cls) -> bool:
         return cls == QoalaQubit

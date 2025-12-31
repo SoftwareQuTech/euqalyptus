@@ -11,15 +11,15 @@ from qoala.utils.debug_info import DebugInfo
 @dataclass(init=False)
 class QoalaBlock(QoalaCompilable):
     # TODO - Rethink the types of the arguments, since they can be the arguments of a function.
-    _position: int
+    _block_id: int
     _args: List[QoalaExpression]
     _operations: List[QoalaExpression]
     _qnet_function: Optional[qnet.FuncOp]
     _qnet_block: Optional[Block]
     debug_info: DebugInfo
 
-    def __init__(self, position: int):
-        self._position = position
+    def __init__(self, block_id: int):
+        self._block_id = block_id
         self._args = []
         self._operations = []
         self._qnet_function = None
@@ -45,7 +45,7 @@ class QoalaBlock(QoalaCompilable):
         return self._qnet_block
 
     def compile(self, ctx: Context, location: Optional[Location] = None) -> None:
-        if self._position == 0:
+        if self._block_id == 0:
             # If the block has position "0", we create it at the beginning of the body
             # TODO - Deal with the arguments of the function, which need to match the block arguments
             block = Block.create_at_start(self._qnet_function.body)

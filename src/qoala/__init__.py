@@ -79,10 +79,9 @@ class QoalaProgram:
             return self._module
 
     @classmethod
-    def add_to_body(cls, item: QoalaExpression) -> None:
-        # TODO - RENAME THIS FUNCTION!
+    def add_to_current_function_body(cls, item: QoalaExpression) -> None:
         if hasattr(QoalaProgram, "_instance"):
-            QoalaProgram._instance._module.add_element_to_body(item)
+            QoalaProgram._instance._module.add_element_to_last_function_body(item)
 
     @classmethod
     def get_declared_remote(cls, remote_name: str) -> Any:

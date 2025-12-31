@@ -37,7 +37,7 @@ class QubitMeasure(_QubitBaseOperation, QoalaBit):
     def __init__(self, *operands: QoalaExpression):
         assert len(operands) == 1
         super().__init__(qubit=operands[0])
-        QoalaProgram.add_to_body(self)
+        QoalaProgram.add_to_current_function_body(self)
 
     @checkbaseir
     def compile(self, ctx: Context, location: Optional[Location] = None) -> None:
@@ -58,7 +58,7 @@ class Rotate(_QubitBaseOperation, ABC):
         super().__init__(qubit=qubit)
         # We assume the users of this class will pass _at least_ default values for all operands
         self.angle = angle
-        QoalaProgram.add_to_body(self)
+        QoalaProgram.add_to_current_function_body(self)
 
 
 class RotateX(Rotate):
@@ -185,7 +185,7 @@ class HGate(_QubitBaseOperation):
     def __init__(self, *operands: QoalaExpression):
         assert len(operands) == 1
         super().__init__(qubit=operands[0])
-        QoalaProgram.add_to_body(self)
+        QoalaProgram.add_to_current_function_body(self)
 
     @checkbaseir
     def compile(self, ctx: Context, location: Optional[Location] = None) -> None:
@@ -206,7 +206,7 @@ class CNotGate(_QubitBaseOperation):
         super().__init__(qubit=qubit)
         assert target.can_evaluate_to(QoalaQubit)
         self.target = target
-        QoalaProgram.add_to_body(self)
+        QoalaProgram.add_to_current_function_body(self)
 
     @checkbaseir
     def compile(self, ctx: Context, location: Optional[Location] = None) -> None:
@@ -234,7 +234,7 @@ class CPhaseGate(_QubitBaseOperation):
         super().__init__(qubit=qubit)
         assert target.can_evaluate_to(QoalaQubit)
         self.target = target
-        QoalaProgram.add_to_body(self)
+        QoalaProgram.add_to_current_function_body(self)
 
     @checkbaseir
     def compile(self, ctx: Context, location: Optional[Location] = None) -> None:

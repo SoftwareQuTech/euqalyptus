@@ -36,10 +36,7 @@ class QoalaModule:
     def add_function(self, name: str):
         self._functions.append(QoalaFunction(name))
 
-    def add_element_to_body(self, elem: QoalaExpression):
-        """
-        Appends the given expression to *the last block of the last function* in the module.
-        """
+    def add_element_to_last_function_body(self, elem: QoalaExpression):
         self._functions[-1].append_to_function(elem)
 
     @property

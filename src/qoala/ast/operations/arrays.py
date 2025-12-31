@@ -22,7 +22,7 @@ class CastToIndex(QoalaOperation):
         super().__init__()
         assert len(operands) == 1
         self.index_val: QoalaExpression = operands[0]
-        QoalaProgram.add_to_body(self)
+        QoalaProgram.add_to_current_function_body(self)
 
     def can_evaluate_to(self, cls) -> bool:
         return self.index_val.can_evaluate_to(QoalaInteger)
@@ -58,7 +58,7 @@ class GetItem(QoalaOperation):
         assert isinstance(operands[0], QoalaArray)
         self.base_array: QoalaArray = operands[0]
         self.index: QoalaExpression = operands[1]
-        QoalaProgram.add_to_body(self)
+        QoalaProgram.add_to_current_function_body(self)
 
     def can_evaluate_to(self, cls) -> bool:
         return self.base_array.members_can_evaluate_to(cls)
@@ -89,7 +89,7 @@ class SetItem(QoalaOperation):
         assert isinstance(operands[0], QoalaArray)
         self.base_array: QoalaArray = operands[0]
         self.index: QoalaExpression = operands[1]
-        QoalaProgram.add_to_body(self)
+        QoalaProgram.add_to_current_function_body(self)
 
     def can_evaluate_to(self, cls) -> bool:
         if self.index.can_evaluate_to(QoalaInteger) and self.base_array.can_evaluate_to(

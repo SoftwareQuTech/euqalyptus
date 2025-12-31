@@ -44,7 +44,7 @@ class BranchingOp(QoalaOperation):
         self.branch_code = branch_code
         self.branch_true = branch_true
         self.branch_false = branch_false
-        QoalaProgram.add_to_body(self)
+        QoalaProgram.add_to_current_function_body(self)
 
     def __enter__(self):
         # TODO - Implement this

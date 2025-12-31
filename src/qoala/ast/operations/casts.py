@@ -19,7 +19,7 @@ class IntToFloat(QoalaOperation):
         super().__init__()
         assert len(operands) == 1
         self.operand = operands[0]
-        QoalaProgram.add_to_body(self)
+        QoalaProgram.add_to_current_function_body(self)
 
     def can_evaluate_to(self, cls) -> bool:
         return cls == QoalaFloat
@@ -43,7 +43,7 @@ class FloatToInt(QoalaOperation):
         super().__init__()
         assert len(operands) == 1
         self.operand = operands[0]
-        QoalaProgram.add_to_body(self)
+        QoalaProgram.add_to_current_function_body(self)
 
     def can_evaluate_to(self, cls) -> bool:
         return cls == QoalaInteger
@@ -67,7 +67,7 @@ class BitToInt(QoalaOperation):
         super().__init__()
         assert len(operands) == 1
         self.operand = operands[0]
-        QoalaProgram.add_to_body(self)
+        QoalaProgram.add_to_current_function_body(self)
 
     def can_evaluate_to(self, cls) -> bool:
         return cls == QoalaInteger
