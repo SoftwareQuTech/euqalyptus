@@ -9,7 +9,7 @@ from typing_extensions import Self
 
 import qoala.utils.debug_info as dbg_info
 from qoala.ast import QoalaExpression
-from qoala.ast.model import QoalaFunction, DummyQoalaFunction
+from qoala.ast.model import QoalaFunction
 from qoala.errors import NotYetCompiledError, QuantumProgramNotImplementedError
 from qoala.module import QoalaModule
 
@@ -83,7 +83,8 @@ class QoalaProgram:
     def current_function(cls) -> QoalaFunction:
         if hasattr(cls, "_instance"):
             return cls._instance._module.current_function
-        return DummyQoalaFunction()
+        # This should never happen
+        raise RuntimeError(f"Program with no instance!")
 
     @classmethod
     def get_last_block_id(cls) -> int:

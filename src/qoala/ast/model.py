@@ -35,7 +35,8 @@ class BlockPlaceholder:
         self._last_block_id = QoalaProgram.get_last_block_id()
         # If self._last_block_id == -1, then we're interpreting code *without* compiling it.
         # This is the case when testing syntax
-        # TODO - Assign this placeholder block in the QoalaProgram instance
+        # Assign this placeholder block in the QoalaProgram instance
+        QoalaProgram.current_function().emplace_block(self)
         return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
@@ -114,15 +115,18 @@ class QoalaFunction(QoalaCompilable):
         self.emplace_new_empty_block()
 
     def emplace_new_empty_block(self):
-        self._current_block = QoalaBlock(len(self._blocks))
-        self._blocks.append(self._current_block)
+        self.emplace_block(QoalaBlock(len(self._blocks)))
+
+    def emplace_block(self, block: QoalaBlock | BlockPlaceholder):
+        self._current_block = block
+        self._blocks.append(block)
 
     @property
     def blocks(self) -> List[QoalaBlock]:
         return self._blocks
 
     def append_to_current_block(self, expression: QoalaExpression):
-        self._blocks[-1].append_to_block(expression)
+        self._current_block.append_to_block(expression)
 
     def compile(self, ctx: Context, location: Optional[Location] = None) -> None:
         # Create the FuncOp object
@@ -141,17 +145,3 @@ class QoalaFunction(QoalaCompilable):
             if i == len(self._blocks) - 1:
                 with InsertionPoint(block.qnet_block):
                     qnet.ReturnOp([], loc=location)
-
-@dataclass(init=False)
-class DummyQoalaFunction(QoalaFunction):
-    """
-    Dummy function object used when asserting tests on QoalaModules that are not compiled yet.
-    The only responsibility of this class is to expose the "append-to_current_block" method,
-    which does nothing. This avoids trying to invoke that method on a None value.
-    """
-    def __init__(self):
-        super().__init__("__dummy_function")
-
-    def append_to_current_block(self, expression: QoalaExpression):
-        # Nothing to do here
-        pass

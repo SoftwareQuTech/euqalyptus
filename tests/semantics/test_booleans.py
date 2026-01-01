@@ -1,9 +1,14 @@
 import pytest
 
 import qoala.utils.debug_info as dbg_info
+from qoala import QoalaProgram
 from qoala.ast.operations.boolean import AndOp, OrOp, XorOp, NotOp
 from qoala.ast.value import QoalaBool
 from qoala.types.classical.booleans import Bool
+
+
+class DummyQoalaProgram(QoalaProgram):
+    pass
 
 
 class TestNumbersSemantics:
@@ -18,6 +23,10 @@ class TestNumbersSemantics:
             dbg_info.function_name = request.node.name
 
     def test_basic_booleans(self):
+        # For testing purposes, we manually create a dummy program and attach a function to it.
+        QoalaProgram._instance = DummyQoalaProgram(self.test_basic_booleans)
+        QoalaProgram._instance._module.add_function(self.test_basic_booleans)
+
         bool_true = Bool(True)
         bool_false = Bool(False)
 
@@ -27,6 +36,10 @@ class TestNumbersSemantics:
         assert bool_false.value == False
 
     def test_boolean_operations(self):
+        # For testing purposes, we manually create a dummy program and attach a function to it.
+        QoalaProgram._instance = DummyQoalaProgram(self.test_boolean_operations)
+        QoalaProgram._instance._module.add_function(self.test_boolean_operations)
+
         bool_true = Bool(True)
         bool_false = Bool(False)
 
