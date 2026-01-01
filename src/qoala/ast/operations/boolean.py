@@ -67,7 +67,7 @@ class BaseBinaryBoolOp(QoalaOperation, ABC):
 
 
 @with_bool_operators
-class And(BaseBinaryBoolOp):
+class AndOp(BaseBinaryBoolOp):
     def __init__(self, *operands: QoalaExpression):
         super().__init__(*operands)
         QoalaProgram.add_to_current_function(self)
@@ -95,7 +95,7 @@ class And(BaseBinaryBoolOp):
 
 
 @with_bool_operators
-class Or(BaseBinaryBoolOp):
+class OrOp(BaseBinaryBoolOp):
     def __init__(self, *operands: QoalaExpression):
         super().__init__(*operands)
         QoalaProgram.add_to_current_function(self)
@@ -123,7 +123,7 @@ class Or(BaseBinaryBoolOp):
 
 
 @with_bool_operators
-class Xor(BaseBinaryBoolOp):
+class XorOp(BaseBinaryBoolOp):
     def __init__(self, *operands: QoalaExpression):
         super().__init__(*operands)
         QoalaProgram.add_to_current_function(self)
@@ -151,7 +151,7 @@ class Xor(BaseBinaryBoolOp):
 
 
 @with_bool_operators
-class Not(BaseUnaryBoolOp):
+class NotOp(BaseUnaryBoolOp):
     def __init__(self, *operands: QoalaExpression):
         super().__init__(*operands)
         QoalaProgram.add_to_current_function(self)
@@ -185,12 +185,12 @@ class Not(BaseUnaryBoolOp):
 class BooleanOperatorFactory:
     def __new__(cls, *operands, operation: str) -> QoalaExpression:
         if operation in ["__and__", "__rand__"]:
-            return And(*operands)
+            return AndOp(*operands)
         elif operation in ["__or__", "__ror__"]:
-            return Or(*operands)
+            return OrOp(*operands)
         elif operation in ["__xor__", "__rxor__"]:
-            return Xor(*operands)
+            return XorOp(*operands)
         elif operation in ["__neg__", "__invert__"]:
-            return Not(*operands)
+            return NotOp(*operands)
         else:
             raise UnknownOperationError(f"Operation '{operation}' is not supported")

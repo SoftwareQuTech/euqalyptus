@@ -8,7 +8,11 @@ from qnet.ir import Context, Location
 
 from qoala import QoalaProgram
 from qoala.ast import QoalaExpression, checkbaseir
-from qoala.ast.operations import QoalaOperation, with_arith_operators, with_order_operators
+from qoala.ast.operations import (
+    QoalaOperation,
+    with_arith_operators,
+    with_order_operators,
+)
 from qoala.ast.operations.casts import IntToFloat
 from qoala.ast.value import QoalaInteger, QoalaFloat
 from qoala.errors import WrongEvaluationTypeError, UnknownOperationError

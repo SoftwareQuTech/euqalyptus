@@ -58,7 +58,9 @@ class BaseBinaryOrderOp(QoalaOperation, ABC):
             self.operand_a = operands[0]
             self.operand_b = operands[1]
 
-    def _compile_with_predicate(self, ctx: Context, int_predicate: CmpIPredicate, float_predicate: CmpFPredicate) -> None:
+    def _compile_with_predicate(
+        self, ctx: Context, int_predicate: CmpIPredicate, float_predicate: CmpFPredicate
+    ) -> None:
         # We can assume that both operands evaluate to the same type, since the constructor
         # in the super class will insert an upcast if needed
         source_location = Location.file(
@@ -72,21 +74,20 @@ class BaseBinaryOrderOp(QoalaOperation, ABC):
                 predicate=int_predicate,
                 lhs=self.operand_a.ir_value,
                 rhs=self.operand_b.ir_value,
-                loc=source_location
+                loc=source_location,
             )
         elif self.operand_a.can_evaluate_to(QoalaFloat):
             self.ir_value = arith.cmpf(
                 predicate=float_predicate,
                 lhs=self.operand_a.ir_value,
                 rhs=self.operand_b.ir_value,
-                loc=source_location
+                loc=source_location,
             )
         else:
             raise WrongEvaluationTypeError(
                 f"When creating an operation of type '{self.__class__.__name__}', "
                 f"the operands cannot be evaluated to any valid value."
             )
-
 
 
 # TODO - Do we need to inherit some operators on this type of value?
@@ -105,7 +106,10 @@ class EqualsOp(BaseBinaryOrderOp):
         # - Unordered comparison will return "unordered" if one of the operands is Nan.
         # - Ordered comparison will *fail* is one of the operands is NaN
         # - No other differences apart from that.
-        self._compile_with_predicate(ctx, arith.CmpIPredicate.eq, arith.CmpFPredicate.OEQ)
+        self._compile_with_predicate(
+            ctx, arith.CmpIPredicate.eq, arith.CmpFPredicate.OEQ
+        )
+
 
 # TODO - Do we need to inherit some operators on this type of value?
 class NotEqualsOp(BaseBinaryOrderOp):
@@ -143,7 +147,9 @@ class GreaterThanOp(BaseBinaryOrderOp):
         # - Unordered comparison will return "unordered" if one of the operands is Nan.
         # - Ordered comparison will *fail* is one of the operands is NaN
         # - No other differences apart from that.
-        self._compile_with_predicate(ctx, arith.CmpIPredicate.sgt, arith.CmpFPredicate.OGT)
+        self._compile_with_predicate(
+            ctx, arith.CmpIPredicate.sgt, arith.CmpFPredicate.OGT
+        )
 
 
 # TODO - Do we need to inherit some operators on this type of value?
@@ -162,7 +168,9 @@ class GreaterThanOrEqualsOp(BaseBinaryOrderOp):
         # - Unordered comparison will return "unordered" if one of the operands is Nan.
         # - Ordered comparison will *fail* is one of the operands is NaN
         # - No other differences apart from that.
-        self._compile_with_predicate(ctx, arith.CmpIPredicate.sge, arith.CmpFPredicate.OGE)
+        self._compile_with_predicate(
+            ctx, arith.CmpIPredicate.sge, arith.CmpFPredicate.OGE
+        )
 
 
 # TODO - Do we need to inherit some operators on this type of value?
@@ -181,7 +189,9 @@ class LessThanOp(BaseBinaryOrderOp):
         # - Unordered comparison will return "unordered" if one of the operands is Nan.
         # - Ordered comparison will *fail* is one of the operands is NaN
         # - No other differences apart from that.
-        self._compile_with_predicate(ctx, arith.CmpIPredicate.slt, arith.CmpFPredicate.OLT)
+        self._compile_with_predicate(
+            ctx, arith.CmpIPredicate.slt, arith.CmpFPredicate.OLT
+        )
 
 
 # TODO - Do we need to inherit some operators on this type of value?
@@ -200,7 +210,9 @@ class LessThanOrEqualsOp(BaseBinaryOrderOp):
         # - Unordered comparison will return "unordered" if one of the operands is Nan.
         # - Ordered comparison will *fail* is one of the operands is NaN
         # - No other differences apart from that.
-        self._compile_with_predicate(ctx, arith.CmpIPredicate.sle, arith.CmpFPredicate.OLE)
+        self._compile_with_predicate(
+            ctx, arith.CmpIPredicate.sle, arith.CmpFPredicate.OLE
+        )
 
 
 class OrderOperatorFactory:

@@ -26,18 +26,14 @@ class BranchCode(IntEnum):
 
 
 @dataclass(init=False)
-class BranchingOp(QoalaOperation):
+class ConditionalBranching(QoalaOperation):
     condition: QoalaExpression
     branch_code: BranchCode
     # Branches need to be a *forward reference* to the place where the code will be
     _branch_true: BlockPlaceholder
     _branch_false: BlockPlaceholder
 
-    def __init__(
-        self,
-        condition: QoalaExpression,
-        branch_code: BranchCode
-    ):
+    def __init__(self, condition: QoalaExpression, branch_code: BranchCode):
         super().__init__()
         self.condition = condition
         self.branch_code = branch_code

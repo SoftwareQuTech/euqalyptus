@@ -25,7 +25,7 @@ from qoala.operations.branching import (
 from qoala.types.classical import Int
 
 
-class TestBranchingSyntax:
+class TestBranchingSemantics:
     @pytest.fixture(autouse=True, scope="function")
     def setup_debug_info(self, request):
         # For allowing debug info

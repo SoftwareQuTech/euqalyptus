@@ -6,7 +6,6 @@ from qnet.dialects import qnet
 from qnet.ir import Context, Location, Block, InsertionPoint, FunctionType
 
 from qoala.utils.debug_info import DebugInfo
-from qoala.errors import ValueUnknownAtCompileTimeError
 
 
 @dataclass(init=False)
@@ -32,6 +31,7 @@ class BlockPlaceholder:
     def __enter__(self):
         # Assign the block ID to this placeholder
         from qoala import QoalaProgram
+
         self._last_block_id = QoalaProgram.get_last_block_id()
         # If self._last_block_id == -1, then we're interpreting code *without* compiling it.
         # This is the case when testing syntax

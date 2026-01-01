@@ -1,4 +1,4 @@
-from qoala.ast.operations.branching import BranchCode, BranchingOp
+from qoala.ast.operations.branching import BranchCode, ConditionalBranching
 from qoala.types.classical.booleans import Bool
 from qoala.types.classical.floats import QoalaFloatingPointType
 from qoala.types.classical.integer import QoalaIntegerType
@@ -9,7 +9,7 @@ class IfCondition:
         if len(args) >= 1:
             kwargs["condition"] = args[0]
         kwargs["branch_code"] = BranchCode.EQUAL
-        return BranchingOp(**kwargs)
+        return ConditionalBranching(**kwargs)
 
     def __init__(self, condition: Bool | bool):
         # Nothing to do here
@@ -29,9 +29,11 @@ class IfEq(IfCondition):
         if len(args) >= 1:
             kwargs["condition"] = args[0]
         kwargs["branch_code"] = BranchCode.EQUAL
-        return BranchingOp(**kwargs)
+        return ConditionalBranching(**kwargs)
 
-    def __init__(self, *operands: QoalaIntegerType | QoalaFloatingPointType | int | float):
+    def __init__(
+        self, *operands: QoalaIntegerType | QoalaFloatingPointType | int | float
+    ):
         # Nothing to do here - Call to super is to avoid a warning, but it's never called
         super().__init__(*operands)
 
@@ -41,9 +43,11 @@ class IfNeq(IfCondition):
         if len(args) >= 1:
             kwargs["condition"] = args[0]
         kwargs["branch_code"] = BranchCode.NOT_EQUAL
-        return BranchingOp(**kwargs)
+        return ConditionalBranching(**kwargs)
 
-    def __init__(self, *operands: QoalaIntegerType | QoalaFloatingPointType | int | float):
+    def __init__(
+        self, *operands: QoalaIntegerType | QoalaFloatingPointType | int | float
+    ):
         # Nothing to do here - Call to super is to avoid a warning, but it's never called
         super().__init__(*operands)
 
@@ -53,9 +57,11 @@ class IfLt(IfCondition):
         if len(args) >= 1:
             kwargs["condition"] = args[0]
         kwargs["branch_code"] = BranchCode.SIGNED_LESS_THAN
-        return BranchingOp(**kwargs)
+        return ConditionalBranching(**kwargs)
 
-    def __init__(self, *operands: QoalaIntegerType | QoalaFloatingPointType | int | float):
+    def __init__(
+        self, *operands: QoalaIntegerType | QoalaFloatingPointType | int | float
+    ):
         # Nothing to do here - Call to super is to avoid a warning, but it's never called
         super().__init__(*operands)
 
@@ -65,9 +71,11 @@ class IfLe(IfCondition):
         if len(args) >= 1:
             kwargs["condition"] = args[0]
         kwargs["branch_code"] = BranchCode.SIGNED_LESS_THAN_OR_EQUAL
-        return BranchingOp(**kwargs)
+        return ConditionalBranching(**kwargs)
 
-    def __init__(self, *operands: QoalaIntegerType | QoalaFloatingPointType | int | float):
+    def __init__(
+        self, *operands: QoalaIntegerType | QoalaFloatingPointType | int | float
+    ):
         # Nothing to do here - Call to super is to avoid a warning, but it's never called
         super().__init__(*operands)
 
@@ -77,9 +85,11 @@ class IfGt(IfCondition):
         if len(args) >= 1:
             kwargs["condition"] = args[0]
         kwargs["branch_code"] = BranchCode.SIGNED_GREATER_THAN
-        return BranchingOp(**kwargs)
+        return ConditionalBranching(**kwargs)
 
-    def __init__(self, *operands: QoalaIntegerType | QoalaFloatingPointType | int | float):
+    def __init__(
+        self, *operands: QoalaIntegerType | QoalaFloatingPointType | int | float
+    ):
         # Nothing to do here - Call to super is to avoid a warning, but it's never called
         super().__init__(*operands)
 
@@ -89,9 +99,11 @@ class IfGe(IfCondition):
         if len(args) >= 1:
             kwargs["condition"] = args[0]
         kwargs["branch_code"] = BranchCode.SIGNED_GREATER_THAN_OR_EQUAL
-        return BranchingOp(**kwargs)
+        return ConditionalBranching(**kwargs)
 
-    def __init__(self, *operands: QoalaIntegerType | QoalaFloatingPointType | int | float):
+    def __init__(
+        self, *operands: QoalaIntegerType | QoalaFloatingPointType | int | float
+    ):
         # Nothing to do here - Call to super is to avoid a warning, but it's never called
         super().__init__(*operands)
 
