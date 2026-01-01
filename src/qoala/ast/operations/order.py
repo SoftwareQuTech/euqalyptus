@@ -131,6 +131,7 @@ class NotEqualsOp(BaseBinaryOrderOp):
             ctx, arith.CmpIPredicate.ne, arith.CmpFPredicate.ONE
         )
 
+
 # TODO - Do we need to inherit some operators on this type of value?
 class GreaterThanOp(BaseBinaryOrderOp):
     def __init__(self, *operands: QoalaExpression):
