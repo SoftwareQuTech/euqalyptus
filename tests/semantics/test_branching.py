@@ -63,6 +63,8 @@ class TestBranchingSemantics:
                 a = Int(20)
                 assert len(branch_false.operations) == 1
         b = a + 10
+        # We expect 4 blocks: entry (with conditional branch) -> true -> false -> terminal.
+        assert len(QoalaProgram._instance.current_function().blocks) == 4
 
     def test_branching_equals(self):
         # For testing purposes, we manually create a dummy program and attach a function to it.
@@ -88,6 +90,8 @@ class TestBranchingSemantics:
                 a = Int(20)
                 assert len(branch_false.operations) == 1
         b = a + 10
+        # We expect 4 blocks: entry (with conditional branch) -> true -> false -> terminal.
+        assert len(QoalaProgram._instance.current_function().blocks) == 4
 
     def test_branching_not_equals(self):
         # For testing purposes, we manually create a dummy program and attach a function to it.
@@ -113,6 +117,8 @@ class TestBranchingSemantics:
                 a = Int(20)
                 assert len(branch_false.operations) == 1
         b = a + 10
+        # We expect 4 blocks: entry (with conditional branch) -> true -> false -> terminal.
+        assert len(QoalaProgram._instance.current_function().blocks) == 4
 
     def test_branching_less_than(self):
         # For testing purposes, we manually create a dummy program and attach a function to it.
@@ -136,6 +142,8 @@ class TestBranchingSemantics:
                 assert isinstance(branch_false, BlockPlaceholder)
                 a = Int(20)
         b = a + 10
+        # We expect 4 blocks: entry (with conditional branch) -> true -> false -> terminal.
+        assert len(QoalaProgram._instance.current_function().blocks) == 4
 
     def test_branching_less_than_or_equals(self):
         # For testing purposes, we manually create a dummy program and attach a function to it.
@@ -164,6 +172,9 @@ class TestBranchingSemantics:
                 assert isinstance(branch_false, BlockPlaceholder)
                 a = Int(20)
                 assert len(branch_false.operations) == 1
+        b = a + 10
+        # We expect 4 blocks: entry (with conditional branch) -> true -> false -> terminal.
+        assert len(QoalaProgram._instance.current_function().blocks) == 4
 
     def test_branching_greater_than(self):
         # For testing purposes, we manually create a dummy program and attach a function to it.
@@ -189,6 +200,8 @@ class TestBranchingSemantics:
                 a = Int(20)
                 assert len(branch_false.operations) == 1
         b = a + 10
+        # We expect 4 blocks: entry (with conditional branch) -> true -> false -> terminal.
+        assert len(QoalaProgram._instance.current_function().blocks) == 4
 
     def test_branching_greater_than_or_equals(self):
         branching = if_ge(Int(4), 10)
@@ -218,3 +231,5 @@ class TestBranchingSemantics:
                 a = Int(20)
                 assert len(branch_false.operations) == 1
         b = a + 10
+        # We expect 4 blocks: entry (with conditional branch) -> true -> false -> terminal.
+        assert len(QoalaProgram._instance.current_function().blocks) == 4
