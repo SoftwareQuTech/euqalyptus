@@ -1,7 +1,7 @@
 import pytest
 
 import qoala.utils.debug_info as dbg_info
-from qoala.ast.operations.boolean import And, Or, Xor, Not
+from qoala.ast.operations.boolean import AndOp, OrOp, XorOp, NotOp
 from qoala.ast.value import QoalaBool
 from qoala.types.classical.booleans import Bool
 
@@ -36,8 +36,28 @@ class TestNumbersSemantics:
         bool_d = -bool_true
         bool_e = ~bool_true
 
-        assert isinstance(bool_a, And)
-        assert isinstance(bool_b, Or)
-        assert isinstance(bool_c, Xor)
-        assert isinstance(bool_d, Not)
-        assert isinstance(bool_e, Not)
+        assert isinstance(bool_a, AndOp)
+        assert isinstance(bool_a.operand_a, QoalaBool)
+        assert bool_a.operand_a.value == True
+        assert isinstance(bool_a.operand_b, QoalaBool)
+        assert bool_a.operand_b.value == False
+
+        assert isinstance(bool_b, OrOp)
+        assert isinstance(bool_b.operand_a, QoalaBool)
+        assert bool_b.operand_a.value == True
+        assert isinstance(bool_b.operand_b, QoalaBool)
+        assert bool_b.operand_b.value == False
+
+        assert isinstance(bool_c, XorOp)
+        assert isinstance(bool_c.operand_a, QoalaBool)
+        assert bool_c.operand_a.value == True
+        assert isinstance(bool_c.operand_b, QoalaBool)
+        assert bool_c.operand_b.value == True
+
+        assert isinstance(bool_d, NotOp)
+        assert isinstance(bool_d.operand, QoalaBool)
+        assert bool_d.operand.value == True
+
+        assert isinstance(bool_e, NotOp)
+        assert isinstance(bool_e.operand, QoalaBool)
+        assert bool_e.operand.value == True
