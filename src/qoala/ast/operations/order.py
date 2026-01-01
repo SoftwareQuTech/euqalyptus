@@ -107,6 +107,25 @@ class EqualsOp(BaseBinaryOrderOp):
         # - No other differences apart from that.
         self._compile_with_predicate(ctx, arith.CmpIPredicate.eq, arith.CmpFPredicate.OEQ)
 
+# TODO - Do we need to inherit some operators on this type of value?
+class NotEqualsOp(BaseBinaryOrderOp):
+    def __init__(self, *operands: QoalaExpression):
+        super().__init__(*operands)
+        QoalaProgram.add_to_current_function(self)
+
+    def can_evaluate_to(self, cls) -> bool:
+        return cls == QoalaBool
+
+    def compile(self, ctx: Context, location: Optional[Location] = None) -> None:
+        # When comparing floats, there are 2 versions of the comparison: OGE and UGE
+        # * OGE: *ORDERED* greater or equal than.
+        # * UGE: *UNORDERED* greater or equal than.
+        # - Unordered comparison will return "unordered" if one of the operands is Nan.
+        # - Ordered comparison will *fail* is one of the operands is NaN
+        # - No other differences apart from that.
+        self._compile_with_predicate(
+            ctx, arith.CmpIPredicate.ne, arith.CmpFPredicate.ONE
+        )
 
 # TODO - Do we need to inherit some operators on this type of value?
 class GreaterThanOp(BaseBinaryOrderOp):
