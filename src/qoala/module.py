@@ -35,14 +35,13 @@ class QoalaModule:
         self._functions.clear()
 
     def add_function(self, name: str):
-        self._functions.append(QoalaFunction(name))
+        new_function = QoalaFunction(name)
+        self._current_function = new_function
+        self._functions.append(new_function)
 
     @property
     def current_function(self) -> QoalaFunction:
         return self._current_function
-
-    def append_element_to_current_block(self, elem: QoalaExpression):
-        self._functions[-1].append_to_current_block(elem)
 
     @property
     def functions(self) -> List[QoalaFunction]:

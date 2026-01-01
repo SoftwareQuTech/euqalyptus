@@ -141,3 +141,17 @@ class QoalaFunction(QoalaCompilable):
             if i == len(self._blocks) - 1:
                 with InsertionPoint(block.qnet_block):
                     qnet.ReturnOp([], loc=location)
+
+@dataclass(init=False)
+class DummyQoalaFunction(QoalaFunction):
+    """
+    Dummy function object used when asserting tests on QoalaModules that are not compiled yet.
+    The only responsibility of this class is to expose the "append-to_current_block" method,
+    which does nothing. This avoids trying to invoke that method on a None value.
+    """
+    def __init__(self):
+        super().__init__("__dummy_function")
+
+    def append_to_current_block(self, expression: QoalaExpression):
+        # Nothing to do here
+        pass

@@ -94,7 +94,7 @@ class BaseBinaryOrderOp(QoalaOperation, ABC):
 class EqualsOp(BaseBinaryOrderOp):
     def __init__(self, *operands: QoalaExpression):
         super().__init__(*operands)
-        QoalaProgram.add_to_current_function(self)
+        QoalaProgram.current_function().append_to_current_block(self)
 
     def can_evaluate_to(self, cls) -> bool:
         return cls == QoalaBool
@@ -115,7 +115,7 @@ class EqualsOp(BaseBinaryOrderOp):
 class NotEqualsOp(BaseBinaryOrderOp):
     def __init__(self, *operands: QoalaExpression):
         super().__init__(*operands)
-        QoalaProgram.add_to_current_function(self)
+        QoalaProgram.current_function().append_to_current_block(self)
 
     def can_evaluate_to(self, cls) -> bool:
         return cls == QoalaBool
@@ -136,7 +136,7 @@ class NotEqualsOp(BaseBinaryOrderOp):
 class GreaterThanOp(BaseBinaryOrderOp):
     def __init__(self, *operands: QoalaExpression):
         super().__init__(*operands)
-        QoalaProgram.add_to_current_function(self)
+        QoalaProgram.current_function().append_to_current_block(self)
 
     def can_evaluate_to(self, cls) -> bool:
         return cls == QoalaBool
@@ -157,7 +157,7 @@ class GreaterThanOp(BaseBinaryOrderOp):
 class GreaterThanOrEqualsOp(BaseBinaryOrderOp):
     def __init__(self, *operands: QoalaExpression):
         super().__init__(*operands)
-        QoalaProgram.add_to_current_function(self)
+        QoalaProgram.current_function().append_to_current_block(self)
 
     def can_evaluate_to(self, cls) -> bool:
         return cls == QoalaBool
@@ -178,7 +178,7 @@ class GreaterThanOrEqualsOp(BaseBinaryOrderOp):
 class LessThanOp(BaseBinaryOrderOp):
     def __init__(self, *operands: QoalaExpression):
         super().__init__(*operands)
-        QoalaProgram.add_to_current_function(self)
+        QoalaProgram.current_function().append_to_current_block(self)
 
     def can_evaluate_to(self, cls) -> bool:
         return cls == QoalaBool
@@ -199,7 +199,7 @@ class LessThanOp(BaseBinaryOrderOp):
 class LessThanOrEqualsOp(BaseBinaryOrderOp):
     def __init__(self, *operands: QoalaExpression):
         super().__init__(*operands)
-        QoalaProgram.add_to_current_function(self)
+        QoalaProgram.current_function().append_to_current_block(self)
 
     def can_evaluate_to(self, cls) -> bool:
         return cls == QoalaBool

@@ -106,7 +106,7 @@ class QoalaInteger(QoalaNumericValue[int]):
             self.debug_info = debug_info
         else:
             self.debug_info = get_debug_info()
-        QoalaProgram.add_to_current_function(self)
+        QoalaProgram.current_function().append_to_current_block(self)
 
     def can_evaluate_to(self, cls) -> bool:
         return cls == QoalaInteger
@@ -159,7 +159,7 @@ class QoalaFloat(QoalaNumericValue[float]):
             self.debug_info = debug_info
         else:
             self.debug_info = get_debug_info()
-        QoalaProgram.add_to_current_function(self)
+        QoalaProgram.current_function().append_to_current_block(self)
 
     def can_evaluate_to(self, cls) -> bool:
         return cls == QoalaFloat
@@ -205,7 +205,7 @@ class QoalaBool(QoalaValue[bool]):
             self.debug_info = debug_info
         else:
             self.debug_info = get_debug_info()
-        QoalaProgram.add_to_current_function(self)
+        QoalaProgram.current_function().append_to_current_block(self)
 
     def compile(self, ctx: Context, location: Optional[Location] = None) -> None:
         bool_type = mlir_bool()
@@ -293,7 +293,7 @@ class QoalaArray(
         else:
             self.length = length
         self.debug_info = get_debug_info()
-        QoalaProgram.add_to_current_function(self)
+        QoalaProgram.current_function().append_to_current_block(self)
 
     def store(
         self, new_element: QoalaExpression | _Native_Base_Type
@@ -378,7 +378,7 @@ class QoalaReferenceInsideArray(QoalaExpression):
         super().__init__()
         self._base_expression = base_expression
         self._index = idx
-        QoalaProgram.add_to_current_function(self)
+        QoalaProgram.current_function().append_to_current_block(self)
 
     def compile(self, ctx: Context, location: Optional[Location] = None) -> None:
         self.ir_value = self._base_expression.ir_values[self._index]

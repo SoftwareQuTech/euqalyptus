@@ -9,6 +9,7 @@ from typing_extensions import Self
 
 import qoala.utils.debug_info as dbg_info
 from qoala.ast import QoalaExpression
+from qoala.ast.model import QoalaFunction, DummyQoalaFunction
 from qoala.errors import NotYetCompiledError, QuantumProgramNotImplementedError
 from qoala.module import QoalaModule
 
@@ -79,9 +80,10 @@ class QoalaProgram:
             return self._module
 
     @classmethod
-    def add_to_current_function(cls, item: QoalaExpression) -> None:
+    def current_function(cls) -> QoalaFunction:
         if hasattr(cls, "_instance"):
-            cls._instance._module.append_element_to_current_block(item)
+            return cls._instance._module.current_function
+        return DummyQoalaFunction()
 
     @classmethod
     def get_last_block_id(cls) -> int:

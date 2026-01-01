@@ -35,7 +35,7 @@ class ConditionalBranching(QoalaOperation):
     def __init__(self, condition: QoalaExpression):
         super().__init__()
         self.condition = condition
-        QoalaProgram.add_to_current_function(self)
+        QoalaProgram.current_function().append_to_current_block(self)
 
     def __enter__(self):
         self._branch_true = BlockPlaceholder()
