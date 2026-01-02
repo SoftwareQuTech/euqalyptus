@@ -2,7 +2,7 @@ import pytest
 
 from qoala import QoalaProgram
 from qoala.utils import debug_info as dbg_info
-from qoala.ast.model import BlockPlaceholder, QoalaBlock
+from qoala.ast.model import BranchingBlockPlaceholder, QoalaBlock
 from qoala.ast.operations.branching import ConditionalBranching, UnconditionalBranching
 from qoala.ast.operations.numeric import Add
 from qoala.ast.operations.order import (
@@ -56,30 +56,45 @@ class TestBranchingSemantics:
 
         with if_cond(Int(4) < 7) as (branch_true, branch_false):
             with branch_true:
-                assert isinstance(branch_true, BlockPlaceholder)
+                assert isinstance(branch_true, BranchingBlockPlaceholder)
                 a = Int(15)
                 assert len(branch_true.operations) == 1
             with branch_false:
-                assert isinstance(branch_false, BlockPlaceholder)
+                assert isinstance(branch_false, BranchingBlockPlaceholder)
                 a = Int(25)
                 assert len(branch_false.operations) == 1
+        # WARNING - This test uses values that depend on the actual branch taken, which is only known at
+        # runtime. This feature is *not*  supported by the frontend just yet. See below.
         # TODO - In the following "add" operation, the frontend captures the value of "a" **coming from the false
-        #  branch** (20), so the value coming from true will never be captured in MLIR. The actual value is not
-        #  known until runtime, but the frontend does not have a way to figure this out. This is a bug!!!
+        #  branch** (25), so the value coming from true (15) will never be captured in MLIR. The actual value is
+        #  not known until runtime, but the frontend does not have a way to figure this out. This is a bug!!!
         #  In LLVM this issue is solved with "stack allocations", which return a *pointer* to the stack:
-        #    %ptr_to_a = alloc i32 ;; This is a pointer to a portion of memory containing an i32 value
+        #    %ptr_to_a = alloc i32 ;; Local variable: it is a pointer to the stack containing an i32 value
         #    %cond = cmpi eq %val_1, %val_2  ;; really doesn't matter
         #    cond_br %cond, ^bb1, ^bb2... ;; True -> ^bb1, False -> ^bb2
         #    ^bb1:
-        #      store $4, %ptr_to_a
+        #      store $4, %ptr_to_a  ;; store value 4 in ptr_to_a
         #      br ^bb3
         #    ^bb2:
-        #      store $5, %ptr_to_a
+        #      store $5, %ptr_to_a  ;; store value 5 in ptr_to_a
         #      br ^bb3
         #    ^bb3:
         #    %val_of_a = load %ptr_to_a : i32 ;;; "val_of_a" is 4 if %cond is true, 5 otherwise
+        #  To see this in action, compile the following C code:
+        #  int main(int argc, char **argv) {
+        #      int a;
+        #      if (argc < 2) {
+        #          a = 4;
+        #      } else {
+        #          a = 5;
+        #      }
+        #      return a;
+        #  }
+        #  Compile it with: `clang -S -emit-llvm -o test.ll test.c`
         #  We need to find a way to emulate the same in this frontend (and translate it into MLIR)
+        #  Idea: Maybe we can check how MLIR emulates this behavior in the cf dialect?
         b = a + 10
+
         # We expect 4 blocks: entry (with conditional branch) -> true -> false -> terminal.
         assert len(QoalaProgram._instance.current_function().blocks) == 4
         # We also assert that there are no placeholder blocks on the final AST
@@ -95,14 +110,20 @@ class TestBranchingSemantics:
         assert isinstance(program_blocks[0].operations[3], QoalaInteger)
         assert isinstance(program_blocks[0].operations[4], LessThanOp)
         assert isinstance(program_blocks[0].operations[5], ConditionalBranching)
+        assert program_blocks[0].operations[5].true_dest is program_blocks[1]
+        assert program_blocks[0].operations[5].false_dest is program_blocks[2]
         # 2. 2 ops: Int(10), incond_branch to 4
         assert len(program_blocks[1].operations) == 2
         assert isinstance(program_blocks[1].operations[0], QoalaInteger)
         assert isinstance(program_blocks[1].operations[1], UnconditionalBranching)
+        assert isinstance(program_blocks[1].operations[1].destination, QoalaBlock)
+        assert program_blocks[1].operations[1].destination is program_blocks[3]
         # 3. 2 ops: Int(20), incond_branch to 4
         assert len(program_blocks[2].operations) == 2
         assert isinstance(program_blocks[2].operations[0], QoalaInteger)
         assert isinstance(program_blocks[2].operations[1], UnconditionalBranching)
+        assert isinstance(program_blocks[2].operations[1].destination, QoalaBlock)
+        assert program_blocks[2].operations[1].destination is program_blocks[3]
         # 4. 2 ops: Int(10), add operation
         assert len(program_blocks[3].operations) == 2
         assert isinstance(program_blocks[3].operations[0], QoalaInteger)
@@ -124,14 +145,15 @@ class TestBranchingSemantics:
 
         with if_eq(Int(4), 7) as (branch_true, branch_false):
             with branch_true:
-                assert isinstance(branch_true, BlockPlaceholder)
+                assert isinstance(branch_true, BranchingBlockPlaceholder)
                 a = Int(15)
                 assert len(branch_true.operations) == 1
             with branch_false:
-                assert isinstance(branch_false, BlockPlaceholder)
+                assert isinstance(branch_false, BranchingBlockPlaceholder)
                 a = Int(25)
                 assert len(branch_false.operations) == 1
         b = a + 10
+
         # We expect 4 blocks: entry (with conditional branch) -> true -> false -> terminal.
         assert len(QoalaProgram._instance.current_function().blocks) == 4
         # We also assert that there are no placeholder blocks on the final AST
@@ -149,14 +171,20 @@ class TestBranchingSemantics:
         assert isinstance(program_blocks[0].operations[5], QoalaInteger)
         assert isinstance(program_blocks[0].operations[6], EqualsOp)
         assert isinstance(program_blocks[0].operations[7], ConditionalBranching)
+        assert program_blocks[0].operations[7].true_dest is program_blocks[1]
+        assert program_blocks[0].operations[7].false_dest is program_blocks[2]
         # 2. 2 ops: Int(10), incond_branch to 4
         assert len(program_blocks[1].operations) == 2
         assert isinstance(program_blocks[1].operations[0], QoalaInteger)
         assert isinstance(program_blocks[1].operations[1], UnconditionalBranching)
+        assert isinstance(program_blocks[1].operations[1].destination, QoalaBlock)
+        assert program_blocks[1].operations[1].destination is program_blocks[3]
         # 3. 2 ops: Int(20), incond_branch to 4
         assert len(program_blocks[2].operations) == 2
         assert isinstance(program_blocks[2].operations[0], QoalaInteger)
         assert isinstance(program_blocks[2].operations[1], UnconditionalBranching)
+        assert isinstance(program_blocks[2].operations[1].destination, QoalaBlock)
+        assert program_blocks[2].operations[1].destination is program_blocks[3]
         # 4. 2 ops: Int(10), add operation
         assert len(program_blocks[3].operations) == 2
         assert isinstance(program_blocks[3].operations[0], QoalaInteger)
@@ -178,14 +206,15 @@ class TestBranchingSemantics:
 
         with if_neq(Int(4), 7) as (branch_true, branch_false):
             with branch_true:
-                assert isinstance(branch_true, BlockPlaceholder)
+                assert isinstance(branch_true, BranchingBlockPlaceholder)
                 a = Int(15)
                 assert len(branch_true.operations) == 1
             with branch_false:
-                assert isinstance(branch_false, BlockPlaceholder)
+                assert isinstance(branch_false, BranchingBlockPlaceholder)
                 a = Int(25)
                 assert len(branch_false.operations) == 1
         b = a + 10
+
         # We expect 4 blocks: entry (with conditional branch) -> true -> false -> terminal.
         assert len(QoalaProgram._instance.current_function().blocks) == 4
         # We also assert that there are no placeholder blocks on the final AST
@@ -203,14 +232,20 @@ class TestBranchingSemantics:
         assert isinstance(program_blocks[0].operations[5], QoalaInteger)
         assert isinstance(program_blocks[0].operations[6], NotEqualsOp)
         assert isinstance(program_blocks[0].operations[7], ConditionalBranching)
+        assert program_blocks[0].operations[7].true_dest is program_blocks[1]
+        assert program_blocks[0].operations[7].false_dest is program_blocks[2]
         # 2. 2 ops: Int(10), incond_branch to 4
         assert len(program_blocks[1].operations) == 2
         assert isinstance(program_blocks[1].operations[0], QoalaInteger)
         assert isinstance(program_blocks[1].operations[1], UnconditionalBranching)
+        assert isinstance(program_blocks[1].operations[1].destination, QoalaBlock)
+        assert program_blocks[1].operations[1].destination is program_blocks[3]
         # 3. 2 ops: Int(20), incond_branch to 4
         assert len(program_blocks[2].operations) == 2
         assert isinstance(program_blocks[2].operations[0], QoalaInteger)
         assert isinstance(program_blocks[2].operations[1], UnconditionalBranching)
+        assert isinstance(program_blocks[2].operations[1].destination, QoalaBlock)
+        assert program_blocks[2].operations[1].destination is program_blocks[3]
         # 4. 2 ops: Int(10), add operation
         assert len(program_blocks[3].operations) == 2
         assert isinstance(program_blocks[3].operations[0], QoalaInteger)
@@ -232,12 +267,13 @@ class TestBranchingSemantics:
 
         with if_lt(Int(4), 7) as (branch_true, branch_false):
             with branch_true:
-                assert isinstance(branch_true, BlockPlaceholder)
+                assert isinstance(branch_true, BranchingBlockPlaceholder)
                 a = Int(15)
             with branch_false:
-                assert isinstance(branch_false, BlockPlaceholder)
+                assert isinstance(branch_false, BranchingBlockPlaceholder)
                 a = Int(25)
         b = a + 10
+
         # We expect 4 blocks: entry (with conditional branch) -> true -> false -> terminal.
         assert len(QoalaProgram._instance.current_function().blocks) == 4
         # We also assert that there are no placeholder blocks on the final AST
@@ -255,14 +291,20 @@ class TestBranchingSemantics:
         assert isinstance(program_blocks[0].operations[5], QoalaInteger)
         assert isinstance(program_blocks[0].operations[6], LessThanOp)
         assert isinstance(program_blocks[0].operations[7], ConditionalBranching)
+        assert program_blocks[0].operations[7].true_dest is program_blocks[1]
+        assert program_blocks[0].operations[7].false_dest is program_blocks[2]
         # 2. 2 ops: Int(10), incond_branch to 4
         assert len(program_blocks[1].operations) == 2
         assert isinstance(program_blocks[1].operations[0], QoalaInteger)
         assert isinstance(program_blocks[1].operations[1], UnconditionalBranching)
+        assert isinstance(program_blocks[1].operations[1].destination, QoalaBlock)
+        assert program_blocks[1].operations[1].destination is program_blocks[3]
         # 3. 2 ops: Int(20), incond_branch to 4
         assert len(program_blocks[2].operations) == 2
         assert isinstance(program_blocks[2].operations[0], QoalaInteger)
         assert isinstance(program_blocks[2].operations[1], UnconditionalBranching)
+        assert isinstance(program_blocks[2].operations[1].destination, QoalaBlock)
+        assert program_blocks[2].operations[1].destination is program_blocks[3]
         # 4. 2 ops: Int(10), add operation
         assert len(program_blocks[3].operations) == 2
         assert isinstance(program_blocks[3].operations[0], QoalaInteger)
@@ -288,14 +330,15 @@ class TestBranchingSemantics:
 
         with if_le(Int(4), 7) as (branch_true, branch_false):
             with branch_true:
-                assert isinstance(branch_true, BlockPlaceholder)
+                assert isinstance(branch_true, BranchingBlockPlaceholder)
                 a = Int(15)
                 assert len(branch_true.operations) == 1
             with branch_false:
-                assert isinstance(branch_false, BlockPlaceholder)
+                assert isinstance(branch_false, BranchingBlockPlaceholder)
                 a = Int(15)
                 assert len(branch_false.operations) == 1
         b = a + 10
+
         # We expect 4 blocks: entry (with conditional branch) -> true -> false -> terminal.
         assert len(QoalaProgram._instance.current_function().blocks) == 4
         # We also assert that there are no placeholder blocks on the final AST
@@ -313,14 +356,20 @@ class TestBranchingSemantics:
         assert isinstance(program_blocks[0].operations[5], QoalaInteger)
         assert isinstance(program_blocks[0].operations[6], LessThanOrEqualsOp)
         assert isinstance(program_blocks[0].operations[7], ConditionalBranching)
+        assert program_blocks[0].operations[7].true_dest is program_blocks[1]
+        assert program_blocks[0].operations[7].false_dest is program_blocks[2]
         # 2. 2 ops: Int(10), incond_branch to 4
         assert len(program_blocks[1].operations) == 2
         assert isinstance(program_blocks[1].operations[0], QoalaInteger)
         assert isinstance(program_blocks[1].operations[1], UnconditionalBranching)
+        assert isinstance(program_blocks[1].operations[1].destination, QoalaBlock)
+        assert program_blocks[1].operations[1].destination is program_blocks[3]
         # 3. 2 ops: Int(20), incond_branch to 4
         assert len(program_blocks[2].operations) == 2
         assert isinstance(program_blocks[2].operations[0], QoalaInteger)
         assert isinstance(program_blocks[2].operations[1], UnconditionalBranching)
+        assert isinstance(program_blocks[2].operations[1].destination, QoalaBlock)
+        assert program_blocks[2].operations[1].destination is program_blocks[3]
         # 4. 2 ops: Int(10), add operation
         assert len(program_blocks[3].operations) == 2
         assert isinstance(program_blocks[3].operations[0], QoalaInteger)
@@ -342,14 +391,15 @@ class TestBranchingSemantics:
 
         with if_gt(Int(4), 10) as (branch_true, branch_false):
             with branch_true:
-                assert isinstance(branch_true, BlockPlaceholder)
+                assert isinstance(branch_true, BranchingBlockPlaceholder)
                 a = Int(15)
                 assert len(branch_true.operations) == 1
             with branch_false:
-                assert isinstance(branch_false, BlockPlaceholder)
+                assert isinstance(branch_false, BranchingBlockPlaceholder)
                 a = Int(15)
                 assert len(branch_false.operations) == 1
         b = a + 10
+
         # We expect 4 blocks: entry (with conditional branch) -> true -> false -> terminal.
         assert len(QoalaProgram._instance.current_function().blocks) == 4
         # We also assert that there are no placeholder blocks on the final AST
@@ -367,14 +417,20 @@ class TestBranchingSemantics:
         assert isinstance(program_blocks[0].operations[5], QoalaInteger)
         assert isinstance(program_blocks[0].operations[6], GreaterThanOp)
         assert isinstance(program_blocks[0].operations[7], ConditionalBranching)
+        assert program_blocks[0].operations[7].true_dest is program_blocks[1]
+        assert program_blocks[0].operations[7].false_dest is program_blocks[2]
         # 2. 2 ops: Int(10), incond_branch to 4
         assert len(program_blocks[1].operations) == 2
         assert isinstance(program_blocks[1].operations[0], QoalaInteger)
         assert isinstance(program_blocks[1].operations[1], UnconditionalBranching)
+        assert isinstance(program_blocks[1].operations[1].destination, QoalaBlock)
+        assert program_blocks[1].operations[1].destination is program_blocks[3]
         # 3. 2 ops: Int(20), incond_branch to 4
         assert len(program_blocks[2].operations) == 2
         assert isinstance(program_blocks[2].operations[0], QoalaInteger)
         assert isinstance(program_blocks[2].operations[1], UnconditionalBranching)
+        assert isinstance(program_blocks[2].operations[1].destination, QoalaBlock)
+        assert program_blocks[2].operations[1].destination is program_blocks[3]
         # 4. 2 ops: Int(10), add operation
         assert len(program_blocks[3].operations) == 2
         assert isinstance(program_blocks[3].operations[0], QoalaInteger)
@@ -400,14 +456,15 @@ class TestBranchingSemantics:
 
         with if_ge(Int(4), 7) as (branch_true, branch_false):
             with branch_true:
-                assert isinstance(branch_true, BlockPlaceholder)
+                assert isinstance(branch_true, BranchingBlockPlaceholder)
                 a = Int(15)
                 assert len(branch_true.operations) == 1
             with branch_false:
-                assert isinstance(branch_false, BlockPlaceholder)
+                assert isinstance(branch_false, BranchingBlockPlaceholder)
                 a = Int(15)
                 assert len(branch_false.operations) == 1
         b = a + 10
+
         # We expect 4 blocks: entry (with conditional branch) -> true -> false -> terminal.
         assert len(QoalaProgram._instance.current_function().blocks) == 4
         # We also assert that there are no placeholder blocks on the final AST
@@ -425,14 +482,20 @@ class TestBranchingSemantics:
         assert isinstance(program_blocks[0].operations[5], QoalaInteger)
         assert isinstance(program_blocks[0].operations[6], GreaterThanOrEqualsOp)
         assert isinstance(program_blocks[0].operations[7], ConditionalBranching)
+        assert program_blocks[0].operations[7].true_dest is program_blocks[1]
+        assert program_blocks[0].operations[7].false_dest is program_blocks[2]
         # 2. 2 ops: Int(10), incond_branch to 4
         assert len(program_blocks[1].operations) == 2
         assert isinstance(program_blocks[1].operations[0], QoalaInteger)
         assert isinstance(program_blocks[1].operations[1], UnconditionalBranching)
+        assert isinstance(program_blocks[1].operations[1].destination, QoalaBlock)
+        assert program_blocks[1].operations[1].destination is program_blocks[3]
         # 3. 2 ops: Int(20), incond_branch to 4
         assert len(program_blocks[2].operations) == 2
         assert isinstance(program_blocks[2].operations[0], QoalaInteger)
         assert isinstance(program_blocks[2].operations[1], UnconditionalBranching)
+        assert isinstance(program_blocks[2].operations[1].destination, QoalaBlock)
+        assert program_blocks[2].operations[1].destination is program_blocks[3]
         # 4. 2 ops: Int(10), add operation
         assert len(program_blocks[3].operations) == 2
         assert isinstance(program_blocks[3].operations[0], QoalaInteger)
