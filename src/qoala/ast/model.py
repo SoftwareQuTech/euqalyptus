@@ -44,7 +44,8 @@ class BlockPlaceholder:
         new_block = QoalaBlock(self._last_block_id)
         for operation in self._operations:
             new_block.append_to_block(operation)
-        # TODO - Insert the new block into the QoalaProgram instance
+        from qoala import QoalaProgram
+        QoalaProgram.current_function().replace_placeholder_block(new_block, self)
 
 
 @dataclass(init=False)
@@ -97,13 +98,12 @@ class QoalaBlock(QoalaCompilable):
         with InsertionPoint(block):
             for operation in self._operations:
                 operation.compile(ctx)
-        pass
 
 
 @dataclass(init=False)
 class QoalaFunction(QoalaCompilable):
     # Functions do not have a list or arguments, since the *first block* will contain that information
-    _blocks: List[QoalaBlock]
+    _blocks: List[QoalaBlock | BlockPlaceholder]
     _current_block: QoalaBlock | BlockPlaceholder
     _function_name: str
     debug_info: DebugInfo
@@ -113,6 +113,16 @@ class QoalaFunction(QoalaCompilable):
         self._function_name = name
         # We start with a single empty block
         self.emplace_new_empty_block()
+
+    def replace_placeholder_block(self, new_block: QoalaBlock, placeholder: BlockPlaceholder):
+        block_position = -1
+        for i, block in enumerate(self._blocks):
+            if block is placeholder:
+                block_position = i
+        if block_position != -1:
+            self._blocks[block_position] = new_block
+        else:
+            raise RuntimeError("Unknown placeholder block")
 
     def emplace_new_empty_block(self):
         self.emplace_block(QoalaBlock(len(self._blocks)))
