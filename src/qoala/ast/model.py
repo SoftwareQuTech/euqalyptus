@@ -41,6 +41,10 @@ class BlockPlaceholder:
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         # Convert this placeholder into a real block
+        # TODO - Insert the correct reference to the destination block!
+        from qoala.ast.operations.branching import UnconditionalBranching
+
+        self.append_to_block(UnconditionalBranching(None))
         new_block = QoalaBlock(self._last_block_id)
         for operation in self._operations:
             new_block.append_to_block(operation)
