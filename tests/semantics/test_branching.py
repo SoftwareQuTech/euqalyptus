@@ -2,7 +2,7 @@ import pytest
 
 import qoala.utils.debug_info as dbg_info
 from qoala import QoalaProgram
-from qoala.ast.model import BlockPlaceholder
+from qoala.ast.model import BlockPlaceholder, QoalaBlock
 from qoala.ast.operations.branching import ConditionalBranching
 from qoala.ast.operations.order import (
     EqualsOp,
@@ -65,6 +65,9 @@ class TestBranchingSemantics:
         b = a + 10
         # We expect 4 blocks: entry (with conditional branch) -> true -> false -> terminal.
         assert len(QoalaProgram._instance.current_function().blocks) == 4
+        # We also assert that there are no placeholder blocks on the final AST
+        assert all([isinstance(block, QoalaBlock) for block in QoalaProgram._instance.current_function().blocks])
+        assert all([len(block.operations) == 1 for block in QoalaProgram._instance.current_function().blocks])
 
     def test_branching_equals(self):
         # For testing purposes, we manually create a dummy program and attach a function to it.
@@ -92,6 +95,9 @@ class TestBranchingSemantics:
         b = a + 10
         # We expect 4 blocks: entry (with conditional branch) -> true -> false -> terminal.
         assert len(QoalaProgram._instance.current_function().blocks) == 4
+        # We also assert that there are no placeholder blocks on the final AST
+        assert all([isinstance(block, QoalaBlock) for block in QoalaProgram._instance.current_function().blocks])
+        assert all([len(block.operations) == 1 for block in QoalaProgram._instance.current_function().blocks])
 
     def test_branching_not_equals(self):
         # For testing purposes, we manually create a dummy program and attach a function to it.
@@ -119,6 +125,9 @@ class TestBranchingSemantics:
         b = a + 10
         # We expect 4 blocks: entry (with conditional branch) -> true -> false -> terminal.
         assert len(QoalaProgram._instance.current_function().blocks) == 4
+        # We also assert that there are no placeholder blocks on the final AST
+        assert all([isinstance(block, QoalaBlock) for block in QoalaProgram._instance.current_function().blocks])
+        assert all([len(block.operations) == 1 for block in QoalaProgram._instance.current_function().blocks])
 
     def test_branching_less_than(self):
         # For testing purposes, we manually create a dummy program and attach a function to it.
@@ -144,6 +153,9 @@ class TestBranchingSemantics:
         b = a + 10
         # We expect 4 blocks: entry (with conditional branch) -> true -> false -> terminal.
         assert len(QoalaProgram._instance.current_function().blocks) == 4
+        # We also assert that there are no placeholder blocks on the final AST
+        assert all([isinstance(block, QoalaBlock) for block in QoalaProgram._instance.current_function().blocks])
+        assert all([len(block.operations) == 1 for block in QoalaProgram._instance.current_function().blocks])
 
     def test_branching_less_than_or_equals(self):
         # For testing purposes, we manually create a dummy program and attach a function to it.
@@ -175,6 +187,9 @@ class TestBranchingSemantics:
         b = a + 10
         # We expect 4 blocks: entry (with conditional branch) -> true -> false -> terminal.
         assert len(QoalaProgram._instance.current_function().blocks) == 4
+        # We also assert that there are no placeholder blocks on the final AST
+        assert all([isinstance(block, QoalaBlock) for block in QoalaProgram._instance.current_function().blocks])
+        assert all([len(block.operations) == 1 for block in QoalaProgram._instance.current_function().blocks])
 
     def test_branching_greater_than(self):
         # For testing purposes, we manually create a dummy program and attach a function to it.
@@ -202,6 +217,9 @@ class TestBranchingSemantics:
         b = a + 10
         # We expect 4 blocks: entry (with conditional branch) -> true -> false -> terminal.
         assert len(QoalaProgram._instance.current_function().blocks) == 4
+        # We also assert that there are no placeholder blocks on the final AST
+        assert all([isinstance(block, QoalaBlock) for block in QoalaProgram._instance.current_function().blocks])
+        assert all([len(block.operations) == 1 for block in QoalaProgram._instance.current_function().blocks])
 
     def test_branching_greater_than_or_equals(self):
         branching = if_ge(Int(4), 10)
@@ -233,3 +251,6 @@ class TestBranchingSemantics:
         b = a + 10
         # We expect 4 blocks: entry (with conditional branch) -> true -> false -> terminal.
         assert len(QoalaProgram._instance.current_function().blocks) == 4
+        # We also assert that there are no placeholder blocks on the final AST
+        assert all([isinstance(block, QoalaBlock) for block in QoalaProgram._instance.current_function().blocks])
+        assert all([len(block.operations) == 1 for block in QoalaProgram._instance.current_function().blocks])
