@@ -1,28 +1,12 @@
 from dataclasses import dataclass
-from enum import IntEnum
 from typing import Optional
 
 from qnet.ir import Context, Location
-from qnet.dialects.arith import CmpIPredicate
+from qnet.dialects import cf
 
 from qoala import QoalaExpression, QoalaProgram
 from qoala.ast.operations import QoalaOperation
 from qoala.ast.model import BlockPlaceholder
-
-
-class BranchCode(IntEnum):
-    # This enum was created following the comparison values from MLIR arith.cmpi documentation:
-    # https://mlir.llvm.org/docs/Dialects/ArithOps/#arithcmpi-arithcmpiop
-    EQUAL = CmpIPredicate.eq
-    NOT_EQUAL = CmpIPredicate.ne
-    SIGNED_LESS_THAN = CmpIPredicate.slt
-    SIGNED_LESS_THAN_OR_EQUAL = CmpIPredicate.sle
-    SIGNED_GREATER_THAN = CmpIPredicate.sgt
-    SIGNED_GREATER_THAN_OR_EQUAL = CmpIPredicate.sge
-    UNSIGNED_LESS_THAN = CmpIPredicate.ult
-    UNSIGNED_LESS_THAN_OR_EQUAL = CmpIPredicate.ule
-    UNSIGNED_GREATER_THAN = CmpIPredicate.ugt
-    UNSIGNED_GREATER_THAN_OR_EQUAL = CmpIPredicate.uge
 
 
 @dataclass(init=False)
