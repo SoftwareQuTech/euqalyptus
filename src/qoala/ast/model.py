@@ -72,7 +72,10 @@ class BranchingBlockPlaceholder:
     This class is intended to just contain the operations and some extra information
     used to correctly insert the block references for the branching instruction.
     """
-    def __init__(self, block_id: int, condition: "ConditionalBranching", join_dest: QoalaBlock):
+
+    def __init__(
+        self, block_id: int, condition: "ConditionalBranching", join_dest: QoalaBlock
+    ):
         self._operations = []
         self._block_id = block_id
         self._branch_operation = condition
@@ -106,9 +109,12 @@ class BranchingBlockPlaceholder:
         elif self is self._branch_operation._branch_false:
             self._branch_operation.false_dest = new_block
         else:
-            raise RuntimeError(f"Trying to replace a Block placeholder which is not attached to a branch op")
+            raise RuntimeError(
+                f"Trying to replace a Block placeholder which is not attached to a branch op"
+            )
         # Replace the placeholder in the function itself
         from qoala import QoalaProgram
+
         QoalaProgram.current_function().replace_placeholder_block(new_block, self)
 
 
@@ -126,7 +132,9 @@ class QoalaFunction(QoalaCompilable):
         # We start with a single empty block
         self.emplace_new_empty_block()
 
-    def replace_placeholder_block(self, new_block: QoalaBlock, placeholder: BranchingBlockPlaceholder):
+    def replace_placeholder_block(
+        self, new_block: QoalaBlock, placeholder: BranchingBlockPlaceholder
+    ):
         block_position = -1
         for i, block in enumerate(self._blocks):
             if block is placeholder:

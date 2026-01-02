@@ -47,8 +47,12 @@ class ConditionalBranching(QoalaOperation):
         # We create the basic blocks for this conditional branching
         new_block_id = len(QoalaProgram.current_function().blocks)
         self._join_block = QoalaBlock(new_block_id + 2)
-        self._branch_true = BranchingBlockPlaceholder(new_block_id, self, self._join_block)
-        self._branch_false = BranchingBlockPlaceholder(new_block_id + 1, self, self._join_block)
+        self._branch_true = BranchingBlockPlaceholder(
+            new_block_id, self, self._join_block
+        )
+        self._branch_false = BranchingBlockPlaceholder(
+            new_block_id + 1, self, self._join_block
+        )
         # We eagerly emplace the blocks in the function. When using the
         # context of each block, we will mark it correspondingly as active
         QoalaProgram.current_function().emplace_block(self._branch_true)
