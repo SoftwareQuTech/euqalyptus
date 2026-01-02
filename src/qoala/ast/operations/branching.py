@@ -43,8 +43,10 @@ class ConditionalBranching(QoalaOperation):
         return self._branch_true, self._branch_false
 
     def __exit__(self, exc_type, exc_val, exc_tb):
-        # TODO - Implement this - Insert the "join" block in the function
-        pass
+        # Exiting the conditional branch context marks the finish of the
+        # branching on CFG. We insert a new empty block (the join block)
+        # in the current function.
+        QoalaProgram.current_function().emplace_new_empty_block()
 
     def compile(self, ctx: Context, location: Optional[Location] = None) -> None:
         pass
