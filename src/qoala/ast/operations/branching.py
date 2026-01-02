@@ -6,15 +6,31 @@ from qnet.dialects import cf
 
 from qoala import QoalaExpression, QoalaProgram
 from qoala.ast.operations import QoalaOperation
-from qoala.ast.model import BlockPlaceholder
+from qoala.ast.model import BlockPlaceholder, QoalaBlock
+
+
+@dataclass(init=False)
+class UnconditionalBranching(QoalaOperation):
+    _destination: QoalaBlock | BlockPlaceholder
+
+    def __init__(self, destination: QoalaBlock | BlockPlaceholder):
+        super().__init__()
+        self._destination = destination
+
+    def can_evaluate_to(self, cls) -> bool:
+        return False
+
+    def compile(self, ctx: Context, location: Optional[Location] = None) -> None:
+        # TODO - Implement this!
+        pass
 
 
 @dataclass(init=False)
 class ConditionalBranching(QoalaOperation):
     condition: QoalaExpression
     # Branches need to be a *forward reference* to the place where the code will be
-    _branch_true: BlockPlaceholder
-    _branch_false: BlockPlaceholder
+    _branch_true: QoalaBlock | BlockPlaceholder
+    _branch_false: QoalaBlock | BlockPlaceholder
 
     def __init__(self, condition: QoalaExpression):
         super().__init__()
