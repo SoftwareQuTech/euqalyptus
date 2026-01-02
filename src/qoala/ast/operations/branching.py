@@ -6,16 +6,20 @@ from qnet.dialects import cf
 
 from qoala import QoalaExpression, QoalaProgram
 from qoala.ast.operations import QoalaOperation
-from qoala.ast.model import BlockPlaceholder, QoalaBlock
+from qoala.ast.model import BranchingBlockPlaceholder, QoalaBlock
 
 
 @dataclass(init=False)
 class UnconditionalBranching(QoalaOperation):
-    _destination: QoalaBlock | BlockPlaceholder
+    _destination: QoalaBlock
 
-    def __init__(self, destination: QoalaBlock | BlockPlaceholder):
+    def __init__(self, destination: QoalaBlock):
         super().__init__()
         self._destination = destination
+
+    @property
+    def destination(self) -> QoalaBlock:
+        return self._destination
 
     def can_evaluate_to(self, cls) -> bool:
         return False
@@ -29,8 +33,10 @@ class UnconditionalBranching(QoalaOperation):
 class ConditionalBranching(QoalaOperation):
     condition: QoalaExpression
     # Branches need to be a *forward reference* to the place where the code will be
-    _branch_true: QoalaBlock | BlockPlaceholder
-    _branch_false: QoalaBlock | BlockPlaceholder
+    _branch_true: QoalaBlock | BranchingBlockPlaceholder
+    _branch_false: QoalaBlock | BranchingBlockPlaceholder
+    # Block that joins the CFG back
+    _join_block: QoalaBlock
 
     def __init__(self, condition: QoalaExpression):
         super().__init__()
@@ -38,15 +44,43 @@ class ConditionalBranching(QoalaOperation):
         QoalaProgram.current_function().append_to_current_block(self)
 
     def __enter__(self):
-        self._branch_true = BlockPlaceholder()
-        self._branch_false = BlockPlaceholder()
+        # We create the basic blocks for this conditional branching
+        new_block_id = len(QoalaProgram.current_function().blocks)
+        self._join_block = QoalaBlock(new_block_id + 2)
+        self._branch_true = BranchingBlockPlaceholder(new_block_id, self, self._join_block)
+        self._branch_false = BranchingBlockPlaceholder(new_block_id + 1, self, self._join_block)
+        # We eagerly emplace the blocks in the function. When using the
+        # context of each block, we will mark it correspondingly as active
+        QoalaProgram.current_function().emplace_block(self._branch_true)
+        QoalaProgram.current_function().emplace_block(self._branch_false)
+        QoalaProgram.current_function().emplace_block(self._join_block)
+        # And return the true and false branches
         return self._branch_true, self._branch_false
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         # Exiting the conditional branch context marks the finish of the
-        # branching on CFG. We insert a new empty block (the join block)
-        # in the current function.
-        QoalaProgram.current_function().emplace_new_empty_block()
+        # branching on CFG. We mark the join block as active
+        QoalaProgram.current_function().mark_as_current_block(self._join_block)
+
+    @property
+    def true_dest(self) -> QoalaBlock:
+        assert isinstance(self._branch_true, QoalaBlock)
+        return self._branch_true
+
+    @true_dest.setter
+    def true_dest(self, new_block: QoalaBlock):
+        assert isinstance(new_block, QoalaBlock)
+        self._branch_true = new_block
+
+    @property
+    def false_dest(self) -> QoalaBlock:
+        assert isinstance(self._branch_false, QoalaBlock)
+        return self._branch_false
+
+    @false_dest.setter
+    def false_dest(self, new_block: QoalaBlock):
+        assert isinstance(new_block, QoalaBlock)
+        self._branch_false = new_block
 
     def compile(self, ctx: Context, location: Optional[Location] = None) -> None:
         pass

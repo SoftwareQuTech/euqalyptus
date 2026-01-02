@@ -160,7 +160,7 @@ class QoalaProgram:
             self._module.add_function(self._function_name)
             # Then we start "executing" the entry function code, to generate the AST
             ret_val = self._entry_fun(*args, **kwargs)
-            # And add the remotes declarations
+            # Add the remotes declarations
             self._module.remotes = [
                 remote for _, remote in self._declared_remotes.items()
             ]

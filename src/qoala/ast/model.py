@@ -9,50 +9,6 @@ from qoala.utils.debug_info import DebugInfo
 
 
 @dataclass(init=False)
-class BlockPlaceholder:
-    _operations: List[QoalaExpression]
-    _block_id: int
-    """
-    Placeholder for the "soon to be placed" blocks of a branching instruction.
-    This class is intended to just contain the 
-    """
-
-    def __init__(self):
-        self._operations = []
-        self._block_id = -1
-
-    @property
-    def operations(self) -> List[QoalaExpression]:
-        return self._operations
-
-    def append_to_block(self, expression: QoalaExpression):
-        self.operations.append(expression)
-
-    def __enter__(self):
-        # Assign the block ID to this placeholder
-        from qoala import QoalaProgram
-
-        self._last_block_id = QoalaProgram.get_last_block_id()
-        # If self._last_block_id == -1, then we're interpreting code *without* compiling it.
-        # This is the case when testing syntax
-        # Assign this placeholder block in the QoalaProgram instance
-        QoalaProgram.current_function().emplace_block(self)
-        return self
-
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        # Convert this placeholder into a real block
-        # TODO - Insert the correct reference to the destination block!
-        from qoala.ast.operations.branching import UnconditionalBranching
-
-        self.append_to_block(UnconditionalBranching(None))
-        new_block = QoalaBlock(self._last_block_id)
-        for operation in self._operations:
-            new_block.append_to_block(operation)
-        from qoala import QoalaProgram
-        QoalaProgram.current_function().replace_placeholder_block(new_block, self)
-
-
-@dataclass(init=False)
 class QoalaBlock(QoalaCompilable):
     # TODO - Rethink the types of the arguments, since they can be the arguments of a function.
     _block_id: int
@@ -105,10 +61,62 @@ class QoalaBlock(QoalaCompilable):
 
 
 @dataclass(init=False)
+class BranchingBlockPlaceholder:
+    _operations: List[QoalaExpression]
+    _block_id: int
+    _branch_operation: "ConditionalBranching"
+    _join_dest: QoalaBlock
+
+    """
+    Placeholder for the "soon to be placed" blocks of a branching instruction.
+    This class is intended to just contain the operations and some extra information
+    used to correctly insert the block references for the branching instruction.
+    """
+    def __init__(self, block_id: int, condition: "ConditionalBranching", join_dest: QoalaBlock):
+        self._operations = []
+        self._block_id = block_id
+        self._branch_operation = condition
+        self._join_dest = join_dest
+
+    @property
+    def operations(self) -> List[QoalaExpression]:
+        return self._operations
+
+    def append_to_block(self, expression: QoalaExpression):
+        self.operations.append(expression)
+
+    def __enter__(self):
+        from qoala import QoalaProgram
+
+        # Mark this placeholder block as active in the QoalaProgram instance
+        QoalaProgram.current_function().mark_as_current_block(self)
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        # Convert this placeholder into a real block
+        from qoala.ast.operations.branching import UnconditionalBranching
+
+        self.append_to_block(UnconditionalBranching(self._join_dest))
+        new_block = QoalaBlock(self._block_id)
+        for operation in self._operations:
+            new_block.append_to_block(operation)
+        # Replace the placeholder in the enclosing branching operation
+        if self is self._branch_operation._branch_true:
+            self._branch_operation.true_dest = new_block
+        elif self is self._branch_operation._branch_false:
+            self._branch_operation.false_dest = new_block
+        else:
+            raise RuntimeError(f"Trying to replace a Block placeholder which is not attached to a branch op")
+        # Replace the placeholder in the function itself
+        from qoala import QoalaProgram
+        QoalaProgram.current_function().replace_placeholder_block(new_block, self)
+
+
+@dataclass(init=False)
 class QoalaFunction(QoalaCompilable):
     # Functions do not have a list or arguments, since the *first block* will contain that information
-    _blocks: List[QoalaBlock | BlockPlaceholder]
-    _current_block: QoalaBlock | BlockPlaceholder
+    _blocks: List[QoalaBlock | BranchingBlockPlaceholder]
+    _current_block: QoalaBlock | BranchingBlockPlaceholder
     _function_name: str
     debug_info: DebugInfo
 
@@ -118,7 +126,7 @@ class QoalaFunction(QoalaCompilable):
         # We start with a single empty block
         self.emplace_new_empty_block()
 
-    def replace_placeholder_block(self, new_block: QoalaBlock, placeholder: BlockPlaceholder):
+    def replace_placeholder_block(self, new_block: QoalaBlock, placeholder: BranchingBlockPlaceholder):
         block_position = -1
         for i, block in enumerate(self._blocks):
             if block is placeholder:
@@ -131,9 +139,12 @@ class QoalaFunction(QoalaCompilable):
     def emplace_new_empty_block(self):
         self.emplace_block(QoalaBlock(len(self._blocks)))
 
-    def emplace_block(self, block: QoalaBlock | BlockPlaceholder):
+    def emplace_block(self, block: QoalaBlock | BranchingBlockPlaceholder):
         self._current_block = block
         self._blocks.append(block)
+
+    def mark_as_current_block(self, block: QoalaBlock | BranchingBlockPlaceholder):
+        self._current_block = block
 
     @property
     def blocks(self) -> List[QoalaBlock]:
