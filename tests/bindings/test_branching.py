@@ -64,17 +64,17 @@ def branching_less_than_or_equals():
         with branch_true:
             a = Int(15)
         with branch_false:
-            a = Int(15)
+            a = Int(25)
     b = Int(30) + 10
 
 
 @QoalaProgram
 def branching_greater_than():
-    with if_gt(Int(4), 10) as (branch_true, branch_false):
+    with if_gt(Int(4), 7) as (branch_true, branch_false):
         with branch_true:
             a = Int(15)
         with branch_false:
-            a = Int(15)
+            a = Int(25)
     b = Int(30) + 10
 
 
@@ -84,7 +84,7 @@ def branching_greater_than_or_equals():
         with branch_true:
             a = Int(15)
         with branch_false:
-            a = Int(15)
+            a = Int(25)
     b = Int(30) + 10
 
 
