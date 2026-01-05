@@ -25,7 +25,7 @@ def simple_if():
             a = Int(15)
         with branch_false:
             a = Int(25)
-    b = a + 10
+    b = Int(30) + 10
 
 
 @QoalaProgram
@@ -35,7 +35,7 @@ def branching_equals():
             a = Int(15)
         with branch_false:
             a = Int(25)
-    b = a + 10
+    b = Int(30) + 10
 
 
 @QoalaProgram
@@ -45,7 +45,7 @@ def branching_not_equals():
             a = Int(15)
         with branch_false:
             a = Int(25)
-    b = a + 10
+    b = Int(30) + 10
 
 
 @QoalaProgram
@@ -55,7 +55,7 @@ def branching_less_than():
             a = Int(15)
         with branch_false:
             a = Int(25)
-    b = a + 10
+    b = Int(30) + 10
 
 
 @QoalaProgram
@@ -65,7 +65,7 @@ def branching_less_than_or_equals():
             a = Int(15)
         with branch_false:
             a = Int(15)
-    b = a + 10
+    b = Int(30) + 10
 
 
 @QoalaProgram
@@ -75,7 +75,7 @@ def branching_greater_than():
             a = Int(15)
         with branch_false:
             a = Int(15)
-    b = a + 10
+    b = Int(30) + 10
 
 
 @QoalaProgram
@@ -85,7 +85,7 @@ def branching_greater_than_or_equals():
             a = Int(15)
         with branch_false:
             a = Int(15)
-    b = a + 10
+    b = Int(30) + 10
 
 
 class TestBranchingInstructionsBindings:
@@ -109,14 +109,22 @@ class TestBranchingInstructionsBindings:
         _, module = simple_if.compile()
         assert isinstance(module, QoalaModule)
         # Note - MLIR does not offer a "boolean" type. values "true" and "false" are modeled as i1 values.
-        # TODO - adjust the expected output
         expected_asm = """module {
   qnet.func @simple_if() {
-    %true = arith.constant true
-    %false = arith.constant false
-    %0 = arith.andi %true, %false : i1
-    %1 = arith.ori %true, %false : i1
-    %2 = arith.xori %true, %true : i1
+    %c4_i32 = arith.constant 4 : i32
+    %c7_i32 = arith.constant 7 : i32
+    %0 = arith.cmpi slt, %c4_i32, %c7_i32 : i32
+    cf.cond_br %0, ^bb1, ^bb2
+  ^bb1:  // pred: ^bb0
+    %c15_i32 = arith.constant 15 : i32
+    cf.br ^bb3
+  ^bb2:  // pred: ^bb0
+    %c25_i32 = arith.constant 25 : i32
+    cf.br ^bb3
+  ^bb3:  // 2 preds: ^bb1, ^bb2
+    %c30_i32 = arith.constant 30 : i32
+    %c10_i32 = arith.constant 10 : i32
+    %1 = arith.addi %c30_i32, %c10_i32 : i32
     qnet.return
   }
 }
@@ -133,14 +141,22 @@ class TestBranchingInstructionsBindings:
         _, module = branching_equals.compile()
         assert isinstance(module, QoalaModule)
         # Note - MLIR does not offer a "boolean" type. values "true" and "false" are modeled as i1 values.
-        # TODO - adjust the expected output
         expected_asm = """module {
   qnet.func @branching_equals() {
-    %true = arith.constant true
-    %false = arith.constant false
-    %0 = arith.andi %true, %false : i1
-    %1 = arith.ori %true, %false : i1
-    %2 = arith.xori %true, %true : i1
+    %c4_i32 = arith.constant 4 : i32
+    %c7_i32 = arith.constant 7 : i32
+    %0 = arith.cmpi eq, %c4_i32, %c7_i32 : i32
+    cf.cond_br %0, ^bb1, ^bb2
+  ^bb1:  // pred: ^bb0
+    %c15_i32 = arith.constant 15 : i32
+    cf.br ^bb3
+  ^bb2:  // pred: ^bb0
+    %c25_i32 = arith.constant 25 : i32
+    cf.br ^bb3
+  ^bb3:  // 2 preds: ^bb1, ^bb2
+    %c30_i32 = arith.constant 30 : i32
+    %c10_i32 = arith.constant 10 : i32
+    %1 = arith.addi %c30_i32, %c10_i32 : i32
     qnet.return
   }
 }
@@ -157,14 +173,22 @@ class TestBranchingInstructionsBindings:
         _, module = branching_not_equals.compile()
         assert isinstance(module, QoalaModule)
         # Note - MLIR does not offer a "boolean" type. values "true" and "false" are modeled as i1 values.
-        # TODO - adjust the expected output
         expected_asm = """module {
   qnet.func @branching_not_equals() {
-    %true = arith.constant true
-    %false = arith.constant false
-    %0 = arith.andi %true, %false : i1
-    %1 = arith.ori %true, %false : i1
-    %2 = arith.xori %true, %true : i1
+    %c4_i32 = arith.constant 4 : i32
+    %c7_i32 = arith.constant 7 : i32
+    %0 = arith.cmpi ne, %c4_i32, %c7_i32 : i32
+    cf.cond_br %0, ^bb1, ^bb2
+  ^bb1:  // pred: ^bb0
+    %c15_i32 = arith.constant 15 : i32
+    cf.br ^bb3
+  ^bb2:  // pred: ^bb0
+    %c25_i32 = arith.constant 25 : i32
+    cf.br ^bb3
+  ^bb3:  // 2 preds: ^bb1, ^bb2
+    %c30_i32 = arith.constant 30 : i32
+    %c10_i32 = arith.constant 10 : i32
+    %1 = arith.addi %c30_i32, %c10_i32 : i32
     qnet.return
   }
 }
@@ -181,14 +205,22 @@ class TestBranchingInstructionsBindings:
         _, module = branching_less_than.compile()
         assert isinstance(module, QoalaModule)
         # Note - MLIR does not offer a "boolean" type. values "true" and "false" are modeled as i1 values.
-        # TODO - adjust the expected output
         expected_asm = """module {
   qnet.func @branching_less_than() {
-    %true = arith.constant true
-    %false = arith.constant false
-    %0 = arith.andi %true, %false : i1
-    %1 = arith.ori %true, %false : i1
-    %2 = arith.xori %true, %true : i1
+    %c4_i32 = arith.constant 4 : i32
+    %c7_i32 = arith.constant 7 : i32
+    %0 = arith.cmpi slt, %c4_i32, %c7_i32 : i32
+    cf.cond_br %0, ^bb1, ^bb2
+  ^bb1:  // pred: ^bb0
+    %c15_i32 = arith.constant 15 : i32
+    cf.br ^bb3
+  ^bb2:  // pred: ^bb0
+    %c25_i32 = arith.constant 25 : i32
+    cf.br ^bb3
+  ^bb3:  // 2 preds: ^bb1, ^bb2
+    %c30_i32 = arith.constant 30 : i32
+    %c10_i32 = arith.constant 10 : i32
+    %1 = arith.addi %c30_i32, %c10_i32 : i32
     qnet.return
   }
 }
@@ -205,14 +237,22 @@ class TestBranchingInstructionsBindings:
         _, module = branching_less_than_or_equals.compile()
         assert isinstance(module, QoalaModule)
         # Note - MLIR does not offer a "boolean" type. values "true" and "false" are modeled as i1 values.
-        # TODO - adjust the expected output
         expected_asm = """module {
   qnet.func @branching_less_than_or_equals() {
-    %true = arith.constant true
-    %false = arith.constant false
-    %0 = arith.andi %true, %false : i1
-    %1 = arith.ori %true, %false : i1
-    %2 = arith.xori %true, %true : i1
+    %c4_i32 = arith.constant 4 : i32
+    %c7_i32 = arith.constant 7 : i32
+    %0 = arith.cmpi sle, %c4_i32, %c7_i32 : i32
+    cf.cond_br %0, ^bb1, ^bb2
+  ^bb1:  // pred: ^bb0
+    %c15_i32 = arith.constant 15 : i32
+    cf.br ^bb3
+  ^bb2:  // pred: ^bb0
+    %c25_i32 = arith.constant 25 : i32
+    cf.br ^bb3
+  ^bb3:  // 2 preds: ^bb1, ^bb2
+    %c30_i32 = arith.constant 30 : i32
+    %c10_i32 = arith.constant 10 : i32
+    %1 = arith.addi %c30_i32, %c10_i32 : i32
     qnet.return
   }
 }
@@ -229,14 +269,22 @@ class TestBranchingInstructionsBindings:
         _, module = branching_greater_than.compile()
         assert isinstance(module, QoalaModule)
         # Note - MLIR does not offer a "boolean" type. values "true" and "false" are modeled as i1 values.
-        # TODO - adjust the expected output
         expected_asm = """module {
   qnet.func @branching_greater_than() {
-    %true = arith.constant true
-    %false = arith.constant false
-    %0 = arith.andi %true, %false : i1
-    %1 = arith.ori %true, %false : i1
-    %2 = arith.xori %true, %true : i1
+    %c4_i32 = arith.constant 4 : i32
+    %c7_i32 = arith.constant 7 : i32
+    %0 = arith.cmpi sgt, %c4_i32, %c7_i32 : i32
+    cf.cond_br %0, ^bb1, ^bb2
+  ^bb1:  // pred: ^bb0
+    %c15_i32 = arith.constant 15 : i32
+    cf.br ^bb3
+  ^bb2:  // pred: ^bb0
+    %c25_i32 = arith.constant 25 : i32
+    cf.br ^bb3
+  ^bb3:  // 2 preds: ^bb1, ^bb2
+    %c30_i32 = arith.constant 30 : i32
+    %c10_i32 = arith.constant 10 : i32
+    %1 = arith.addi %c30_i32, %c10_i32 : i32
     qnet.return
   }
 }
@@ -253,14 +301,22 @@ class TestBranchingInstructionsBindings:
         _, module = branching_greater_than_or_equals.compile()
         assert isinstance(module, QoalaModule)
         # Note - MLIR does not offer a "boolean" type. values "true" and "false" are modeled as i1 values.
-        # TODO - adjust the expected output
         expected_asm = """module {
   qnet.func @branching_greater_than_or_equals() {
-    %true = arith.constant true
-    %false = arith.constant false
-    %0 = arith.andi %true, %false : i1
-    %1 = arith.ori %true, %false : i1
-    %2 = arith.xori %true, %true : i1
+    %c4_i32 = arith.constant 4 : i32
+    %c7_i32 = arith.constant 7 : i32
+    %0 = arith.cmpi sge, %c4_i32, %c7_i32 : i32
+    cf.cond_br %0, ^bb1, ^bb2
+  ^bb1:  // pred: ^bb0
+    %c15_i32 = arith.constant 15 : i32
+    cf.br ^bb3
+  ^bb2:  // pred: ^bb0
+    %c25_i32 = arith.constant 25 : i32
+    cf.br ^bb3
+  ^bb3:  // 2 preds: ^bb1, ^bb2
+    %c30_i32 = arith.constant 30 : i32
+    %c10_i32 = arith.constant 10 : i32
+    %1 = arith.addi %c30_i32, %c10_i32 : i32
     qnet.return
   }
 }
