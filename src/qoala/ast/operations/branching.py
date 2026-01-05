@@ -100,7 +100,6 @@ class ConditionalBranching(QoalaOperation):
             col=self.debug_info.col_start,
             context=ctx,
         )
-        self.condition.compile(ctx, location)
         blocks_map = self.qoala_block.qoala_function.blocks_map
         self.ir_value = cf.cond_br(
             condition=self.condition.ir_value,
