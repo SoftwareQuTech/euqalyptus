@@ -16,12 +16,14 @@ class QoalaBlock(QoalaCompilable):
     _operations: List[QoalaExpression]
     _qnet_function: Optional[qnet.FuncOp]
     _qnet_block: Optional[Block]
+    _container_function: "QoalaFunction"
     debug_info: DebugInfo
 
-    def __init__(self, block_id: int):
+    def __init__(self, block_id: int, qoala_function: "QoalaFunction"):
         self._block_id = block_id
         self._args = []
         self._operations = []
+        self._container_function = qoala_function
         self._qnet_function = None
         self._qnet_block = None
 
@@ -34,6 +36,7 @@ class QoalaBlock(QoalaCompilable):
 
     def append_to_block(self, expression: QoalaExpression):
         self.operations.append(expression)
+        expression.qoala_block = self
 
     @property
     def qnet_function(self) -> Optional[qnet.FuncOp]:
@@ -46,6 +49,10 @@ class QoalaBlock(QoalaCompilable):
     @property
     def qnet_block(self) -> Optional[Block]:
         return self._qnet_block
+
+    @property
+    def qoala_function(self) -> "QoalaFunction":
+        return self._container_function
 
     def create_empty_qnet_block(self):
         if self._block_id == 0:
@@ -72,6 +79,7 @@ class BranchingBlockPlaceholder:
     _block_id: int
     _branch_operation: "ConditionalBranching"
     _join_dest: QoalaBlock
+    _container_function: "QoalaFunction"
 
     """
     Placeholder for the "soon to be placed" blocks of a branching instruction.
@@ -80,12 +88,13 @@ class BranchingBlockPlaceholder:
     """
 
     def __init__(
-        self, block_id: int, condition: "ConditionalBranching", join_dest: QoalaBlock
+        self, block_id: int, condition: "ConditionalBranching", join_dest: QoalaBlock, qoala_function: "QoalaFunction"
     ):
         self._operations = []
         self._block_id = block_id
         self._branch_operation = condition
         self._join_dest = join_dest
+        self._container_function = qoala_function
 
     @property
     def operations(self) -> List[QoalaExpression]:
@@ -106,7 +115,7 @@ class BranchingBlockPlaceholder:
         from qoala.ast.operations.branching import UnconditionalBranching
 
         self.append_to_block(UnconditionalBranching(self._join_dest))
-        new_block = QoalaBlock(self._block_id)
+        new_block = QoalaBlock(self._block_id, self._container_function)
         for operation in self._operations:
             new_block.append_to_block(operation)
         # Replace the placeholder in the enclosing branching operation
@@ -153,7 +162,7 @@ class QoalaFunction(QoalaCompilable):
             raise RuntimeError("Unknown placeholder block")
 
     def emplace_new_empty_block(self):
-        self.emplace_block(QoalaBlock(len(self._blocks)))
+        self.emplace_block(QoalaBlock(len(self._blocks), self))
 
     def emplace_block(self, block: QoalaBlock | BranchingBlockPlaceholder):
         self._current_block = block
