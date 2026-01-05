@@ -31,8 +31,8 @@ class UnconditionalBranching(QoalaOperation):
             col=self.debug_info.col_start,
             context=ctx,
         )
-        # TODO - Correctly set the destinations (and the arguments of those blocks)
-        self.ir_value = cf.br(dest_operands=(), dest=None, loc=source_location)
+        blocks_map = self.qoala_block.qoala_function.blocks_map
+        self.ir_value = cf.br(dest_operands=(), dest=blocks_map[self._destination], loc=source_location)
 
 
 @dataclass(init=False)
@@ -101,13 +101,13 @@ class ConditionalBranching(QoalaOperation):
             context=ctx,
         )
         self.condition.compile(ctx, location)
-        # TODO - Correctly set the destinations (and the arguments of those blocks)
+        blocks_map = self.qoala_block.qoala_function.blocks_map
         self.ir_value = cf.cond_br(
             condition=self.condition.ir_value,
             true_dest_operands=(),
             false_dest_operands=(),
-            true_dest=None,
-            false_dest=None,
+            true_dest=blocks_map[self.true_dest],
+            false_dest=blocks_map[self.false_dest],
             loc=source_location,
         )
 
