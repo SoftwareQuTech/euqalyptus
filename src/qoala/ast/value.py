@@ -2,16 +2,21 @@ from abc import ABC
 from dataclasses import dataclass
 from enum import Enum, auto
 from typing import Generic, TypeVar, Optional, Type, List, Union
-from typing_extensions import Self
 
 import qnet.dialects.arith as arith
 import qnet.dialects.tensor as tensor
-from qnet.extras.types import i32, ui32, f32, index
+from qnet.extras.types import i32, ui32, f32, index, bool as mlir_bool
 from qnet.ir import Context, Location
+from typing_extensions import Self
 
 from qoala import QoalaProgram
 from qoala.ast import QoalaExpression, checkbaseir
-from qoala.ast.operations import QoalaOperation, with_arith_operators
+from qoala.ast.operations import (
+    QoalaOperation,
+    with_arith_operators,
+    with_order_operators,
+    with_bool_operators,
+)
 from qoala.errors import UnknownTypeError, OperandMismatchError
 from qoala.utils.debug_info import DebugInfo, get_debug_info
 
@@ -42,7 +47,7 @@ class QoalaNumericValue(QoalaValue[_T], ABC):
     @classmethod
     def from_immediate(
         cls, value: _T, dbg_info: DebugInfo, is_index: bool = False
-    ) -> Union["QoalaInteger", "QoalaFloat"]:
+    ) -> Union["QoalaInteger", "QoalaFloat", "QoalaBool"]:
         if is_index:
             return QoalaInteger(
                 value=value,
@@ -51,6 +56,13 @@ class QoalaNumericValue(QoalaValue[_T], ABC):
                 is_index_type=True,
                 debug_info=dbg_info,
             )
+        # Weird stuff... In python, "True" and "False" are both "bool" and "int" types, so
+        # isinstance(True, bool) == True, and *also* isinstance(True, int) == True
+        # This is very C-ish, and kinda unexpected... In any case, to avoid casting bool
+        # immediates into QoalaIntegers (instead of QoalaBools), we first ask for bool
+        # type, then integer. This takes advantage that isinstance(1, bool) == False
+        elif isinstance(value, bool):
+            return QoalaBool(value=value, debug_info=dbg_info)
         elif isinstance(value, int):
             return QoalaInteger(
                 value=value, width=32, signedness=Signedness.SIGNED, debug_info=dbg_info
@@ -64,6 +76,7 @@ class QoalaNumericValue(QoalaValue[_T], ABC):
             )
 
 
+@with_order_operators
 @with_arith_operators
 class QoalaInteger(QoalaNumericValue[int]):
 
@@ -93,13 +106,13 @@ class QoalaInteger(QoalaNumericValue[int]):
             self.debug_info = debug_info
         else:
             self.debug_info = get_debug_info()
-        QoalaProgram.add_to_body(self)
+        QoalaProgram.current_function().append_to_current_block(self)
 
     def can_evaluate_to(self, cls) -> bool:
         return cls == QoalaInteger
 
     @checkbaseir
-    def compile(self, ctx: Context) -> None:
+    def compile(self, ctx: Context, location: Optional[Location] = None) -> None:
         if self.is_index_type:
             integer_type = index()
         elif self.signedness == Signedness.SIGNED:
@@ -119,6 +132,7 @@ class QoalaInteger(QoalaNumericValue[int]):
         )
 
 
+@with_order_operators
 @with_arith_operators
 class QoalaFloat(QoalaNumericValue[float]):
 
@@ -145,13 +159,13 @@ class QoalaFloat(QoalaNumericValue[float]):
             self.debug_info = debug_info
         else:
             self.debug_info = get_debug_info()
-        QoalaProgram.add_to_body(self)
+        QoalaProgram.current_function().append_to_current_block(self)
 
     def can_evaluate_to(self, cls) -> bool:
         return cls == QoalaFloat
 
     @checkbaseir
-    def compile(self, ctx: Context) -> None:
+    def compile(self, ctx: Context, location: Optional[Location] = None) -> None:
         float_type = f32()
         source_location = Location.file(
             filename=self.debug_info.filename,
@@ -169,6 +183,44 @@ QoalaIntegerOrExpression = QoalaInteger | QoalaExpression
 
 ImmediateQFloatOrExpression = QoalaFloatOrExpression | float
 ImmediateQIntOrExpression = QoalaIntegerOrExpression | int
+
+
+@with_bool_operators
+class QoalaBool(QoalaValue[bool]):
+    def __init__(
+        self,
+        value: bool,
+        debug_info: DebugInfo | None = None,
+        other: Optional[Self] = None,
+    ):
+        super().__init__()
+        if other is not None:
+            if value is not None:
+                self.value = value
+            else:
+                self.value = other.value
+        else:
+            self.value = value
+        if debug_info is not None:
+            self.debug_info = debug_info
+        else:
+            self.debug_info = get_debug_info()
+        QoalaProgram.current_function().append_to_current_block(self)
+
+    def compile(self, ctx: Context, location: Optional[Location] = None) -> None:
+        bool_type = mlir_bool()
+        source_location = Location.file(
+            filename=self.debug_info.filename,
+            line=self.debug_info.line_start,
+            col=self.debug_info.col_start,
+            context=ctx,
+        )
+        self.ir_value = arith.constant(
+            value=self.value, result=bool_type, loc=source_location
+        )
+
+    def can_evaluate_to(self, cls) -> bool:
+        return cls == QoalaBool
 
 
 # FIXME - In the meantime, we will model arrays as if they were
@@ -241,7 +293,7 @@ class QoalaArray(
         else:
             self.length = length
         self.debug_info = get_debug_info()
-        QoalaProgram.add_to_body(self)
+        QoalaProgram.current_function().append_to_current_block(self)
 
     def store(
         self, new_element: QoalaExpression | _Native_Base_Type
@@ -288,7 +340,7 @@ class QoalaArray(
         return cls == self.qoala_type
 
     @checkbaseir
-    def compile(self, ctx: Context) -> None:
+    def compile(self, ctx: Context, location: Optional[Location] = None) -> None:
         ir_values = [element.ir_value for element in self.members]
         if self.base_type is int:
             hir_base_type = i32()
@@ -326,9 +378,9 @@ class QoalaReferenceInsideArray(QoalaExpression):
         super().__init__()
         self._base_expression = base_expression
         self._index = idx
-        QoalaProgram.add_to_body(self)
+        QoalaProgram.current_function().append_to_current_block(self)
 
-    def compile(self, ctx: Context) -> None:
+    def compile(self, ctx: Context, location: Optional[Location] = None) -> None:
         self.ir_value = self._base_expression.ir_values[self._index]
 
     def can_evaluate_to(self, cls) -> bool:

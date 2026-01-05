@@ -1,5 +1,6 @@
 from abc import ABC
 from dataclasses import dataclass
+from typing import Optional
 
 import qnet.dialects.arith as arith
 import qnet.dialects.math as math
@@ -7,10 +8,14 @@ from qnet.ir import Context, Location
 
 from qoala import QoalaProgram
 from qoala.ast import QoalaExpression, checkbaseir
-from qoala.ast.operations import QoalaOperation, with_arith_operators
+from qoala.ast.operations import (
+    QoalaOperation,
+    with_arith_operators,
+    with_order_operators,
+)
 from qoala.ast.operations.casts import IntToFloat
 from qoala.ast.value import QoalaInteger, QoalaFloat
-from qoala.errors import WrongEvaluationTypeError
+from qoala.errors import WrongEvaluationTypeError, UnknownOperationError
 from qoala.utils.debug_info import get_debug_info
 
 
@@ -60,12 +65,14 @@ class BaseBinaryArithOp(QoalaOperation, ABC):
             self.operand_b = operands[1]
 
 
+@dataclass(init=False)
+@with_order_operators
 @with_arith_operators
 class Add(BaseBinaryArithOp):
 
     def __init__(self, *operands: QoalaExpression):
         super().__init__(*operands)
-        QoalaProgram.add_to_body(self)
+        QoalaProgram.current_function().append_to_current_block(self)
 
     def can_evaluate_to(self, cls) -> bool:
         # We can assume that both operands evaluate to the same type, since the constructor
@@ -77,7 +84,7 @@ class Add(BaseBinaryArithOp):
         )
 
     @checkbaseir
-    def compile(self, ctx: Context) -> None:
+    def compile(self, ctx: Context, location: Optional[Location] = None) -> None:
         # We can assume that both operands evaluate to the same type, since the constructor
         # in the super class will insert an upcast if needed
         source_location = Location.file(
@@ -101,12 +108,14 @@ class Add(BaseBinaryArithOp):
             )
 
 
+@dataclass(init=False)
+@with_order_operators
 @with_arith_operators
 class Subtract(BaseBinaryArithOp):
 
     def __init__(self, *operands: QoalaExpression):
         super().__init__(*operands)
-        QoalaProgram.add_to_body(self)
+        QoalaProgram.current_function().append_to_current_block(self)
 
     def can_evaluate_to(self, cls) -> bool:
         # We can assume that both operands evaluate to the same type, since the constructor
@@ -118,7 +127,7 @@ class Subtract(BaseBinaryArithOp):
         )
 
     @checkbaseir
-    def compile(self, ctx: Context) -> None:
+    def compile(self, ctx: Context, location: Optional[Location] = None) -> None:
         # We can assume that both operands evaluate to the same type, since the constructor
         # in the super class will insert an upcast if needed
         source_location = Location.file(
@@ -143,12 +152,13 @@ class Subtract(BaseBinaryArithOp):
 
 
 @dataclass(init=False)
+@with_order_operators
 @with_arith_operators
 class Multiply(BaseBinaryArithOp):
 
     def __init__(self, *operands: QoalaExpression):
         super().__init__(*operands)
-        QoalaProgram.add_to_body(self)
+        QoalaProgram.current_function().append_to_current_block(self)
 
     def can_evaluate_to(self, cls) -> bool:
         # We can assume that both operands evaluate to the same type, since the constructor
@@ -160,7 +170,7 @@ class Multiply(BaseBinaryArithOp):
         )
 
     @checkbaseir
-    def compile(self, ctx: Context) -> None:
+    def compile(self, ctx: Context, location: Optional[Location] = None) -> None:
         # We can assume that both operands evaluate to the same type, since the constructor
         # in the super class will insert an upcast if needed
         source_location = Location.file(
@@ -185,6 +195,7 @@ class Multiply(BaseBinaryArithOp):
 
 
 @dataclass(init=False)
+@with_order_operators
 @with_arith_operators
 class Divide(BaseBinaryArithOp):
     """
@@ -196,7 +207,7 @@ class Divide(BaseBinaryArithOp):
 
     def __init__(self, *operands: QoalaExpression):
         super().__init__(*operands)
-        QoalaProgram.add_to_body(self)
+        QoalaProgram.current_function().append_to_current_block(self)
 
     def can_evaluate_to(self, cls) -> bool:
         # We can assume that both operands evaluate to the same type, since the constructor
@@ -208,7 +219,7 @@ class Divide(BaseBinaryArithOp):
         )
 
     @checkbaseir
-    def compile(self, ctx: Context) -> None:
+    def compile(self, ctx: Context, location: Optional[Location] = None) -> None:
         # We can assume that both operands evaluate to the same type, since the constructor
         # in the super class will insert an upcast if needed
         source_location = Location.file(
@@ -233,6 +244,7 @@ class Divide(BaseBinaryArithOp):
 
 
 @dataclass(init=False)
+@with_order_operators
 @with_arith_operators
 class Pow(QoalaOperation):
     base: QoalaExpression
@@ -244,7 +256,7 @@ class Pow(QoalaOperation):
         self.base = operands[0]
         self.exponent = operands[1]
         self.debug_info = get_debug_info()
-        QoalaProgram.add_to_body(self)
+        QoalaProgram.current_function().append_to_current_block(self)
 
     def can_evaluate_to(self, cls) -> bool:
         return (cls == QoalaInteger or cls == QoalaFloat) and self.base.can_evaluate_to(
@@ -252,7 +264,7 @@ class Pow(QoalaOperation):
         )  # The base of the exponentiation dictates the type of the result
 
     @checkbaseir
-    def compile(self, ctx: Context) -> None:
+    def compile(self, ctx: Context, location: Optional[Location] = None) -> None:
         # TODO - In the meantime we assume both operands are of the same type
         #        In the future we could implement semantic checks to automatically cast one
         #        type to another one
@@ -291,6 +303,7 @@ class Pow(QoalaOperation):
 
 
 @dataclass(init=False)
+@with_order_operators
 @with_arith_operators
 class Pow2(QoalaOperation):
     exponent: QoalaExpression
@@ -304,13 +317,13 @@ class Pow2(QoalaOperation):
         else:
             self.exponent = operands[0]
         self.debug_info = get_debug_info()
-        QoalaProgram.add_to_body(self)
+        QoalaProgram.current_function().append_to_current_block(self)
 
     def can_evaluate_to(self, cls) -> bool:
         return cls == QoalaFloat
 
     @checkbaseir
-    def compile(self, ctx: Context) -> None:
+    def compile(self, ctx: Context, location: Optional[Location] = None) -> None:
         source_location = Location.file(
             filename=self.debug_info.filename,
             line=self.debug_info.line_start,
@@ -329,7 +342,6 @@ class Pow2(QoalaOperation):
 
 
 class ArithOperatorFactory:
-
     def __new__(cls, *operands, operation: str) -> QoalaExpression:
         if operation in ["__add__", "__radd__", "__iadd__"]:
             return Add(*operands)
@@ -339,3 +351,5 @@ class ArithOperatorFactory:
             return Multiply(*operands)
         elif operation in ["__truediv__", "__rtruediv_", "__itruediv__"]:
             return Divide(*operands)
+        else:
+            raise UnknownOperationError(f"Operation '{operation}' is not supported")

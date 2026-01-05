@@ -60,6 +60,56 @@ class _NumericOperandsOverload:
     def __itruediv__(self, other):
         pass
 
+    # Overload of numeric operands that yield booleans
+    def __eq__(self, other):
+        pass
+
+    def __ne__(self, other):
+        pass
+
+    def __lt__(self, other):
+        pass
+
+    def __gt__(self, other):
+        pass
+
+    def __le__(self, other):
+        pass
+
+    def __ge__(self, other):
+        pass
+
+
+class _BooleanOperandsOverload:
+    # We overload the dunder methods operators, so IDEs do not get confused because of
+    # the dynamic type of booleans, so instances of this class "can use" the overloaded
+    # operator. This is because the constructor of the concrete types return an instance
+    # of a subclass of QoalaExpression, rather than a Boolean instance
+    def __and__(self, other):
+        pass
+
+    def __or__(self, other):
+        pass
+
+    def __xor__(self, other):
+        pass
+
+    def __rand__(self, other):
+        pass
+
+    def __ror__(self, other):
+        pass
+
+    def __rxor__(self, other):
+        pass
+
+    # Unary boolean operators
+    def __neg__(self):
+        pass
+
+    def __invert__(self):
+        pass
+
 
 from .integer import Int, Int32, UInt32, Bit
 from .floats import Float, Double

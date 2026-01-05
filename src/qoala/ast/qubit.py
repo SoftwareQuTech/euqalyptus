@@ -1,6 +1,8 @@
 import math
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
+from typing import Optional
+
 from typing_extensions import Self
 
 import qnet.dialects.qnet as qnet
@@ -253,13 +255,13 @@ class QoalaLocalQubit(QbitBaseOperations):
     def __init__(self):
         super().__init__()
         self.debug_info = get_debug_info()
-        QoalaProgram.add_to_body(self)
+        QoalaProgram.current_function().append_to_current_block(self)
 
     def can_evaluate_to(self, cls) -> bool:
         return cls == QoalaQubit
 
     @checkbaseir
-    def compile(self, ctx: Context) -> None:
+    def compile(self, ctx: Context, location: Optional[Location] = None) -> None:
         source_location = Location.file(
             filename=self.debug_info.filename,
             line=self.debug_info.line_start,
@@ -281,13 +283,13 @@ class QoalaEprs(QbitBaseOperations):
         # We assume the remote was declared before using the name (symbol)
         self.remote_name = name
         self.debug_info = get_debug_info()
-        QoalaProgram.add_to_body(self)
+        QoalaProgram.current_function().append_to_current_block(self)
 
     def can_evaluate_to(self, cls) -> bool:
         return cls == QoalaQubit
 
     @checkbaseir
-    def compile(self, ctx: Context) -> None:
+    def compile(self, ctx: Context, location: Optional[Location] = None) -> None:
         source_location = Location.file(
             filename=self.debug_info.filename,
             line=self.debug_info.line_start,

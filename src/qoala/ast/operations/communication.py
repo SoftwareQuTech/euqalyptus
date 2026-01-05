@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import List, Type, TypeVar
+from typing import List, Type, TypeVar, Optional
 
 import qnet.dialects.tensor as tensor
 import qnet.dialects.qnet as qnet
@@ -39,7 +39,7 @@ class DeclaredRemote(QoalaOperation):
         return False
 
     @checkbaseir
-    def compile(self, ctx: Context) -> None:
+    def compile(self, ctx: Context, location: Optional[Location] = None) -> None:
         source_location = Location.file(
             filename=self.debug_info.filename,
             line=self.debug_info.line_start,
@@ -106,7 +106,7 @@ class BaseRecvOp(QoalaArray[_Qoala_Base_Type, _Native_Base_Type]):
             return cls == QoalaArray
 
     @checkbaseir
-    def compile(self, ctx: Context) -> None:
+    def compile(self, ctx: Context, location: Optional[Location] = None) -> None:
         source_location = Location.file(
             filename=self.debug_info.filename,
             line=self.debug_info.line_start,
@@ -238,13 +238,13 @@ class BaseSendOp(QoalaOperation):
                     f"Send operation: value '{val}' cannot be converted to '{self.base_type}'"
                 )
             self.values.append(val_to_add)
-        QoalaProgram.add_to_body(self)
+        QoalaProgram.current_function().append_to_current_block(self)
 
     def can_evaluate_to(self, cls) -> bool:
         return False
 
     @checkbaseir
-    def compile(self, ctx: Context) -> None:
+    def compile(self, ctx: Context, location: Optional[Location] = None) -> None:
         source_location = Location.file(
             filename=self.debug_info.filename,
             line=self.debug_info.line_start,

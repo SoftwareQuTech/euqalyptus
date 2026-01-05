@@ -9,6 +9,7 @@ from typing_extensions import Self
 
 import qoala.utils.debug_info as dbg_info
 from qoala.ast import QoalaExpression
+from qoala.ast.model import QoalaFunction
 from qoala.errors import NotYetCompiledError, QuantumProgramNotImplementedError
 from qoala.module import QoalaModule
 
@@ -50,9 +51,10 @@ class QoalaProgram:
     def __init__(self, entry_fun: Callable):
         self._function_name = entry_fun.__name__
         module_dbg_info = dbg_info.get_debug_info_for_function(entry_fun)
-        self._module = QoalaModule(self._function_name, module_dbg_info)
         self._entry_fun = entry_fun
         self._is_compiled = False
+        # Create the module
+        self._module = QoalaModule(module_dbg_info)
 
     @classmethod
     def compile_lazy_flag(cls, new_flag_value: Optional[bool] = None) -> bool:
@@ -69,10 +71,6 @@ class QoalaProgram:
         return cls._compilation_context.options.use_singular_classical_comm_ops
 
     @property
-    def _body(self):
-        return self._module._body
-
-    @property
     def module(self):
         if not self._is_compiled:
             raise NotYetCompiledError(
@@ -82,9 +80,17 @@ class QoalaProgram:
             return self._module
 
     @classmethod
-    def add_to_body(cls, item: QoalaExpression) -> None:
-        if hasattr(QoalaProgram, "_instance"):
-            QoalaProgram._instance._module.add_element_to_body(item)
+    def current_function(cls) -> QoalaFunction:
+        if hasattr(cls, "_instance"):
+            return cls._instance._module.current_function
+        # This should never happen
+        raise RuntimeError(f"Program with no instance!")
+
+    @classmethod
+    def get_last_block_id(cls) -> int:
+        if hasattr(cls, "_instance"):
+            return len(cls._instance._module.functions[-1].blocks)
+        return -1
 
     @classmethod
     def get_declared_remote(cls, remote_name: str) -> Any:
@@ -149,12 +155,17 @@ class QoalaProgram:
             self.compile_singular_comm_ops(singular_comm_ops)
 
             # We clear the body of this qoala program.
-            self._module.clear_body()
+            self._module.clear()
+            # For the moment, we create the *only* function of the module
+            self._module.add_function(self._function_name)
+            # Then we start "executing" the entry function code, to generate the AST
             ret_val = self._entry_fun(*args, **kwargs)
+            # Add the remotes declarations
             self._module.remotes = [
                 remote for _, remote in self._declared_remotes.items()
             ]
             self._is_compiled = True
+            # Finally, we generate the QoalaHIR from the AST
             if not self.compile_lazy_flag():
                 self.module.generate_qoala_hir()
             # We delete the reference to the QoalaProgram under compilation

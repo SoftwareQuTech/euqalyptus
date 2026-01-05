@@ -4,10 +4,15 @@ from typing import Type, Tuple, Union, List
 import pytest
 
 import qoala.utils.debug_info as dbg_info
+from qoala import QoalaProgram
 from qoala.ast.value import QoalaArray, QoalaInteger, QoalaFloat
 from qoala.types.classical.arrays import IntArray, FloatArray
 from qoala.types.classical.floats import Float
 from qoala.types.classical.integer import Int32
+
+
+class DummyQoalaProgram(QoalaProgram):
+    pass
 
 
 class TestArraySemantics:
@@ -39,6 +44,10 @@ class TestArraySemantics:
         array_type: Type,
         member_type: QoalaInteger | QoalaFloat,
     ):
+        # For testing purposes, we manually create a dummy program and attach a function to it.
+        QoalaProgram._instance = DummyQoalaProgram(self.test_array_semantics)
+        QoalaProgram._instance._module.add_function(self.test_array_semantics)
+
         array_values: List[member_type, vals_type] = []
         in_order_values: Queue[vals_type] = Queue()
         for value in values:

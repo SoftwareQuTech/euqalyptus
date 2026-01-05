@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from typing import Optional
 
 import qnet.dialects.arith as arith
 import qnet.dialects.tensor as tensor
@@ -21,13 +22,13 @@ class CastToIndex(QoalaOperation):
         super().__init__()
         assert len(operands) == 1
         self.index_val: QoalaExpression = operands[0]
-        QoalaProgram.add_to_body(self)
+        QoalaProgram.current_function().append_to_current_block(self)
 
     def can_evaluate_to(self, cls) -> bool:
         return self.index_val.can_evaluate_to(QoalaInteger)
 
     @checkbaseir
-    def compile(self, ctx: Context) -> None:
+    def compile(self, ctx: Context, location: Optional[Location] = None) -> None:
         source_location = Location.file(
             filename=self.debug_info.filename,
             line=self.debug_info.line_start,
@@ -57,13 +58,13 @@ class GetItem(QoalaOperation):
         assert isinstance(operands[0], QoalaArray)
         self.base_array: QoalaArray = operands[0]
         self.index: QoalaExpression = operands[1]
-        QoalaProgram.add_to_body(self)
+        QoalaProgram.current_function().append_to_current_block(self)
 
     def can_evaluate_to(self, cls) -> bool:
         return self.base_array.members_can_evaluate_to(cls)
 
     @checkbaseir
-    def compile(self, ctx: Context) -> None:
+    def compile(self, ctx: Context, location: Optional[Location] = None) -> None:
         source_location = Location.file(
             filename=self.debug_info.filename,
             line=self.debug_info.line_start,
@@ -88,7 +89,7 @@ class SetItem(QoalaOperation):
         assert isinstance(operands[0], QoalaArray)
         self.base_array: QoalaArray = operands[0]
         self.index: QoalaExpression = operands[1]
-        QoalaProgram.add_to_body(self)
+        QoalaProgram.current_function().append_to_current_block(self)
 
     def can_evaluate_to(self, cls) -> bool:
         if self.index.can_evaluate_to(QoalaInteger) and self.base_array.can_evaluate_to(
@@ -100,7 +101,7 @@ class SetItem(QoalaOperation):
             return False
 
     @checkbaseir
-    def compile(self, ctx: Context) -> None:
+    def compile(self, ctx: Context, location: Optional[Location] = None) -> None:
         _ = Location.file(
             filename=self.debug_info.filename,
             line=self.debug_info.line_start,

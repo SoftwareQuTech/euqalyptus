@@ -53,7 +53,7 @@ def classical_send_measurement_values_as_float():
 def classical_send_array_of_values():
     remote = Remote("Alice")
     # We're not interested on testing how an array can be created from values and immediates
-    # For that, see the corresponding test on the "test_classical.py" file
+    # For that, see the corresponding test on the "test_classical_floats_ints.py" file
     int_vals = IntArray(10, 20)
     float_vals = FloatArray(3.14, 2.71)
     send_ints("Alice", int_vals)
@@ -64,7 +64,7 @@ def classical_send_array_of_values():
 def classical_send_immediates_and_array_of_values():
     remote = Remote("Alice")
     # We're not interested on testing how an array can be created from values and immediates
-    # For that, see the corresponding test on the "test_classical.py" file
+    # For that, see the corresponding test on the "test_classical_floats_ints.py" file
     int_vals = IntArray(10, 20)
     float_vals = FloatArray(3.14, 2.71)
     send_ints("Alice", int_vals, 30)
