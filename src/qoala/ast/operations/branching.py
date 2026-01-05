@@ -25,8 +25,14 @@ class UnconditionalBranching(QoalaOperation):
         return False
 
     def compile(self, ctx: Context, location: Optional[Location] = None) -> None:
-        # TODO - Implement this!
-        pass
+        source_location = Location.file(
+            filename=self.debug_info.filename,
+            line=self.debug_info.line_start,
+            col=self.debug_info.col_start,
+            context=ctx,
+        )
+        # TODO - Correctly set the destinations (and the arguments of those blocks)
+        self.ir_value = cf.br(dest_operands=(), dest=None, loc=source_location)
 
 
 @dataclass(init=False)
@@ -87,7 +93,22 @@ class ConditionalBranching(QoalaOperation):
         self._branch_false = new_block
 
     def compile(self, ctx: Context, location: Optional[Location] = None) -> None:
-        pass
+        source_location = Location.file(
+            filename=self.debug_info.filename,
+            line=self.debug_info.line_start,
+            col=self.debug_info.col_start,
+            context=ctx,
+        )
+        self.condition.compile(ctx, location)
+        # TODO - Correctly set the destinations (and the arguments of those blocks)
+        self.ir_value = cf.cond_br(
+            condition=self.condition.ir_value,
+            true_dest_operands=(),
+            false_dest_operands=(),
+            true_dest=None,
+            false_dest=None,
+            loc=source_location,
+        )
 
     def can_evaluate_to(self, cls) -> bool:
         return False
