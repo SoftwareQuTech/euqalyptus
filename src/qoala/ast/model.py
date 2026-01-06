@@ -205,7 +205,7 @@ class QoalaFunction(QoalaCompilable):
             self._block_map[block] = block.qnet_block
 
         # Compile each block of the function
-        for i, block in enumerate(self._blocks):
+        for block in self._blocks:
             block.compile(ctx, location)
 
         # Insert the default return only in the last block, and only if needed.
