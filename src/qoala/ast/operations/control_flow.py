@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import Optional, Sequence
+from typing import Optional
 
 import qnet.dialects.qnet as qnet
 from qnet.ir import Context, Location
