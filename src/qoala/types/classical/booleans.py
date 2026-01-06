@@ -1,4 +1,5 @@
-from typing import Optional, Self
+from typing_extensions import Self
+from typing import Optional
 
 from qoala.ast.value import QoalaBool
 from qoala.errors import NotBooleanArgumentError
