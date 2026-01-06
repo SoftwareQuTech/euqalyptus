@@ -32,6 +32,7 @@ class QoalaCompilable(ABC):
 @dataclass(init=False)
 class QoalaExpression(QoalaCompilable, ABC):
     _ir_vals: List[Operation]
+    _containing_block: "QoalaBlock"
     debug_info: DebugInfo
 
     def __init__(self):
@@ -51,6 +52,14 @@ class QoalaExpression(QoalaCompilable, ABC):
     @property
     def ir_values(self) -> List[Operation]:
         return self._ir_vals
+
+    @property
+    def qoala_block(self) -> "QoalaBlock":
+        return self._containing_block
+
+    @qoala_block.setter
+    def qoala_block(self, new_block: "QoalaBlock"):
+        self._containing_block = new_block
 
     @abstractmethod
     def can_evaluate_to(self, cls) -> bool:

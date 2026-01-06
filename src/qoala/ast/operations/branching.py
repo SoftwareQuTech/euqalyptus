@@ -25,8 +25,16 @@ class UnconditionalBranching(QoalaOperation):
         return False
 
     def compile(self, ctx: Context, location: Optional[Location] = None) -> None:
-        # TODO - Implement this!
-        pass
+        source_location = Location.file(
+            filename=self.debug_info.filename,
+            line=self.debug_info.line_start,
+            col=self.debug_info.col_start,
+            context=ctx,
+        )
+        blocks_map = self.qoala_block.qoala_function.blocks_map
+        self.ir_value = cf.br(
+            dest_operands=(), dest=blocks_map[self._destination], loc=source_location
+        )
 
 
 @dataclass(init=False)
@@ -45,19 +53,20 @@ class ConditionalBranching(QoalaOperation):
 
     def __enter__(self):
         # We create the basic blocks for this conditional branching
-        new_block_id = len(QoalaProgram.current_function().blocks)
-        self._join_block = QoalaBlock(new_block_id + 2)
+        current_function = QoalaProgram.current_function()
+        new_block_id = len(current_function.blocks)
+        self._join_block = QoalaBlock(new_block_id + 2, current_function)
         self._branch_true = BranchingBlockPlaceholder(
-            new_block_id, self, self._join_block
+            new_block_id, self, self._join_block, current_function
         )
         self._branch_false = BranchingBlockPlaceholder(
-            new_block_id + 1, self, self._join_block
+            new_block_id + 1, self, self._join_block, current_function
         )
         # We eagerly emplace the blocks in the function. When using the
         # context of each block, we will mark it correspondingly as active
-        QoalaProgram.current_function().emplace_block(self._branch_true)
-        QoalaProgram.current_function().emplace_block(self._branch_false)
-        QoalaProgram.current_function().emplace_block(self._join_block)
+        current_function.emplace_block(self._branch_true)
+        current_function.emplace_block(self._branch_false)
+        current_function.emplace_block(self._join_block)
         # And return the true and false branches
         return self._branch_true, self._branch_false
 
@@ -87,7 +96,21 @@ class ConditionalBranching(QoalaOperation):
         self._branch_false = new_block
 
     def compile(self, ctx: Context, location: Optional[Location] = None) -> None:
-        pass
+        source_location = Location.file(
+            filename=self.debug_info.filename,
+            line=self.debug_info.line_start,
+            col=self.debug_info.col_start,
+            context=ctx,
+        )
+        blocks_map = self.qoala_block.qoala_function.blocks_map
+        self.ir_value = cf.cond_br(
+            condition=self.condition.ir_value,
+            true_dest_operands=(),
+            false_dest_operands=(),
+            true_dest=blocks_map[self.true_dest],
+            false_dest=blocks_map[self.false_dest],
+            loc=source_location,
+        )
 
     def can_evaluate_to(self, cls) -> bool:
         return False

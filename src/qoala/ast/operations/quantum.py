@@ -153,6 +153,7 @@ def RotationAlias(base_clazz: Type, base_rotation: float):
 
     return outer
 
+
 class XGate(_QubitBaseOperation):
     def __init__(self, qubit: QoalaExpression):
         super().__init__(qubit=qubit)
