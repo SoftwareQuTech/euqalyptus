@@ -196,6 +196,8 @@ class HGate(_QubitBaseOperation):
             context=ctx,
         )
         self.ir_value = qnet.hadamard(self.qubit.ir_value, loc=source_location)
+        # We then register that the qubit has a "new" value
+        self.qubit.ir_value = self.ir_value
 
 
 @dataclass(init=False)
