@@ -194,6 +194,7 @@ class QoalaFunction(QoalaCompilable):
             type=func_type,
             loc=location,
         )
+
         # Eagerly create empty blocks that will be filled later.
         # This is needed when compiling the branching instructions, which require
         # forward block references.
@@ -202,9 +203,28 @@ class QoalaFunction(QoalaCompilable):
             block.qnet_function = function
             block.create_empty_qnet_block()
             self._block_map[block] = block.qnet_block
-        # Compile each block fo the function
+
+        # Compile each block of the function
         for block in self._blocks:
             block.compile(ctx, location)
-        # Insert the return, only in the last block
-        with InsertionPoint(self._blocks[-1].qnet_block):
-            qnet.ReturnOp([], loc=location)
+
+        # Insert the default return only in the last block, and only if needed.
+        #
+        # NOTE:
+        # Ideally, we would check whether the block already has a terminator by
+        # querying the MLIR "IsTerminator" trait. However, the MLIR Python bindings
+        # used here do not expose terminator traits (e.g., `is_terminator` or
+        # `has_trait`) on operations or blocks.
+        #
+        # Therefore, we explicitly check whether the last MLIR operation in the
+        # block is a qnet.ReturnOp. This is sufficient for now, since qnet.return
+        # is currently the only terminator operation in the QNet dialect.
+        last_block = self._blocks[-1]
+        b = last_block.qnet_block
+        mlir_ops = list(b.operations)
+
+        already_has_return = bool(mlir_ops) and isinstance(mlir_ops[-1], qnet.ReturnOp)
+
+        if not already_has_return:
+            with InsertionPoint(b):
+                qnet.ReturnOp([], loc=location)

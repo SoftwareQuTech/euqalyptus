@@ -3,10 +3,12 @@ from typing import List, Any
 from qoala import QoalaProgramBase
 from qoala.ast.operations.arrays import GetItem, SetItem
 from qoala.ast.operations.numeric import Add, Subtract, Multiply, Divide
+from qoala.ast.operations.control_flow import ReturnResultsOp
 from qoala.ast.value import QoalaInteger, QoalaFloat, QoalaArray
 from qoala.types.classical.arrays import IntArray, FloatArray
 from qoala.types.classical.floats import Float
 from qoala.types.classical.integer import Int
+from qoala.operations.control_flow import return_results
 
 
 class EmptyProgram(QoalaProgramBase):
@@ -22,9 +24,11 @@ class ArithmeticProgram(QoalaProgramBase):
         int_b = Int(20)
 
         int_c = int_a + int_b
-        inc_d = int_b - int_a
-        inc_e = int_a * int_a
-        inc_f = int_b / int_a
+        int_d = int_b - int_a
+        int_e = int_a * int_a
+        int_f = int_b / int_a
+
+        return_results(int_c, int_d, int_e, int_f)
 
 
 class ProgramWithArg(QoalaProgramBase):
@@ -32,6 +36,8 @@ class ProgramWithArg(QoalaProgramBase):
     def main(self, val_a: int, val_b: float):
         int_a = Int(val_a)
         int_b = Float(val_b)
+
+        return_results(int_a, int_b)
 
 
 class ProgramWithArrayAccess(QoalaProgramBase):
@@ -76,7 +82,7 @@ class TestQoalaClass:
         # Basic check
         assert len(arithmetic_program.module.functions) == 1
         assert len(arithmetic_program.module.functions[0].blocks) == 1
-        assert len(arithmetic_program.module.functions[0].blocks[0].operations) == 6
+        assert len(arithmetic_program.module.functions[0].blocks[0].operations) == 7
         program_body = arithmetic_program.module.functions[0].blocks[0].operations
 
         assert isinstance(program_body[0], QoalaInteger)
@@ -93,6 +99,8 @@ class TestQoalaClass:
         assert isinstance(program_body[5], Divide)
         assert program_body[5].operand_a is program_body[1]
         assert program_body[5].operand_b is program_body[0]
+        assert isinstance(program_body[6], ReturnResultsOp)
+        assert program_body[6].values == [program_body[2], program_body[3], program_body[4], program_body[5]]
 
     def test_program_using_args(self):
         program_with_arg = ProgramWithArg()
@@ -101,11 +109,13 @@ class TestQoalaClass:
         # Basic check
         assert len(program_with_arg.module.functions) == 1
         assert len(program_with_arg.module.functions[0].blocks) == 1
-        assert len(program_with_arg.module.functions[0].blocks[0].operations) == 2
+        assert len(program_with_arg.module.functions[0].blocks[0].operations) == 3
         program_body = program_with_arg.module.functions[0].blocks[0].operations
 
         assert isinstance(program_body[0], QoalaInteger)
         assert isinstance(program_body[1], QoalaFloat)
+        assert isinstance(program_body[2], ReturnResultsOp)
+        assert program_body[2].values == [program_body[0], program_body[1]]
 
     def test_program_with_array_access(self):
         program_with_array_access = ProgramWithArrayAccess()
