@@ -8,7 +8,7 @@ from qoala import QoalaProgram
 
 from qoala.ast import checkbaseir, QoalaExpression
 from qoala.ast.operations import QoalaOperation
-from qoala.ast.value import QoalaNumericValue
+from qoala.ast.value import QoalaNumericValue, QoalaBool
 from qoala.errors import UnknownTypeError
 
 @dataclass(init=False)
@@ -21,7 +21,10 @@ class ReturnResultsOp(QoalaOperation):
 
         # Users must pass operands as varargs: ReturnResults(x, y).
         for v in vals:
-            if isinstance(v, (int, float)):
+            # IMPORTANT: bool is a subclass of int in Python, so handle it first.
+            if isinstance(v, bool):
+                self.values.append(QoalaBool.from_immediate(v, dbg_info=self.debug_info))
+            elif isinstance(v, (int, float)):
                 self.values.append(QoalaNumericValue.from_immediate(v, self.debug_info))
             elif isinstance(v, QoalaExpression):
                 self.values.append(v)

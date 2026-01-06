@@ -27,6 +27,15 @@ def return_float():
     return_results(pi)
 
 @QoalaProgram
+def return_bool():
+    a = Int(1)
+    b = Int(2)
+
+    check = a == b
+
+    return_results(check)
+
+@QoalaProgram
 def return_mixed():
     q = LocalQubit()
     m = q.measure()
@@ -105,6 +114,27 @@ class TestQoalaQnetPythonBindingsControlFlow:
   qnet.func @return_float() {
     %cst = arith.constant 3.140000e+00 : f32
     qnet.return %cst : f32
+  }
+}
+"""
+        assert str(module.asm) == expected_asm
+
+    def test_return_bool(self):
+        with pytest.raises(NotYetCompiledError) as ex:
+            _, _ = return_bool.module
+        assert (
+            str(ex.value)
+            == "The program has not been compiled yet. Did you invoke 'compile()' on it?"
+        )
+        _, module = return_bool.compile()
+        assert isinstance(module, QoalaModule)
+        expected_asm = """module {
+  qnet.func @return_bool() {
+    %c1_i32 = arith.constant 1 : i32
+    %c2_i32 = arith.constant 2 : i32
+    %0 = arith.cmpi eq, %c1_i32, %c2_i32 : i32
+    %1 = arith.cmpi eq, %c1_i32, %c2_i32 : i32
+    qnet.return %1 : i1
   }
 }
 """
