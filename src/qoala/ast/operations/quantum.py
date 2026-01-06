@@ -153,23 +153,61 @@ def RotationAlias(base_clazz: Type, base_rotation: float):
 
     return outer
 
+class XGate(_QubitBaseOperation):
+    def __init__(self, qubit: QoalaExpression):
+        super().__init__(qubit=qubit)
+        QoalaProgram.current_function().append_to_current_block(self)
+
+    @checkbaseir
+    def compile(self, ctx: Context, location: Optional[Location] = None) -> None:
+        source_location = Location.file(
+            filename=self.debug_info.filename,
+            line=self.debug_info.line_start,
+            col=self.debug_info.col_start,
+            context=ctx,
+        )
+        self.ir_value = qnet.x(self.qubit.ir_value, loc=source_location)
+        # We then register that the qubit has a "new" value
+        self.qubit.ir_value = self.ir_value
+
+
+class YGate(_QubitBaseOperation):
+    def __init__(self, qubit: QoalaExpression):
+        super().__init__(qubit=qubit)
+        QoalaProgram.current_function().append_to_current_block(self)
+
+    @checkbaseir
+    def compile(self, ctx: Context, location: Optional[Location] = None) -> None:
+        source_location = Location.file(
+            filename=self.debug_info.filename,
+            line=self.debug_info.line_start,
+            col=self.debug_info.col_start,
+            context=ctx,
+        )
+        self.ir_value = qnet.y(self.qubit.ir_value, loc=source_location)
+        # We then register that the qubit has a "new" value
+        self.qubit.ir_value = self.ir_value
+
+
+class ZGate(_QubitBaseOperation):
+    def __init__(self, qubit: QoalaExpression):
+        super().__init__(qubit=qubit)
+        QoalaProgram.current_function().append_to_current_block(self)
+
+    @checkbaseir
+    def compile(self, ctx: Context, location: Optional[Location] = None) -> None:
+        source_location = Location.file(
+            filename=self.debug_info.filename,
+            line=self.debug_info.line_start,
+            col=self.debug_info.col_start,
+            context=ctx,
+        )
+        self.ir_value = qnet.z(self.qubit.ir_value, loc=source_location)
+        # We then register that the qubit has a "new" value
+        self.qubit.ir_value = self.ir_value
+
 
 # Definition of the "Rotation Aliases"; basic rotations with a fixed given angle
-@RotationAlias(RotateX, base_rotation=math.pi)
-class XGate:
-    pass
-
-
-@RotationAlias(RotateY, base_rotation=math.pi)
-class YGate:
-    pass
-
-
-@RotationAlias(RotateZ, base_rotation=math.pi)
-class ZGate:
-    pass
-
-
 @RotationAlias(RotateZ, base_rotation=math.pi / 2.0)
 class SGate:
     pass
@@ -196,6 +234,8 @@ class HGate(_QubitBaseOperation):
             context=ctx,
         )
         self.ir_value = qnet.hadamard(self.qubit.ir_value, loc=source_location)
+        # We then register that the qubit has a "new" value
+        self.qubit.ir_value = self.ir_value
 
 
 @dataclass(init=False)

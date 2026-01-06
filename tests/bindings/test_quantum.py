@@ -120,16 +120,13 @@ class TestQoalaQnetPythonBindingsQuantum:
   qnet.func @quantum_alias_gates_program() {
     %0 = qnet.new_qubit : !qnet.qubit
     %1 = qnet.new_qubit : !qnet.qubit
-    %cst = arith.constant 3.14159274 : f32
-    %2 = qnet.rot_x %0, %cst : !qnet.qubit
-    %cst_0 = arith.constant 3.14159274 : f32
-    %3 = qnet.rot_y %2, %cst_0 : !qnet.qubit
-    %cst_1 = arith.constant 3.14159274 : f32
-    %4 = qnet.rot_z %3, %cst_1 : !qnet.qubit
-    %cst_2 = arith.constant 1.57079637 : f32
-    %5 = qnet.rot_z %4, %cst_2 : !qnet.qubit
-    %cst_3 = arith.constant 0.785398185 : f32
-    %6 = qnet.rot_z %5, %cst_3 : !qnet.qubit
+    %2 = qnet.x %0 : !qnet.qubit
+    %3 = qnet.y %2 : !qnet.qubit
+    %4 = qnet.z %3 : !qnet.qubit
+    %cst = arith.constant 1.57079637 : f32
+    %5 = qnet.rot_z %4, %cst : !qnet.qubit
+    %cst_0 = arith.constant 0.785398185 : f32
+    %6 = qnet.rot_z %5, %cst_0 : !qnet.qubit
     %qout0, %qout1 = qnet.cz %6, %1 : !qnet.qubit, !qnet.qubit
     %7 = qnet.measure %qout0 : i1
     %8 = qnet.measure %qout1 : i1
