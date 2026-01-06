@@ -16,10 +16,12 @@ from qoala.ast.operations.quantum import (
 )
 from qoala.ast.qubit import QoalaLocalQubit
 from qoala.ast.value import QoalaInteger, QoalaFloat, QoalaArray
+from qoala.ast.operations.control_flow import ReturnResultsOp
 from qoala.types.classical.arrays import IntArray, FloatArray
 from qoala.types.classical.floats import Float
 from qoala.types.classical.integer import Int
 from qoala.types.quantum.qubit import LocalQubit
+from qoala.operations.control_flow import return_results
 
 
 @QoalaProgram
@@ -33,15 +35,19 @@ def arithmetic_program():
     int_b = Int(20)
 
     int_c = int_a + int_b
-    inc_d = int_b - int_a
-    inc_e = int_a * int_a
-    inc_f = int_b / int_a
+    int_d = int_b - int_a
+    int_e = int_a * int_a
+    int_f = int_b / int_a
+
+    return_results(int_c, int_d, int_e, int_f)
 
 
 @QoalaProgram
 def program_with_arg(val_a: int, val_b: float):
     int_a = Int(val_a)
     int_b = Float(val_b)
+
+    return_results(int_a, int_b)
 
 
 @QoalaProgram
@@ -74,6 +80,8 @@ def program_local_qubit_with_simple_gates():
 
     measurement = qubit.measure()
 
+    return_results(measurement)
+
 
 @QoalaProgram
 def program_local_qubit_with_complex_gates():
@@ -94,6 +102,8 @@ def program_local_qubit_with_complex_gates():
 
     measurement_a = qubit.measure()
     measurement_b = qubit_b.measure()
+
+    return_results(measurement_a, measurement_b)
 
 
 # Across all the tests of this file, we only make assertions on the AST, so we compile "lazily"
@@ -117,7 +127,7 @@ class TestQoalaDecorator:
         # Basic check
         assert len(arithmetic_program.module.functions) == 1
         assert len(arithmetic_program.module.functions[0].blocks) == 1
-        assert len(arithmetic_program.module.functions[0].blocks[0].operations) == 6
+        assert len(arithmetic_program.module.functions[0].blocks[0].operations) == 7
         program_body = arithmetic_program.module.functions[0].blocks[0].operations
 
         assert isinstance(program_body[0], QoalaInteger)
@@ -134,6 +144,8 @@ class TestQoalaDecorator:
         assert isinstance(program_body[5], Divide)
         assert program_body[5].operand_a is program_body[1]
         assert program_body[5].operand_b is program_body[0]
+        assert isinstance(program_body[6], ReturnResultsOp)
+        assert program_body[6].values == [program_body[2], program_body[3], program_body[4], program_body[5]]
 
     def test_program_using_args(self):
         program_with_arg.compile(1, 2.5, compile_lazy=True)
@@ -141,11 +153,13 @@ class TestQoalaDecorator:
         # Basic check
         assert len(program_with_arg.module.functions) == 1
         assert len(program_with_arg.module.functions[0].blocks) == 1
-        assert len(program_with_arg.module.functions[0].blocks[0].operations) == 2
+        assert len(program_with_arg.module.functions[0].blocks[0].operations) == 3
         program_body = program_with_arg.module.functions[0].blocks[0].operations
 
         assert isinstance(program_body[0], QoalaInteger)
         assert isinstance(program_body[1], QoalaFloat)
+        assert isinstance(program_body[2], ReturnResultsOp)
+        assert program_body[2].values == [program_body[0], program_body[1]]
 
     def test_program_with_array_access(self):
         program_with_array_access.compile(compile_lazy=True)
@@ -218,7 +232,7 @@ class TestQoalaDecorator:
                 .blocks[0]
                 .operations
             )
-            == 10
+            == 11
         )
         program_body = (
             program_local_qubit_with_simple_gates.module.functions[0]
@@ -248,6 +262,8 @@ class TestQoalaDecorator:
         assert program_body[8].qubit is program_body[0]
         assert program_body[8].angle is program_body[7]
         assert isinstance(program_body[9], QubitMeasure)
+        assert isinstance(program_body[10], ReturnResultsOp)
+        assert program_body[10].values == [program_body[9]]
 
     def test_quantum_program_with_complex_gates(self):
         program_local_qubit_with_complex_gates.compile(compile_lazy=True)
@@ -263,7 +279,7 @@ class TestQoalaDecorator:
                 .blocks[0]
                 .operations
             )
-            == 13
+            == 14
         )
         program_body = (
             program_local_qubit_with_complex_gates.module.functions[0]
@@ -305,3 +321,6 @@ class TestQoalaDecorator:
 
         assert isinstance(program_body[12], QubitMeasure)
         assert program_body[12].qubit is program_body[4]
+
+        assert isinstance(program_body[13], ReturnResultsOp)
+        assert program_body[13].values == [program_body[11], program_body[12]]
