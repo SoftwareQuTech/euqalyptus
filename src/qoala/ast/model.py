@@ -88,7 +88,11 @@ class BranchingBlockPlaceholder:
     """
 
     def __init__(
-        self, block_id: int, condition: "ConditionalBranching", join_dest: QoalaBlock, qoala_function: "QoalaFunction"
+        self,
+        block_id: int,
+        condition: "ConditionalBranching",
+        join_dest: QoalaBlock,
+        qoala_function: "QoalaFunction",
     ):
         self._operations = []
         self._block_id = block_id

@@ -32,7 +32,9 @@ class UnconditionalBranching(QoalaOperation):
             context=ctx,
         )
         blocks_map = self.qoala_block.qoala_function.blocks_map
-        self.ir_value = cf.br(dest_operands=(), dest=blocks_map[self._destination], loc=source_location)
+        self.ir_value = cf.br(
+            dest_operands=(), dest=blocks_map[self._destination], loc=source_location
+        )
 
 
 @dataclass(init=False)

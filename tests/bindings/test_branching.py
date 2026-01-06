@@ -103,8 +103,8 @@ class TestBranchingInstructionsBindings:
         with pytest.raises(NotYetCompiledError) as ex:
             _, _ = simple_if.module
         assert (
-                str(ex.value)
-                == "The program has not been compiled yet. Did you invoke 'compile()' on it?"
+            str(ex.value)
+            == "The program has not been compiled yet. Did you invoke 'compile()' on it?"
         )
         _, module = simple_if.compile()
         assert isinstance(module, QoalaModule)
@@ -135,8 +135,8 @@ class TestBranchingInstructionsBindings:
         with pytest.raises(NotYetCompiledError) as ex:
             _, _ = branching_equals.module
         assert (
-                str(ex.value)
-                == "The program has not been compiled yet. Did you invoke 'compile()' on it?"
+            str(ex.value)
+            == "The program has not been compiled yet. Did you invoke 'compile()' on it?"
         )
         _, module = branching_equals.compile()
         assert isinstance(module, QoalaModule)
@@ -167,8 +167,8 @@ class TestBranchingInstructionsBindings:
         with pytest.raises(NotYetCompiledError) as ex:
             _, _ = branching_not_equals.module
         assert (
-                str(ex.value)
-                == "The program has not been compiled yet. Did you invoke 'compile()' on it?"
+            str(ex.value)
+            == "The program has not been compiled yet. Did you invoke 'compile()' on it?"
         )
         _, module = branching_not_equals.compile()
         assert isinstance(module, QoalaModule)
@@ -199,8 +199,8 @@ class TestBranchingInstructionsBindings:
         with pytest.raises(NotYetCompiledError) as ex:
             _, _ = branching_less_than.module
         assert (
-                str(ex.value)
-                == "The program has not been compiled yet. Did you invoke 'compile()' on it?"
+            str(ex.value)
+            == "The program has not been compiled yet. Did you invoke 'compile()' on it?"
         )
         _, module = branching_less_than.compile()
         assert isinstance(module, QoalaModule)
@@ -231,8 +231,8 @@ class TestBranchingInstructionsBindings:
         with pytest.raises(NotYetCompiledError) as ex:
             _, _ = branching_less_than_or_equals.module
         assert (
-                str(ex.value)
-                == "The program has not been compiled yet. Did you invoke 'compile()' on it?"
+            str(ex.value)
+            == "The program has not been compiled yet. Did you invoke 'compile()' on it?"
         )
         _, module = branching_less_than_or_equals.compile()
         assert isinstance(module, QoalaModule)
@@ -263,8 +263,8 @@ class TestBranchingInstructionsBindings:
         with pytest.raises(NotYetCompiledError) as ex:
             _, _ = branching_greater_than.module
         assert (
-                str(ex.value)
-                == "The program has not been compiled yet. Did you invoke 'compile()' on it?"
+            str(ex.value)
+            == "The program has not been compiled yet. Did you invoke 'compile()' on it?"
         )
         _, module = branching_greater_than.compile()
         assert isinstance(module, QoalaModule)
@@ -295,8 +295,8 @@ class TestBranchingInstructionsBindings:
         with pytest.raises(NotYetCompiledError) as ex:
             _, _ = branching_greater_than_or_equals.module
         assert (
-                str(ex.value)
-                == "The program has not been compiled yet. Did you invoke 'compile()' on it?"
+            str(ex.value)
+            == "The program has not been compiled yet. Did you invoke 'compile()' on it?"
         )
         _, module = branching_greater_than_or_equals.compile()
         assert isinstance(module, QoalaModule)
