@@ -1,6 +1,9 @@
 import pytest
 
 import qoala.utils.debug_info as dbg_info
+from qoala import QoalaProgram, CompilationContext
+from qoala.ast.model import QoalaBlock
+from qoala.ast.operations.branching import ConditionalBranching
 from qoala.ast.operations.casts import IntToFloat
 from qoala.ast.operations.numeric import Add, Subtract, Multiply, Divide
 from qoala.ast.operations.order import (
@@ -16,9 +19,18 @@ from qoala.errors import (
     NotUnsignedIntegerArgumentError,
     NotIntegerArgumentError,
 )
+from qoala.operations import Remote
+from qoala.operations.branching import if_cond
+from qoala.operations.communication import recv_int, recv_float
 from qoala.types.classical.arrays import IntArray, FloatArray
 from qoala.types.classical.floats import Float
 from qoala.types.classical.integer import Int32, UInt32, Int
+from qoala.types.quantum import Entangle, LocalQubit
+
+
+class DummyQoalaProgram(QoalaProgram):
+    pass
+
 
 
 class TestNumbersSemantics:
@@ -254,3 +266,73 @@ class TestNumbersSemantics:
         assert isinstance(result_e.operand_b, IntToFloat)
         assert isinstance(result_e.operand_b.operand, QoalaInteger)
         assert result_e.operand_b.operand.value == 20
+
+    def test_singular_recv_int_value_comparison(self):
+        # For testing purposes, we manually create a dummy program and attach a function to it.
+        # With this hack, we can assert the structure of the generated program
+        QoalaProgram._instance = DummyQoalaProgram(self.test_singular_recv_int_value_comparison)
+        QoalaProgram._instance._module.add_function(self.test_singular_recv_int_value_comparison)
+        # We also manually set the internal structures for registering remotes and compilation options
+        QoalaProgram._declared_remotes = {}
+        compilation_context = CompilationContext()
+        compilation_context.options.use_singular_classical_comm_ops = True
+        QoalaProgram._compilation_context = compilation_context
+
+        Remote("Alice")
+        qubit = Entangle("Alice")
+        local_qubit = LocalQubit()
+        x = recv_int("Alice")
+
+        with if_cond(x == 0) as (branch_true, branch_false):
+            with branch_true:
+                qubit.X()
+            with branch_false:
+                local_qubit.Z()
+
+        val = Int(10)
+
+        # We expect 4 blocks: entry (with conditional branch) -> true -> false -> terminal.
+        assert len(QoalaProgram._instance.current_function().blocks) == 4
+        # We also assert that there are no placeholder blocks on the final AST
+        program_blocks = QoalaProgram._instance.current_function().blocks
+        assert all([isinstance(block, QoalaBlock) for block in program_blocks])
+        # In this example, we only assert that the value returned by recv_int can be
+        # compared as any other integer.
+        assert len(program_blocks[0].operations) == 6
+        assert isinstance(program_blocks[0].operations[4], EqualsOp)
+        assert isinstance(program_blocks[0].operations[5], ConditionalBranching)
+
+    def test_singular_recv_float_value_comparison(self):
+        # For testing purposes, we manually create a dummy program and attach a function to it.
+        # With this hack, we can assert the structure of the generated program
+        QoalaProgram._instance = DummyQoalaProgram(self.test_singular_recv_float_value_comparison)
+        QoalaProgram._instance._module.add_function(self.test_singular_recv_float_value_comparison)
+        # We also manually set the internal structures for registering remotes and compilation options
+        QoalaProgram._declared_remotes = {}
+        compilation_context = CompilationContext()
+        compilation_context.options.use_singular_classical_comm_ops = True
+        QoalaProgram._compilation_context = compilation_context
+
+        Remote("Alice")
+        qubit = Entangle("Alice")
+        local_qubit = LocalQubit()
+        x = recv_float("Alice")
+
+        with if_cond(x == 0.0) as (branch_true, branch_false):
+            with branch_true:
+                qubit.X()
+            with branch_false:
+                local_qubit.Z()
+
+        val = Int(10)
+
+        # We expect 4 blocks: entry (with conditional branch) -> true -> false -> terminal.
+        assert len(QoalaProgram._instance.current_function().blocks) == 4
+        # We also assert that there are no placeholder blocks on the final AST
+        program_blocks = QoalaProgram._instance.current_function().blocks
+        assert all([isinstance(block, QoalaBlock) for block in program_blocks])
+        # In this example, we only assert that the value returned by recv_int can be
+        # compared as any other float.
+        assert len(program_blocks[0].operations) == 6
+        assert isinstance(program_blocks[0].operations[4], EqualsOp)
+        assert isinstance(program_blocks[0].operations[5], ConditionalBranching)
