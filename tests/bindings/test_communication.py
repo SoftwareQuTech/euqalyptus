@@ -3,14 +3,15 @@ import pytest
 from qoala import QoalaProgram, QoalaModule
 from qoala.errors import NotYetCompiledError
 from qoala.operations import Remote
+from qoala.operations.branching import if_cond
 from qoala.operations.communication import (
     recv_int,
     recv_ints,
     recv_floats,
     send_floats,
-    send_ints,
+    send_ints, recv_float,
 )
-from qoala.types.classical import IntArray, FloatArray
+from qoala.types.classical import IntArray, FloatArray, Int
 from qoala.types.quantum import Entangle, LocalQubit
 
 
@@ -90,6 +91,38 @@ def quantum_entanglement_program_c():
     # Here we try to use an index whose value is only known at runtime
     # We DO NOT support this yet
     q[t2[4]].H()
+
+
+@QoalaProgram
+def program_using_recv_int_for_comparison():
+    Remote("Alice")
+    qubit = Entangle("Alice")
+    local_qubit = LocalQubit()
+    x = recv_int("Alice")
+
+    with if_cond(x == 0) as (branch_true, branch_false):
+        with branch_true:
+            qubit.X()
+        with branch_false:
+            local_qubit.Z()
+
+    val = Int(10)
+
+
+@QoalaProgram
+def program_using_recv_float_for_comparison():
+    Remote("Alice")
+    qubit = Entangle("Alice")
+    local_qubit = LocalQubit()
+    x = recv_float("Alice")
+
+    with if_cond(x == 0.0) as (branch_true, branch_false):
+        with branch_true:
+            qubit.X()
+        with branch_false:
+            local_qubit.Z()
+
+    val = Int(10)
 
 
 class TestQoalaQnetPythonBindingsQuantum:
@@ -268,24 +301,20 @@ class TestQoalaQnetPythonBindingsQuantum:
   qnet.remote @Bob
   qnet.func @quantum_entanglement_program() {
     %0 = qnet.eprs  {remote = @Bob} : !qnet.qubit
-    %1 = qnet.recv_ints  {length = 1 : i32, remote = @Bob} : tensor<1xi32>
-    %c0 = arith.constant 0 : index
-    %extracted = tensor.extract %1[%c0] : tensor<1xi32>
+    %1 = qnet.recv_int  {remote = @Bob} : i32
     %cst = arith.constant 0.000000e+00 : f32
     %cst_0 = arith.constant 3.14159274 : f32
-    %2 = arith.uitofp %extracted : i32 to f32
+    %2 = arith.uitofp %1 : i32 to f32
     %3 = arith.mulf %2, %cst_0 : f32
     %4 = math.exp2 %cst : f32
     %5 = arith.divf %3, %4 : f32
     %6 = qnet.rot_x %0, %5 : !qnet.qubit
-    %7 = qnet.recv_ints  {length = 1 : i32, remote = @Bob} : tensor<1xi32>
-    %c0_1 = arith.constant 0 : index
-    %extracted_2 = tensor.extract %7[%c0_1] : tensor<1xi32>
-    %cst_3 = arith.constant 0.000000e+00 : f32
-    %cst_4 = arith.constant 3.14159274 : f32
-    %8 = arith.uitofp %extracted_2 : i32 to f32
-    %9 = arith.mulf %8, %cst_4 : f32
-    %10 = math.exp2 %cst_3 : f32
+    %7 = qnet.recv_int  {remote = @Bob} : i32
+    %cst_1 = arith.constant 0.000000e+00 : f32
+    %cst_2 = arith.constant 3.14159274 : f32
+    %8 = arith.uitofp %7 : i32 to f32
+    %9 = arith.mulf %8, %cst_2 : f32
+    %10 = math.exp2 %cst_1 : f32
     %11 = arith.divf %9, %10 : f32
     %12 = qnet.rot_y %6, %11 : !qnet.qubit
     %13 = qnet.measure %12 : i1
@@ -341,6 +370,84 @@ class TestQoalaQnetPythonBindingsQuantum:
     %8 = arith.index_cast %extracted_6 : i32 to index
     %extracted_7 = tensor.extract %from_elements[%8] : tensor<3x!qnet.qubit>
     %9 = qnet.hadamard %extracted_7 : !qnet.qubit
+    qnet.return
+  }
+}
+"""
+        assert str(module.asm) == expected_asm
+
+    def test_using_recv_int_as_comparison_to_qoala_qnet(self):
+        with pytest.raises(NotYetCompiledError) as ex:
+            _, _ = program_using_recv_int_for_comparison.module
+        assert (
+            str(ex.value)
+            == "The program has not been compiled yet. Did you invoke 'compile()' on it?"
+        )
+        _, module = program_using_recv_int_for_comparison.compile()
+        assert isinstance(module, QoalaModule)
+        # NOTE - All the qubit operations performed on a qubit modify the internal state of the qubit,
+        #        as seen from the SDK side of the compiler. However, the semantics of the generated MLIR
+        #        is a bit different. Since MLIR follows a Single Static Assignment (SSA) approach, an
+        #        operation _cannot_ modify the state of a registry, but rather _returns_ the modified
+        #        value, so it can be assigned to a new registry.
+        #        Being this said, successive operations applied on the same qubit (as depicted in the
+        #        code tested in this case) _MUST_ operate on the "updated" value of the qubit.
+        expected_asm = """module {
+  qnet.remote @Alice
+  qnet.func @program_using_recv_int_for_comparison() {
+    %0 = qnet.eprs  {remote = @Alice} : !qnet.qubit
+    %1 = qnet.new_qubit : !qnet.qubit
+    %2 = qnet.recv_int  {remote = @Alice} : i32
+    %c0_i32 = arith.constant 0 : i32
+    %3 = arith.cmpi eq, %2, %c0_i32 : i32
+    cf.cond_br %3, ^bb1, ^bb2
+  ^bb1:  // pred: ^bb0
+    %4 = qnet.x %0 : !qnet.qubit
+    cf.br ^bb3
+  ^bb2:  // pred: ^bb0
+    %5 = qnet.z %1 : !qnet.qubit
+    cf.br ^bb3
+  ^bb3:  // 2 preds: ^bb1, ^bb2
+    %c10_i32 = arith.constant 10 : i32
+    qnet.return
+  }
+}
+"""
+        assert str(module.asm) == expected_asm
+
+    def test_using_recv_float_as_comparison_to_qoala_qnet(self):
+        with pytest.raises(NotYetCompiledError) as ex:
+            _, _ = program_using_recv_float_for_comparison.module
+        assert (
+            str(ex.value)
+            == "The program has not been compiled yet. Did you invoke 'compile()' on it?"
+        )
+        _, module = program_using_recv_float_for_comparison.compile()
+        assert isinstance(module, QoalaModule)
+        # NOTE - All the qubit operations performed on a qubit modify the internal state of the qubit,
+        #        as seen from the SDK side of the compiler. However, the semantics of the generated MLIR
+        #        is a bit different. Since MLIR follows a Single Static Assignment (SSA) approach, an
+        #        operation _cannot_ modify the state of a registry, but rather _returns_ the modified
+        #        value, so it can be assigned to a new registry.
+        #        Being this said, successive operations applied on the same qubit (as depicted in the
+        #        code tested in this case) _MUST_ operate on the "updated" value of the qubit.
+        expected_asm = """module {
+  qnet.remote @Alice
+  qnet.func @program_using_recv_float_for_comparison() {
+    %0 = qnet.eprs  {remote = @Alice} : !qnet.qubit
+    %1 = qnet.new_qubit : !qnet.qubit
+    %2 = qnet.recv_float  {remote = @Alice} : f32
+    %cst = arith.constant 0.000000e+00 : f32
+    %3 = arith.cmpf oeq, %2, %cst : f32
+    cf.cond_br %3, ^bb1, ^bb2
+  ^bb1:  // pred: ^bb0
+    %4 = qnet.x %0 : !qnet.qubit
+    cf.br ^bb3
+  ^bb2:  // pred: ^bb0
+    %5 = qnet.z %1 : !qnet.qubit
+    cf.br ^bb3
+  ^bb3:  // 2 preds: ^bb1, ^bb2
+    %c10_i32 = arith.constant 10 : i32
     qnet.return
   }
 }

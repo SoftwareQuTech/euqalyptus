@@ -9,7 +9,7 @@ from qnet.ir import Context, Location, IntegerAttr
 from qoala import QoalaProgram
 from qoala.ast import checkbaseir, QoalaExpression
 from qoala.ast.value import QoalaReferenceInsideArray
-from qoala.ast.operations import QoalaOperation
+from qoala.ast.operations import QoalaOperation, with_order_operators, with_arith_operators
 from qoala.ast.operations.arrays import GetItem
 from qoala.ast.operations.casts import BitToInt, IntToFloat
 from qoala.ast.operations.quantum import QubitMeasure
@@ -24,6 +24,7 @@ from qoala.errors import (
     UnknownRemoteError,
     ValueUnknownAtCompileTimeError,
 )
+from qoala.utils.debug_info import get_debug_info
 
 
 @dataclass(init=False)
@@ -54,7 +55,7 @@ _Native_Base_Type = TypeVar("_Native_Base_Type")
 
 
 @dataclass(init=False)
-class BaseRecvOp(QoalaArray[_Qoala_Base_Type, _Native_Base_Type]):
+class BasePluralRecvOp(QoalaArray[_Qoala_Base_Type, _Native_Base_Type]):
     # Does this need to be a string? It seems to be just a "reference"
     remote: DeclaredRemote | str
     base_type: Type
@@ -168,17 +169,84 @@ class BaseRecvOp(QoalaArray[_Qoala_Base_Type, _Native_Base_Type]):
 
 
 @dataclass(init=False)
-class RecvIntsOp(BaseRecvOp[QoalaInteger, int]):
+class BaseSingularRecvOp(QoalaNumericValue[_Qoala_Base_Type]):
+    remote: DeclaredRemote | str
+    base_type: Type
 
+    def __init__(self, remote_name: DeclaredRemote | str, base_type: Type):
+        super().__init__()
+        self.remote = remote_name
+        self.base_type = base_type
+        self.debug_info = get_debug_info()
+        QoalaProgram.current_function().append_to_current_block(self)
+
+    def can_evaluate_to(self, cls) -> bool:
+        if self.base_type == int:
+            return cls == QoalaInteger
+        elif self.base_type == float:
+            return cls == QoalaFloat
+        else:
+            raise UnknownTypeError(
+                f"Recv with base type '{self.base_type} cannot evaluate to '{cls}"
+            )
+
+    @checkbaseir
+    def compile(self, ctx: Context, location: Optional[Location] = None) -> None:
+        source_location = Location.file(
+            filename=self.debug_info.filename,
+            line=self.debug_info.line_start,
+            col=self.debug_info.col_start,
+            context=ctx,
+        )
+        if isinstance(self.remote, DeclaredRemote):
+            remote_name = self.remote.remote_name
+        else:
+            remote = QoalaProgram.get_declared_remote(self.remote)
+            if remote is None:
+                raise UnknownRemoteError(self.remote)
+            remote_name = self.remote
+        if self.base_type == int:
+            self.ir_value = qnet.recv_int(
+                remote=remote_name,
+                loc=source_location,
+            )
+        elif self.base_type == float:
+            self.ir_value = qnet.recv_float(
+                remote=remote_name,
+                loc=source_location,
+            )
+        else:
+            raise UnknownTypeError(
+                f"Cannot create recv operation for base type '{self.base_type}'"
+            )
+
+
+@dataclass(init=False)
+class RecvIntsOp(BasePluralRecvOp[QoalaInteger, int]):
     def __init__(self, remote_name: DeclaredRemote | str, length: int):
         super().__init__(remote_name=remote_name, length=length, base_type=int)
 
 
 @dataclass(init=False)
-class RecvFloatsOp(BaseRecvOp[QoalaFloat, float]):
-
+class RecvFloatsOp(BasePluralRecvOp[QoalaFloat, float]):
     def __init__(self, remote_name: DeclaredRemote | str, length: int):
         super().__init__(remote_name=remote_name, length=length, base_type=float)
+
+
+@with_arith_operators
+@with_order_operators
+@dataclass(init=False)
+class RecvIntOp(BaseSingularRecvOp[QoalaInteger]):
+    def __init__(self, remote_name: DeclaredRemote | str):
+        super().__init__(remote_name=remote_name, base_type=int)
+
+
+@with_arith_operators
+@with_order_operators
+@dataclass(init=False)
+class RecvFloatOp(BaseSingularRecvOp[QoalaFloat]):
+    def __init__(self, remote_name: DeclaredRemote | str):
+        super().__init__(remote_name=remote_name, base_type=float)
 
 
 @dataclass(init=False)

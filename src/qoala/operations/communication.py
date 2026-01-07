@@ -1,6 +1,8 @@
 from qoala.ast.operations.communication import (
     RecvIntsOp,
     RecvFloatsOp,
+    RecvIntOp,
+    RecvFloatOp,
     SendIntsOp,
     SendFloatsOp,
 )
@@ -11,7 +13,6 @@ from qoala.types.classical.integer import QoalaIntegerType
 
 
 class RecvInts(IntArray):
-
     def __new__(cls, remote_name: Remote | str, length: int):
         return RecvIntsOp(remote_name=remote_name, length=length)
 
@@ -21,17 +22,15 @@ class RecvInts(IntArray):
 
 
 class RecvInt(RecvInts, QoalaIntegerType):
+    def __new__(cls, remote_name: Remote | str):
+        return RecvIntOp(remote_name=remote_name)
 
-    def __new__(cls, remote_name: Remote | str, length: int = 1):
-        return RecvIntsOp(remote_name=remote_name, length=length)
-
-    def __init__(self, remote_name: Remote | str, length: int = 1):
+    def __init__(self, remote_name: Remote | str):
         # Nothing to do here
-        super().__init__(remote_name=remote_name, length=length)
+        super().__init__(remote_name=remote_name)
 
 
 class RecvFloats(FloatArray):
-
     def __new__(cls, remote_name: Remote | str, length: int):
         return RecvFloatsOp(remote_name=remote_name, length=length)
 
@@ -41,18 +40,16 @@ class RecvFloats(FloatArray):
 
 
 class RecvFloat(RecvFloats, QoalaFloatingPointType):
-
     def __new__(cls, remote_name: Remote | str):
-        return RecvFloatsOp(remote_name=remote_name, length=1)
+        return RecvFloatOp(remote_name=remote_name)
 
     def __init__(self, remote_name: Remote | str):
         # Nothing to do here
-        super().__init__(remote_name=remote_name, length=1)
+        super().__init__(remote_name=remote_name)
 
 
 # TODO - Inherit from what?
 class SendInts:
-
     def __new__(
         cls, remote_name: Remote | str, *args: IntArray | QoalaIntegerType | int
     ):
@@ -67,7 +64,6 @@ class SendInts:
 
 # TODO - Inherit from what?
 class SendFloats:
-
     def __new__(
         cls,
         remote_name: Remote | str,
