@@ -500,3 +500,95 @@ class TestBranchingSemantics:
         assert len(program_blocks[3].operations) == 2
         assert isinstance(program_blocks[3].operations[0], QoalaInteger)
         assert isinstance(program_blocks[3].operations[1], Add)
+
+    def test_branching_missing_false_branch(self):
+        # For testing purposes, we manually create a dummy program and attach a function to it.
+        # With this hack, we can assert the structure of the generated program
+        QoalaProgram._instance = DummyQoalaProgram(
+            self.test_branching_missing_false_branch
+        )
+        QoalaProgram._instance._module.add_function(
+            self.test_branching_missing_false_branch
+        )
+
+        with if_cond(Int(4) == 7) as (branch_true, branch_false):
+            with branch_true:
+                assert isinstance(branch_true, BranchingBlockPlaceholder)
+                a = Int(25)
+                assert len(branch_true.operations) == 1
+            # We deliberately don't have a "branch_false" (not used)
+        b = Int(15) + 10
+
+        # We expect 4 blocks: entry (with conditional branch) -> true -> terminal.
+        program_blocks = QoalaProgram._instance.current_function().blocks
+        assert len(program_blocks) == 3
+        # We also assert that there are no placeholder blocks on the final AST
+        assert all([isinstance(block, QoalaBlock) for block in program_blocks])
+
+        # Assert the types of ops of each block:
+        # 1. 4 ops: Int(4), Int(7), EqualsOp, Cond_branch
+        assert len(program_blocks[0].operations) == 4
+        assert isinstance(program_blocks[0].operations[0], QoalaInteger)
+        assert isinstance(program_blocks[0].operations[1], QoalaInteger)
+        assert isinstance(program_blocks[0].operations[2], EqualsOp)
+        assert isinstance(program_blocks[0].operations[3], ConditionalBranching)
+        # Tricky assert: The "false" destination needs to be the "join" block.
+        assert program_blocks[0].operations[3].true_dest is program_blocks[1]
+        assert program_blocks[0].operations[3].false_dest is program_blocks[2]
+        # 2. 2 ops: Int(25), incond_branch to 2
+        assert len(program_blocks[1].operations) == 2
+        assert isinstance(program_blocks[1].operations[0], QoalaInteger)
+        assert isinstance(program_blocks[1].operations[1], UnconditionalBranching)
+        assert isinstance(program_blocks[1].operations[1].destination, QoalaBlock)
+        assert program_blocks[1].operations[1].destination is program_blocks[2]
+        # 4. 2 ops: Int(10), add operation
+        assert len(program_blocks[2].operations) == 3
+        assert isinstance(program_blocks[2].operations[0], QoalaInteger)
+        assert isinstance(program_blocks[2].operations[1], QoalaInteger)
+        assert isinstance(program_blocks[2].operations[2], Add)
+
+    def test_branching_missing_true_branch(self):
+        # For testing purposes, we manually create a dummy program and attach a function to it.
+        # With this hack, we can assert the structure of the generated program
+        QoalaProgram._instance = DummyQoalaProgram(
+            self.test_branching_missing_true_branch
+        )
+        QoalaProgram._instance._module.add_function(
+            self.test_branching_missing_true_branch
+        )
+
+        with if_cond(Int(4) == 7) as (branch_true, branch_false):
+            with branch_false:
+                assert isinstance(branch_false, BranchingBlockPlaceholder)
+                a = Int(25)
+                assert len(branch_false.operations) == 1
+            # We deliberately don't have a "branch_true" (not used)
+        b = Int(15) + 10
+
+        # We expect 4 blocks: entry (with conditional branch) -> true -> terminal.
+        program_blocks = QoalaProgram._instance.current_function().blocks
+        assert len(program_blocks) == 3
+        # We also assert that there are no placeholder blocks on the final AST
+        assert all([isinstance(block, QoalaBlock) for block in program_blocks])
+
+        # Assert the types of ops of each block:
+        # 1. 4 ops: Int(4), Int(7), EqualsOp, Cond_branch
+        assert len(program_blocks[0].operations) == 4
+        assert isinstance(program_blocks[0].operations[0], QoalaInteger)
+        assert isinstance(program_blocks[0].operations[1], QoalaInteger)
+        assert isinstance(program_blocks[0].operations[2], EqualsOp)
+        assert isinstance(program_blocks[0].operations[3], ConditionalBranching)
+        # Tricky assert: The "true" destination needs to be the "join" block.
+        assert program_blocks[0].operations[3].true_dest is program_blocks[2]
+        assert program_blocks[0].operations[3].false_dest is program_blocks[1]
+        # 2. 2 ops: Int(25), incond_branch to 2
+        assert len(program_blocks[1].operations) == 2
+        assert isinstance(program_blocks[1].operations[0], QoalaInteger)
+        assert isinstance(program_blocks[1].operations[1], UnconditionalBranching)
+        assert isinstance(program_blocks[1].operations[1].destination, QoalaBlock)
+        assert program_blocks[1].operations[1].destination is program_blocks[2]
+        # 4. 2 ops: Int(10), add operation
+        assert len(program_blocks[2].operations) == 3
+        assert isinstance(program_blocks[2].operations[0], QoalaInteger)
+        assert isinstance(program_blocks[2].operations[1], QoalaInteger)
+        assert isinstance(program_blocks[2].operations[2], Add)

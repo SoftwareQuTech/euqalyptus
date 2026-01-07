@@ -72,7 +72,17 @@ class ConditionalBranching(QoalaOperation):
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         # Exiting the conditional branch context marks the finish of the
-        # branching on CFG. We mark the join block as active
+        # branching on CFG.
+        # First, we check for the unused branches
+        if isinstance(self._branch_false, BranchingBlockPlaceholder):
+            QoalaProgram.current_function().remove_block(self._branch_false)
+            self._branch_false = self._join_block
+        if isinstance(self._branch_true, BranchingBlockPlaceholder):
+            # The case where the true branch was not used is unlikely,
+            # but easily supported
+            QoalaProgram.current_function().remove_block(self._branch_true)
+            self._branch_true = self._join_block
+        # Finally, we mark the join block as active
         QoalaProgram.current_function().mark_as_current_block(self._join_block)
 
     @property

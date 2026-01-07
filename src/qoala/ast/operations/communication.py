@@ -9,7 +9,11 @@ from qnet.ir import Context, Location, IntegerAttr
 from qoala import QoalaProgram
 from qoala.ast import checkbaseir, QoalaExpression
 from qoala.ast.value import QoalaReferenceInsideArray
-from qoala.ast.operations import QoalaOperation, with_order_operators, with_arith_operators
+from qoala.ast.operations import (
+    QoalaOperation,
+    with_order_operators,
+    with_arith_operators,
+)
 from qoala.ast.operations.arrays import GetItem
 from qoala.ast.operations.casts import BitToInt, IntToFloat
 from qoala.ast.operations.quantum import QubitMeasure

@@ -1,6 +1,7 @@
 from qoala.ast.operations.control_flow import ReturnResultsOp
 from qoala.ast import QoalaExpression
 
+
 class ReturnResults:
     """
     User-facing SDK helper to emit qnet.return (0..N operands).
@@ -20,5 +21,6 @@ class ReturnResults:
 
     def __init__(self, *args, **kwargs):
         pass
+
 
 return_results = ReturnResults

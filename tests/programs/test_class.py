@@ -100,7 +100,12 @@ class TestQoalaClass:
         assert program_body[5].operand_a is program_body[1]
         assert program_body[5].operand_b is program_body[0]
         assert isinstance(program_body[6], ReturnResultsOp)
-        assert program_body[6].values == [program_body[2], program_body[3], program_body[4], program_body[5]]
+        assert program_body[6].values == [
+            program_body[2],
+            program_body[3],
+            program_body[4],
+            program_body[5],
+        ]
 
     def test_program_using_args(self):
         program_with_arg = ProgramWithArg()

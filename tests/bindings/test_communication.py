@@ -9,7 +9,8 @@ from qoala.operations.communication import (
     recv_ints,
     recv_floats,
     send_floats,
-    send_ints, recv_float,
+    send_ints,
+    recv_float,
 )
 from qoala.types.classical import IntArray, FloatArray, Int
 from qoala.types.quantum import Entangle, LocalQubit
