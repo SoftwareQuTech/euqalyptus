@@ -562,7 +562,7 @@ class TestBranchingSemantics:
                 assert isinstance(branch_false, BranchingBlockPlaceholder)
                 a = Int(25)
                 assert len(branch_false.operations) == 1
-            # We deliberately don't have a "branch_false" (not used)
+            # We deliberately don't have a "branch_true" (not used)
         b = Int(15) + 10
 
         # We expect 4 blocks: entry (with conditional branch) -> true -> terminal.

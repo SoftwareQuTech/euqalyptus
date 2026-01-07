@@ -88,6 +88,24 @@ def branching_greater_than_or_equals():
     b = Int(30) + 10
 
 
+@QoalaProgram
+def branching_not_using_false_branch():
+    with if_cond(Int(4) == 7) as (branch_true, branch_false):
+        with branch_true:
+            a = Int(25)
+        # We deliberately don't have a "branch_false" (not used)
+    b = Int(15) + 10
+
+
+@QoalaProgram
+def branching_not_using_true_branch():
+    with if_cond(Int(4) == 7) as (branch_true, branch_false):
+        with branch_false:
+            a = Int(25)
+            assert len(branch_false.operations) == 1
+    b = Int(15) + 10
+
+
 class TestBranchingInstructionsBindings:
     @pytest.fixture(autouse=True, scope="function")
     def setup_debug_info(self, request):
@@ -317,6 +335,64 @@ class TestBranchingInstructionsBindings:
     %c30_i32 = arith.constant 30 : i32
     %c10_i32 = arith.constant 10 : i32
     %1 = arith.addi %c30_i32, %c10_i32 : i32
+    qnet.return
+  }
+}
+"""
+        assert str(module.asm) == expected_asm
+
+    def test_branching_missing_false_branch(self):
+        with pytest.raises(NotYetCompiledError) as ex:
+            _, _ = branching_not_using_false_branch.module
+        assert (
+            str(ex.value)
+            == "The program has not been compiled yet. Did you invoke 'compile()' on it?"
+        )
+        _, module = branching_not_using_false_branch.compile()
+        assert isinstance(module, QoalaModule)
+        # Note - MLIR does not offer a "boolean" type. values "true" and "false" are modeled as i1 values.
+        expected_asm = """module {
+  qnet.func @branching_not_using_false_branch() {
+    %c4_i32 = arith.constant 4 : i32
+    %c7_i32 = arith.constant 7 : i32
+    %0 = arith.cmpi eq, %c4_i32, %c7_i32 : i32
+    cf.cond_br %0, ^bb1, ^bb2
+  ^bb1:  // pred: ^bb0
+    %c25_i32 = arith.constant 25 : i32
+    cf.br ^bb2
+  ^bb2:  // 2 preds: ^bb0, ^bb1
+    %c15_i32 = arith.constant 15 : i32
+    %c10_i32 = arith.constant 10 : i32
+    %1 = arith.addi %c15_i32, %c10_i32 : i32
+    qnet.return
+  }
+}
+"""
+        assert str(module.asm) == expected_asm
+
+    def test_branching_missing_true_branch(self):
+        with pytest.raises(NotYetCompiledError) as ex:
+            _, _ = branching_not_using_true_branch.module
+        assert (
+            str(ex.value)
+            == "The program has not been compiled yet. Did you invoke 'compile()' on it?"
+        )
+        _, module = branching_not_using_true_branch.compile()
+        assert isinstance(module, QoalaModule)
+        # Note - MLIR does not offer a "boolean" type. values "true" and "false" are modeled as i1 values.
+        expected_asm = """module {
+  qnet.func @branching_not_using_true_branch() {
+    %c4_i32 = arith.constant 4 : i32
+    %c7_i32 = arith.constant 7 : i32
+    %0 = arith.cmpi eq, %c4_i32, %c7_i32 : i32
+    cf.cond_br %0, ^bb2, ^bb1
+  ^bb1:  // pred: ^bb0
+    %c25_i32 = arith.constant 25 : i32
+    cf.br ^bb2
+  ^bb2:  // 2 preds: ^bb0, ^bb1
+    %c15_i32 = arith.constant 15 : i32
+    %c10_i32 = arith.constant 10 : i32
+    %1 = arith.addi %c15_i32, %c10_i32 : i32
     qnet.return
   }
 }
