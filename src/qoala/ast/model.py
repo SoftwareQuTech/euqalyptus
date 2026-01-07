@@ -172,6 +172,10 @@ class QoalaFunction(QoalaCompilable):
         self._current_block = block
         self._blocks.append(block)
 
+    def remove_block(self, block: QoalaBlock | BranchingBlockPlaceholder):
+        if block in self._blocks:
+            self._blocks.remove(block)
+
     def mark_as_current_block(self, block: QoalaBlock | BranchingBlockPlaceholder):
         self._current_block = block
 
