@@ -592,4 +592,3 @@ class TestBranchingSemantics:
         assert isinstance(program_blocks[2].operations[0], QoalaInteger)
         assert isinstance(program_blocks[2].operations[1], QoalaInteger)
         assert isinstance(program_blocks[2].operations[2], Add)
-

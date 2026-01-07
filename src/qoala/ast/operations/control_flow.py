@@ -11,6 +11,7 @@ from qoala.ast.operations import QoalaOperation
 from qoala.ast.value import QoalaNumericValue, QoalaBool
 from qoala.errors import UnknownTypeError
 
+
 @dataclass(init=False)
 class ReturnResultsOp(QoalaOperation):
     values: list[QoalaExpression]
@@ -23,7 +24,9 @@ class ReturnResultsOp(QoalaOperation):
         for v in vals:
             # IMPORTANT: bool is a subclass of int in Python, so handle it first.
             if isinstance(v, bool):
-                self.values.append(QoalaBool.from_immediate(v, dbg_info=self.debug_info))
+                self.values.append(
+                    QoalaBool.from_immediate(v, dbg_info=self.debug_info)
+                )
             elif isinstance(v, (int, float)):
                 self.values.append(QoalaNumericValue.from_immediate(v, self.debug_info))
             elif isinstance(v, QoalaExpression):
@@ -39,7 +42,7 @@ class ReturnResultsOp(QoalaOperation):
 
     def can_evaluate_to(self, cls) -> bool:
         return False
-    
+
     @checkbaseir
     def compile(self, ctx: Context, location: Optional[Location] = None) -> None:
         source_location = Location.file(

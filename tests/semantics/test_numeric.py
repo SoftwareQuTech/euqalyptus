@@ -32,7 +32,6 @@ class DummyQoalaProgram(QoalaProgram):
     pass
 
 
-
 class TestNumbersSemantics:
     numeric_test_data = [(10, 20, Int32, QoalaInteger), (11.1, 22.2, Float, QoalaFloat)]
 
@@ -270,8 +269,12 @@ class TestNumbersSemantics:
     def test_singular_recv_int_value_comparison(self):
         # For testing purposes, we manually create a dummy program and attach a function to it.
         # With this hack, we can assert the structure of the generated program
-        QoalaProgram._instance = DummyQoalaProgram(self.test_singular_recv_int_value_comparison)
-        QoalaProgram._instance._module.add_function(self.test_singular_recv_int_value_comparison)
+        QoalaProgram._instance = DummyQoalaProgram(
+            self.test_singular_recv_int_value_comparison
+        )
+        QoalaProgram._instance._module.add_function(
+            self.test_singular_recv_int_value_comparison
+        )
         # We also manually set the internal structures for registering remotes and compilation options
         QoalaProgram._declared_remotes = {}
         compilation_context = CompilationContext()
@@ -305,8 +308,12 @@ class TestNumbersSemantics:
     def test_singular_recv_float_value_comparison(self):
         # For testing purposes, we manually create a dummy program and attach a function to it.
         # With this hack, we can assert the structure of the generated program
-        QoalaProgram._instance = DummyQoalaProgram(self.test_singular_recv_float_value_comparison)
-        QoalaProgram._instance._module.add_function(self.test_singular_recv_float_value_comparison)
+        QoalaProgram._instance = DummyQoalaProgram(
+            self.test_singular_recv_float_value_comparison
+        )
+        QoalaProgram._instance._module.add_function(
+            self.test_singular_recv_float_value_comparison
+        )
         # We also manually set the internal structures for registering remotes and compilation options
         QoalaProgram._declared_remotes = {}
         compilation_context = CompilationContext()

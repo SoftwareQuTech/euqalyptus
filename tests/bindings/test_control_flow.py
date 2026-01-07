@@ -6,9 +6,11 @@ from qoala.operations.control_flow import return_results
 from qoala.types.classical import Int, Float
 from qoala.types.quantum import LocalQubit
 
+
 @QoalaProgram
 def return_empty():
     return_results()
+
 
 @QoalaProgram
 def return_measurement_result():
@@ -16,15 +18,18 @@ def return_measurement_result():
     m = q.measure()
     return_results(m)
 
+
 @QoalaProgram
 def return_int():
     two = Int(2)
     return_results(two)
 
+
 @QoalaProgram
 def return_float():
     pi = Float(3.14)
     return_results(pi)
+
 
 @QoalaProgram
 def return_bool():
@@ -34,6 +39,7 @@ def return_bool():
     check = a == b
 
     return_results(check)
+
 
 @QoalaProgram
 def return_mixed():
@@ -45,6 +51,7 @@ def return_mixed():
     pi = Float(3.14)
 
     return_results(m, two, pi)
+
 
 class TestQoalaQnetPythonBindingsControlFlow:
     def test_return_empty(self):
