@@ -109,7 +109,6 @@ def program_local_qubit_with_complex_gates():
 # Across all the tests of this file, we only make assertions on the AST, so we compile "lazily"
 # (do not transform the AST into Qoala HIR
 class TestQoalaDecorator:
-
     def test_decorator_on_mt_program(self):
         empty_program.compile(compile_lazy=True)
         # The second invocation to "compile" should not do anything, since the program
@@ -118,17 +117,15 @@ class TestQoalaDecorator:
 
         # Basic check
         assert len(empty_program.module.functions) == 1
-        assert len(empty_program.module.functions[0].blocks) == 1
-        assert len(empty_program.module.functions[0].blocks[0].operations) == 0
+        assert len(empty_program.module.functions[0]._main_block.operations) == 0
 
     def test_basic_arith_program(self):
         arithmetic_program.compile(compile_lazy=True)
 
         # Basic check
         assert len(arithmetic_program.module.functions) == 1
-        assert len(arithmetic_program.module.functions[0].blocks) == 1
-        assert len(arithmetic_program.module.functions[0].blocks[0].operations) == 7
-        program_body = arithmetic_program.module.functions[0].blocks[0].operations
+        assert len(arithmetic_program.module.functions[0]._main_block.operations) == 7
+        program_body = arithmetic_program.module.functions[0]._main_block.operations
 
         assert isinstance(program_body[0], QoalaInteger)
         assert isinstance(program_body[1], QoalaInteger)
@@ -157,9 +154,8 @@ class TestQoalaDecorator:
 
         # Basic check
         assert len(program_with_arg.module.functions) == 1
-        assert len(program_with_arg.module.functions[0].blocks) == 1
-        assert len(program_with_arg.module.functions[0].blocks[0].operations) == 3
-        program_body = program_with_arg.module.functions[0].blocks[0].operations
+        assert len(program_with_arg.module.functions[0]._main_block.operations) == 3
+        program_body = program_with_arg.module.functions[0]._main_block.operations
 
         assert isinstance(program_body[0], QoalaInteger)
         assert isinstance(program_body[1], QoalaFloat)
@@ -171,12 +167,11 @@ class TestQoalaDecorator:
 
         # Basic check
         assert len(program_with_array_access.module.functions) == 1
-        assert len(program_with_array_access.module.functions[0].blocks) == 1
         assert (
-            len(program_with_array_access.module.functions[0].blocks[0].operations) == 5
+            len(program_with_array_access.module.functions[0]._main_block.operations) == 5
         )
         program_body = (
-            program_with_array_access.module.functions[0].blocks[0].operations
+            program_with_array_access.module.functions[0]._main_block.operations
         )
 
         assert isinstance(program_body[0], QoalaInteger)
@@ -197,13 +192,12 @@ class TestQoalaDecorator:
 
         # Basic check
         assert len(program_with_array_mutation.module.functions) == 1
-        assert len(program_with_array_mutation.module.functions[0].blocks) == 1
         assert (
-            len(program_with_array_mutation.module.functions[0].blocks[0].operations)
+            len(program_with_array_mutation.module.functions[0]._main_block.operations)
             == 6
         )
         program_body = (
-            program_with_array_mutation.module.functions[0].blocks[0].operations
+            program_with_array_mutation.module.functions[0]._main_block.operations
         )
 
         assert isinstance(program_body[0], QoalaArray)
@@ -229,19 +223,16 @@ class TestQoalaDecorator:
         # Basic check
         assert len(program_local_qubit_with_simple_gates.module.functions) == 1
         assert (
-            len(program_local_qubit_with_simple_gates.module.functions[0].blocks) == 1
-        )
-        assert (
             len(
                 program_local_qubit_with_simple_gates.module.functions[0]
-                .blocks[0]
+                ._main_block
                 .operations
             )
             == 11
         )
         program_body = (
             program_local_qubit_with_simple_gates.module.functions[0]
-            .blocks[0]
+            ._main_block
             .operations
         )
 
@@ -276,19 +267,16 @@ class TestQoalaDecorator:
         # Basic check
         assert len(program_local_qubit_with_complex_gates.module.functions) == 1
         assert (
-            len(program_local_qubit_with_complex_gates.module.functions[0].blocks) == 1
-        )
-        assert (
             len(
                 program_local_qubit_with_complex_gates.module.functions[0]
-                .blocks[0]
+                ._main_block
                 .operations
             )
             == 14
         )
         program_body = (
             program_local_qubit_with_complex_gates.module.functions[0]
-            .blocks[0]
+            ._main_block
             .operations
         )
 
