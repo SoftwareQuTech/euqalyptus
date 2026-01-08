@@ -7,7 +7,6 @@ from qoala.errors import QuantumProgramNotImplementedError
 
 
 class _EmptyQoalaProgramBase(QoalaProgramBase):
-
     def main(self, args: List[Any]) -> int:
         pass
 
@@ -17,7 +16,6 @@ class _IncompleteQoalaProgramBase(QoalaProgramBase):
 
 
 class TestBase:
-
     def test_class_without_entry_point(self):
         with pytest.raises(QuantumProgramNotImplementedError) as exec_info:
             _ = _IncompleteQoalaProgramBase()

@@ -14,7 +14,7 @@ class QoalaBranchTerminator(QoalaExpression):
     Simple class that can be compiled into a scf.yield operation. These operations
     are *always* needed as block terminators, even if the scf.if block does not
     yield a value (in which case, this operation will not be printed in the simplified
-    versioon of the IR)
+    version of the IR)
     """
 
     def can_evaluate_to(self, cls) -> bool:
@@ -51,8 +51,10 @@ class QoalaBlock(QoalaCompilable):
         QoalaProgram.current_function().nest_block(self)
 
     def __exit__(self, exc_type, exc_val, exc_tb):
-        from qoala import QoalaProgram
+        # We *need* to insert a block terminator, even if we don't return any
+        # outside the scope of the if-then-else operation
         self._operations.append(QoalaBranchTerminator())
+        from qoala import QoalaProgram
         QoalaProgram.current_function().pop_previous_block()
 
     @property

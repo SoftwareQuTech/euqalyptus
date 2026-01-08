@@ -2,7 +2,7 @@ import pytest
 
 import qoala.utils.debug_info as dbg_info
 from qoala import QoalaExpression
-from qoala.ast.model import BranchingBlockPlaceholder
+from qoala.ast.model import QoalaBlock
 from qoala.ast.operations.branching import ConditionalBranching
 from qoala.operations.branching import (
     if_cond,
@@ -69,10 +69,10 @@ class TestBranchingSyntax:
         assert isinstance(branching, ConditionalBranching)
         with if_cond(Int(4) < 10) as (branch_true, branch_false):
             with branch_true:
-                assert isinstance(branch_true, BranchingBlockPlaceholder)
+                assert isinstance(branch_true, QoalaBlock)
                 a = Int(10)
             with branch_false:
-                assert isinstance(branch_false, BranchingBlockPlaceholder)
+                assert isinstance(branch_false, QoalaBlock)
                 a = Int(20)
         b = a + 10
 
@@ -81,10 +81,10 @@ class TestBranchingSyntax:
         assert isinstance(branching, ConditionalBranching)
         with if_eq(Int(4), 10) as (branch_true, branch_false):
             with branch_true:
-                assert isinstance(branch_true, BranchingBlockPlaceholder)
+                assert isinstance(branch_true, QoalaBlock)
                 a = Int(10)
             with branch_false:
-                assert isinstance(branch_false, BranchingBlockPlaceholder)
+                assert isinstance(branch_false, QoalaBlock)
                 a = Int(20)
         b = a + 10
 
@@ -93,10 +93,10 @@ class TestBranchingSyntax:
         assert isinstance(branching, ConditionalBranching)
         with if_neq(Int(4), 10) as (branch_true, branch_false):
             with branch_true:
-                assert isinstance(branch_true, BranchingBlockPlaceholder)
+                assert isinstance(branch_true, QoalaBlock)
                 a = Int(10)
             with branch_false:
-                assert isinstance(branch_false, BranchingBlockPlaceholder)
+                assert isinstance(branch_false, QoalaBlock)
                 a = Int(20)
         b = a + 10
 
@@ -105,10 +105,10 @@ class TestBranchingSyntax:
         assert isinstance(branching, ConditionalBranching)
         with if_lt(Int(4), 10) as (branch_true, branch_false):
             with branch_true:
-                assert isinstance(branch_true, BranchingBlockPlaceholder)
+                assert isinstance(branch_true, QoalaBlock)
                 a = Int(10)
             with branch_false:
-                assert isinstance(branch_false, BranchingBlockPlaceholder)
+                assert isinstance(branch_false, QoalaBlock)
                 a = Int(20)
         b = a + 10
 
@@ -117,10 +117,10 @@ class TestBranchingSyntax:
         assert isinstance(branching, ConditionalBranching)
         with if_le(Int(4), 10) as (branch_true, branch_false):
             with branch_true:
-                assert isinstance(branch_true, BranchingBlockPlaceholder)
+                assert isinstance(branch_true, QoalaBlock)
                 a = Int(10)
             with branch_false:
-                assert isinstance(branch_false, BranchingBlockPlaceholder)
+                assert isinstance(branch_false, QoalaBlock)
                 a = Int(20)
         b = a + 10
 
@@ -129,10 +129,10 @@ class TestBranchingSyntax:
         assert isinstance(branching, ConditionalBranching)
         with if_gt(Int(4), 10) as (branch_true, branch_false):
             with branch_true:
-                assert isinstance(branch_true, BranchingBlockPlaceholder)
+                assert isinstance(branch_true, QoalaBlock)
                 a = Int(10)
             with branch_false:
-                assert isinstance(branch_false, BranchingBlockPlaceholder)
+                assert isinstance(branch_false, QoalaBlock)
                 a = Int(20)
         b = a + 10
 
@@ -141,9 +141,9 @@ class TestBranchingSyntax:
         assert isinstance(branching, ConditionalBranching)
         with if_ge(Int(4), 10) as (branch_true, branch_false):
             with branch_true:
-                assert isinstance(branch_true, BranchingBlockPlaceholder)
+                assert isinstance(branch_true, QoalaBlock)
                 a = Int(10)
             with branch_false:
-                assert isinstance(branch_false, BranchingBlockPlaceholder)
+                assert isinstance(branch_false, QoalaBlock)
                 a = Int(20)
         b = a + 10
