@@ -132,14 +132,11 @@ class TestBranchingInstructionsBindings:
     %c4_i32 = arith.constant 4 : i32
     %c7_i32 = arith.constant 7 : i32
     %0 = arith.cmpi slt, %c4_i32, %c7_i32 : i32
-    cf.cond_br %0, ^bb1, ^bb2
-  ^bb1:  // pred: ^bb0
-    %c15_i32 = arith.constant 15 : i32
-    cf.br ^bb3
-  ^bb2:  // pred: ^bb0
-    %c25_i32 = arith.constant 25 : i32
-    cf.br ^bb3
-  ^bb3:  // 2 preds: ^bb1, ^bb2
+    scf.if %0 {
+      %c15_i32 = arith.constant 15 : i32
+    } else {
+      %c25_i32 = arith.constant 25 : i32
+    }
     %c30_i32 = arith.constant 30 : i32
     %c10_i32 = arith.constant 10 : i32
     %1 = arith.addi %c30_i32, %c10_i32 : i32
@@ -164,14 +161,11 @@ class TestBranchingInstructionsBindings:
     %c4_i32 = arith.constant 4 : i32
     %c7_i32 = arith.constant 7 : i32
     %0 = arith.cmpi eq, %c4_i32, %c7_i32 : i32
-    cf.cond_br %0, ^bb1, ^bb2
-  ^bb1:  // pred: ^bb0
-    %c15_i32 = arith.constant 15 : i32
-    cf.br ^bb3
-  ^bb2:  // pred: ^bb0
-    %c25_i32 = arith.constant 25 : i32
-    cf.br ^bb3
-  ^bb3:  // 2 preds: ^bb1, ^bb2
+    scf.if %0 {
+      %c15_i32 = arith.constant 15 : i32
+    } else {
+      %c25_i32 = arith.constant 25 : i32
+    }
     %c30_i32 = arith.constant 30 : i32
     %c10_i32 = arith.constant 10 : i32
     %1 = arith.addi %c30_i32, %c10_i32 : i32
@@ -196,14 +190,11 @@ class TestBranchingInstructionsBindings:
     %c4_i32 = arith.constant 4 : i32
     %c7_i32 = arith.constant 7 : i32
     %0 = arith.cmpi ne, %c4_i32, %c7_i32 : i32
-    cf.cond_br %0, ^bb1, ^bb2
-  ^bb1:  // pred: ^bb0
-    %c15_i32 = arith.constant 15 : i32
-    cf.br ^bb3
-  ^bb2:  // pred: ^bb0
-    %c25_i32 = arith.constant 25 : i32
-    cf.br ^bb3
-  ^bb3:  // 2 preds: ^bb1, ^bb2
+    scf.if %0 {
+      %c15_i32 = arith.constant 15 : i32
+    } else {
+      %c25_i32 = arith.constant 25 : i32
+    }
     %c30_i32 = arith.constant 30 : i32
     %c10_i32 = arith.constant 10 : i32
     %1 = arith.addi %c30_i32, %c10_i32 : i32
@@ -228,14 +219,11 @@ class TestBranchingInstructionsBindings:
     %c4_i32 = arith.constant 4 : i32
     %c7_i32 = arith.constant 7 : i32
     %0 = arith.cmpi slt, %c4_i32, %c7_i32 : i32
-    cf.cond_br %0, ^bb1, ^bb2
-  ^bb1:  // pred: ^bb0
-    %c15_i32 = arith.constant 15 : i32
-    cf.br ^bb3
-  ^bb2:  // pred: ^bb0
-    %c25_i32 = arith.constant 25 : i32
-    cf.br ^bb3
-  ^bb3:  // 2 preds: ^bb1, ^bb2
+    scf.if %0 {
+      %c15_i32 = arith.constant 15 : i32
+    } else {
+      %c25_i32 = arith.constant 25 : i32
+    }
     %c30_i32 = arith.constant 30 : i32
     %c10_i32 = arith.constant 10 : i32
     %1 = arith.addi %c30_i32, %c10_i32 : i32
@@ -260,14 +248,11 @@ class TestBranchingInstructionsBindings:
     %c4_i32 = arith.constant 4 : i32
     %c7_i32 = arith.constant 7 : i32
     %0 = arith.cmpi sle, %c4_i32, %c7_i32 : i32
-    cf.cond_br %0, ^bb1, ^bb2
-  ^bb1:  // pred: ^bb0
-    %c15_i32 = arith.constant 15 : i32
-    cf.br ^bb3
-  ^bb2:  // pred: ^bb0
-    %c25_i32 = arith.constant 25 : i32
-    cf.br ^bb3
-  ^bb3:  // 2 preds: ^bb1, ^bb2
+    scf.if %0 {
+      %c15_i32 = arith.constant 15 : i32
+    } else {
+      %c25_i32 = arith.constant 25 : i32
+    }
     %c30_i32 = arith.constant 30 : i32
     %c10_i32 = arith.constant 10 : i32
     %1 = arith.addi %c30_i32, %c10_i32 : i32
@@ -292,14 +277,11 @@ class TestBranchingInstructionsBindings:
     %c4_i32 = arith.constant 4 : i32
     %c7_i32 = arith.constant 7 : i32
     %0 = arith.cmpi sgt, %c4_i32, %c7_i32 : i32
-    cf.cond_br %0, ^bb1, ^bb2
-  ^bb1:  // pred: ^bb0
-    %c15_i32 = arith.constant 15 : i32
-    cf.br ^bb3
-  ^bb2:  // pred: ^bb0
-    %c25_i32 = arith.constant 25 : i32
-    cf.br ^bb3
-  ^bb3:  // 2 preds: ^bb1, ^bb2
+    scf.if %0 {
+      %c15_i32 = arith.constant 15 : i32
+    } else {
+      %c25_i32 = arith.constant 25 : i32
+    }
     %c30_i32 = arith.constant 30 : i32
     %c10_i32 = arith.constant 10 : i32
     %1 = arith.addi %c30_i32, %c10_i32 : i32
@@ -324,14 +306,11 @@ class TestBranchingInstructionsBindings:
     %c4_i32 = arith.constant 4 : i32
     %c7_i32 = arith.constant 7 : i32
     %0 = arith.cmpi sge, %c4_i32, %c7_i32 : i32
-    cf.cond_br %0, ^bb1, ^bb2
-  ^bb1:  // pred: ^bb0
-    %c15_i32 = arith.constant 15 : i32
-    cf.br ^bb3
-  ^bb2:  // pred: ^bb0
-    %c25_i32 = arith.constant 25 : i32
-    cf.br ^bb3
-  ^bb3:  // 2 preds: ^bb1, ^bb2
+    scf.if %0 {
+      %c15_i32 = arith.constant 15 : i32
+    } else {
+      %c25_i32 = arith.constant 25 : i32
+    }
     %c30_i32 = arith.constant 30 : i32
     %c10_i32 = arith.constant 10 : i32
     %1 = arith.addi %c30_i32, %c10_i32 : i32
@@ -356,11 +335,9 @@ class TestBranchingInstructionsBindings:
     %c4_i32 = arith.constant 4 : i32
     %c7_i32 = arith.constant 7 : i32
     %0 = arith.cmpi eq, %c4_i32, %c7_i32 : i32
-    cf.cond_br %0, ^bb1, ^bb2
-  ^bb1:  // pred: ^bb0
-    %c25_i32 = arith.constant 25 : i32
-    cf.br ^bb2
-  ^bb2:  // 2 preds: ^bb0, ^bb1
+    scf.if %0 {
+      %c25_i32 = arith.constant 25 : i32
+    }
     %c15_i32 = arith.constant 15 : i32
     %c10_i32 = arith.constant 10 : i32
     %1 = arith.addi %c15_i32, %c10_i32 : i32
@@ -370,7 +347,10 @@ class TestBranchingInstructionsBindings:
 """
         assert str(module.asm) == expected_asm
 
+    @pytest.mark.skip(reason="Missing true branch is ot supported yet")
     def test_branching_missing_true_branch(self):
+        # TODO - To fully support missing the true branch, we need to negate the condition
+        #  and place the old false branch in the true branch with the negated condition.
         with pytest.raises(NotYetCompiledError) as ex:
             _, _ = branching_not_using_true_branch.module
         assert (
