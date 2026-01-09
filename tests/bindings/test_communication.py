@@ -401,14 +401,11 @@ class TestQoalaQnetPythonBindingsQuantum:
     %2 = qnet.recv_int  {remote = @Alice} : i32
     %c0_i32 = arith.constant 0 : i32
     %3 = arith.cmpi eq, %2, %c0_i32 : i32
-    cf.cond_br %3, ^bb1, ^bb2
-  ^bb1:  // pred: ^bb0
-    %4 = qnet.x %0 : !qnet.qubit
-    cf.br ^bb3
-  ^bb2:  // pred: ^bb0
-    %5 = qnet.z %1 : !qnet.qubit
-    cf.br ^bb3
-  ^bb3:  // 2 preds: ^bb1, ^bb2
+    scf.if %3 {
+      %4 = qnet.x %0 : !qnet.qubit
+    } else {
+      %4 = qnet.z %1 : !qnet.qubit
+    }
     %c10_i32 = arith.constant 10 : i32
     qnet.return
   }
@@ -440,14 +437,11 @@ class TestQoalaQnetPythonBindingsQuantum:
     %2 = qnet.recv_float  {remote = @Alice} : f32
     %cst = arith.constant 0.000000e+00 : f32
     %3 = arith.cmpf oeq, %2, %cst : f32
-    cf.cond_br %3, ^bb1, ^bb2
-  ^bb1:  // pred: ^bb0
-    %4 = qnet.x %0 : !qnet.qubit
-    cf.br ^bb3
-  ^bb2:  // pred: ^bb0
-    %5 = qnet.z %1 : !qnet.qubit
-    cf.br ^bb3
-  ^bb3:  // 2 preds: ^bb1, ^bb2
+    scf.if %3 {
+      %4 = qnet.x %0 : !qnet.qubit
+    } else {
+      %4 = qnet.z %1 : !qnet.qubit
+    }
     %c10_i32 = arith.constant 10 : i32
     qnet.return
   }

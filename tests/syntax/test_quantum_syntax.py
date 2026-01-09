@@ -1,11 +1,13 @@
 import pytest
 
 import qoala.utils.debug_info as dbg_info
+from qoala import QoalaProgram
 from qoala.ast.operations.quantum import QubitMeasure
 from qoala.ast.qubit import QoalaQubit
 from qoala.types.classical.floats import Float
 from qoala.types.classical.integer import Int
 from qoala.types.quantum.qubit import LocalQubit
+from tests.helpers_tests import DummyQoalaProgram
 
 
 class TestQuantumSyntax:
@@ -19,6 +21,15 @@ class TestQuantumSyntax:
             dbg_info.function_name = request.node.name[0:bracket_index]
         else:
             dbg_info.function_name = request.node.name
+        # For testing purposes, we manually create a dummy program and attach a function to it.
+        # With this hack, we can assert the structure of the generated program
+        QoalaProgram._instance = DummyQoalaProgram(
+            getattr(request.cls, request.node.originalname)
+        )
+        QoalaProgram._instance._module.add_function(request.node.name)
+        yield
+        QoalaProgram._instance._module.remove_function(request.node.name)
+        del QoalaProgram._instance
 
     def test_qubit_allocation(self):
         qubit = LocalQubit()

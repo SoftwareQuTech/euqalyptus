@@ -1,4 +1,5 @@
 from typing import Optional
+
 from typing_extensions import Self
 
 from qoala.ast.value import QoalaInteger, Signedness

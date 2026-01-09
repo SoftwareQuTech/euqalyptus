@@ -5,7 +5,6 @@ import qnet.dialects.qnet as qnet
 from qnet.ir import Context, Location
 
 from qoala import QoalaProgram
-
 from qoala.ast import checkbaseir, QoalaExpression
 from qoala.ast.operations import QoalaOperation
 from qoala.ast.value import QoalaNumericValue, QoalaBool

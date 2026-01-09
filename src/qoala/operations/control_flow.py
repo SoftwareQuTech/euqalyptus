@@ -1,5 +1,5 @@
-from qoala.ast.operations.control_flow import ReturnResultsOp
 from qoala.ast import QoalaExpression
+from qoala.ast.operations.control_flow import ReturnResultsOp
 
 
 class ReturnResults:

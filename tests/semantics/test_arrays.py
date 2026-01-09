@@ -9,10 +9,7 @@ from qoala.ast.value import QoalaArray, QoalaInteger, QoalaFloat
 from qoala.types.classical.arrays import IntArray, FloatArray
 from qoala.types.classical.floats import Float
 from qoala.types.classical.integer import Int32
-
-
-class DummyQoalaProgram(QoalaProgram):
-    pass
+from tests.helpers_tests import DummyQoalaProgram
 
 
 class TestArraySemantics:
@@ -30,6 +27,15 @@ class TestArraySemantics:
             dbg_info.function_name = request.node.name[0:bracket_index]
         else:
             dbg_info.function_name = request.node.name
+        # For testing purposes, we manually create a dummy program and attach a function to it.
+        # With this hack, we can assert the structure of the generated program
+        QoalaProgram._instance = DummyQoalaProgram(
+            getattr(request.cls, request.node.originalname)
+        )
+        QoalaProgram._instance._module.add_function(request.node.name)
+        yield
+        QoalaProgram._instance._module.remove_function(request.node.name)
+        del QoalaProgram._instance
 
     @pytest.mark.parametrize(
         "values, constants, vals_type, base_type, array_type, member_type",
@@ -44,10 +50,6 @@ class TestArraySemantics:
         array_type: Type,
         member_type: QoalaInteger | QoalaFloat,
     ):
-        # For testing purposes, we manually create a dummy program and attach a function to it.
-        QoalaProgram._instance = DummyQoalaProgram(self.test_array_semantics)
-        QoalaProgram._instance._module.add_function(self.test_array_semantics)
-
         array_values: List[member_type, vals_type] = []
         in_order_values: Queue[vals_type] = Queue()
         for value in values:

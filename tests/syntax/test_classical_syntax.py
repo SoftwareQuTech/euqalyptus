@@ -3,6 +3,7 @@ from typing import Generic, TypeVar
 import pytest
 
 import qoala.utils.debug_info as dbg_info
+from qoala import QoalaProgram
 from qoala.ast.value import (
     QoalaExpression,
     QoalaInteger,
@@ -12,6 +13,7 @@ from qoala.ast.value import (
 from qoala.types.classical.arrays import IntArray, FloatArray
 from qoala.types.classical.floats import Float, Double, QoalaFloatingPointType
 from qoala.types.classical.integer import Int32, UInt32, Int, QoalaIntegerType
+from tests.helpers_tests import DummyQoalaProgram
 
 _Base_Type_Int = TypeVar("_Base_Type_Int", bound=QoalaIntegerType)
 _Base_Type_Float = TypeVar("_Base_Type_Float", bound=QoalaFloatingPointType)
@@ -43,6 +45,15 @@ class TestIntegerClassicalSyntax(Generic[_Base_Type_Int]):
             dbg_info.function_name = request.node.name[0:bracket_index]
         else:
             dbg_info.function_name = request.node.name
+        # For testing purposes, we manually create a dummy program and attach a function to it.
+        # With this hack, we can assert the structure of the generated program
+        QoalaProgram._instance = DummyQoalaProgram(
+            getattr(request.cls, request.node.originalname)
+        )
+        QoalaProgram._instance._module.add_function(request.node.name)
+        yield
+        QoalaProgram._instance._module.remove_function(request.node.name)
+        del QoalaProgram._instance
 
     @staticmethod
     def _get_int_from_immediate(clazz: type, immediate: int) -> _Base_Type_Int:
@@ -114,6 +125,15 @@ class TestFloatClassicalSyntax(Generic[_Base_Type_Float]):
             dbg_info.function_name = request.node.name[0:bracket_index]
         else:
             dbg_info.function_name = request.node.name
+        # For testing purposes, we manually create a dummy program and attach a function to it.
+        # With this hack, we can assert the structure of the generated program
+        QoalaProgram._instance = DummyQoalaProgram(
+            getattr(request.cls, request.node.originalname)
+        )
+        QoalaProgram._instance._module.add_function(request.node.name)
+        yield
+        QoalaProgram._instance._module.remove_function(request.node.name)
+        del QoalaProgram._instance
 
     @staticmethod
     def _get_float_from_immediate(clazz: type, immediate: float) -> _Base_Type_Float:
@@ -180,6 +200,15 @@ class TestArrayClassicalSyntax:
             dbg_info.function_name = request.node.name[0:bracket_index]
         else:
             dbg_info.function_name = request.node.name
+        # For testing purposes, we manually create a dummy program and attach a function to it.
+        # With this hack, we can assert the structure of the generated program
+        QoalaProgram._instance = DummyQoalaProgram(
+            getattr(request.cls, request.node.originalname)
+        )
+        QoalaProgram._instance._module.add_function(request.node.name)
+        yield
+        QoalaProgram._instance._module.remove_function(request.node.name)
+        del QoalaProgram._instance
 
     def test_declare_integer_array(self):
         val_a = Int(10)

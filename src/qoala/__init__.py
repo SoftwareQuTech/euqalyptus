@@ -5,6 +5,7 @@ from dataclasses import dataclass, field
 from functools import partial
 from threading import Lock
 from typing import List, Any, Dict, Tuple, Optional
+
 from typing_extensions import Self
 
 import qoala.utils.debug_info as dbg_info

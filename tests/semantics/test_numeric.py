@@ -2,9 +2,9 @@ import pytest
 
 import qoala.utils.debug_info as dbg_info
 from qoala import QoalaProgram, CompilationContext
-from qoala.ast.model import QoalaBlock
 from qoala.ast.operations.branching import ConditionalBranching
 from qoala.ast.operations.casts import IntToFloat
+from qoala.ast.operations.communication import RecvIntOp, RecvFloatOp
 from qoala.ast.operations.numeric import Add, Subtract, Multiply, Divide
 from qoala.ast.operations.order import (
     EqualsOp,
@@ -26,10 +26,7 @@ from qoala.types.classical.arrays import IntArray, FloatArray
 from qoala.types.classical.floats import Float
 from qoala.types.classical.integer import Int32, UInt32, Int
 from qoala.types.quantum import Entangle, LocalQubit
-
-
-class DummyQoalaProgram(QoalaProgram):
-    pass
+from tests.helpers_tests import DummyQoalaProgram
 
 
 class TestNumbersSemantics:
@@ -44,6 +41,15 @@ class TestNumbersSemantics:
             dbg_info.function_name = request.node.name[0:bracket_index]
         else:
             dbg_info.function_name = request.node.name
+        # For testing purposes, we manually create a dummy program and attach a function to it.
+        # With this hack, we can assert the structure of the generated program
+        QoalaProgram._instance = DummyQoalaProgram(
+            getattr(request.cls, request.node.originalname)
+        )
+        QoalaProgram._instance._module.add_function(request.node.name)
+        yield
+        QoalaProgram._instance._module.remove_function(request.node.name)
+        del QoalaProgram._instance
 
     @pytest.mark.parametrize(
         "val_a, val_b, numeric_type, internal_type", numeric_test_data
@@ -267,14 +273,6 @@ class TestNumbersSemantics:
         assert result_e.operand_b.operand.value == 20
 
     def test_singular_recv_int_value_comparison(self):
-        # For testing purposes, we manually create a dummy program and attach a function to it.
-        # With this hack, we can assert the structure of the generated program
-        QoalaProgram._instance = DummyQoalaProgram(
-            self.test_singular_recv_int_value_comparison
-        )
-        QoalaProgram._instance._module.add_function(
-            self.test_singular_recv_int_value_comparison
-        )
         # We also manually set the internal structures for registering remotes and compilation options
         QoalaProgram._declared_remotes = {}
         compilation_context = CompilationContext()
@@ -292,28 +290,23 @@ class TestNumbersSemantics:
             with branch_false:
                 local_qubit.Z()
 
-        val = Int(10)
+        main_block = QoalaProgram._instance.current_function()._main_block
 
-        # We expect 4 blocks: entry (with conditional branch) -> true -> false -> terminal.
-        assert len(QoalaProgram._instance.current_function().blocks) == 4
-        # We also assert that there are no placeholder blocks on the final AST
-        program_blocks = QoalaProgram._instance.current_function().blocks
-        assert all([isinstance(block, QoalaBlock) for block in program_blocks])
+        assert len(main_block.operations) == 6
         # In this example, we only assert that the value returned by recv_int can be
         # compared as any other integer.
-        assert len(program_blocks[0].operations) == 6
-        assert isinstance(program_blocks[0].operations[4], EqualsOp)
-        assert isinstance(program_blocks[0].operations[5], ConditionalBranching)
+        assert isinstance(main_block.operations[2], RecvIntOp)
+        assert isinstance(main_block.operations[4], EqualsOp)
+        assert (
+            main_block.operations[4].operand_a is main_block.operations[2]
+            or main_block.operations[4].operand_b is main_block.operations[2]
+        )
+        assert isinstance(main_block.operations[5], ConditionalBranching)
+
+        del QoalaProgram._declared_remotes
+        del QoalaProgram._compilation_context
 
     def test_singular_recv_float_value_comparison(self):
-        # For testing purposes, we manually create a dummy program and attach a function to it.
-        # With this hack, we can assert the structure of the generated program
-        QoalaProgram._instance = DummyQoalaProgram(
-            self.test_singular_recv_float_value_comparison
-        )
-        QoalaProgram._instance._module.add_function(
-            self.test_singular_recv_float_value_comparison
-        )
         # We also manually set the internal structures for registering remotes and compilation options
         QoalaProgram._declared_remotes = {}
         compilation_context = CompilationContext()
@@ -331,15 +324,18 @@ class TestNumbersSemantics:
             with branch_false:
                 local_qubit.Z()
 
-        val = Int(10)
+        main_block = QoalaProgram._instance.current_function()._main_block
 
-        # We expect 4 blocks: entry (with conditional branch) -> true -> false -> terminal.
-        assert len(QoalaProgram._instance.current_function().blocks) == 4
-        # We also assert that there are no placeholder blocks on the final AST
-        program_blocks = QoalaProgram._instance.current_function().blocks
-        assert all([isinstance(block, QoalaBlock) for block in program_blocks])
+        assert len(main_block.operations) == 6
         # In this example, we only assert that the value returned by recv_int can be
-        # compared as any other float.
-        assert len(program_blocks[0].operations) == 6
-        assert isinstance(program_blocks[0].operations[4], EqualsOp)
-        assert isinstance(program_blocks[0].operations[5], ConditionalBranching)
+        # compared as any other integer.
+        assert isinstance(main_block.operations[2], RecvFloatOp)
+        assert isinstance(main_block.operations[4], EqualsOp)
+        assert (
+            main_block.operations[4].operand_a is main_block.operations[2]
+            or main_block.operations[4].operand_b is main_block.operations[2]
+        )
+        assert isinstance(main_block.operations[5], ConditionalBranching)
+
+        del QoalaProgram._declared_remotes
+        del QoalaProgram._compilation_context

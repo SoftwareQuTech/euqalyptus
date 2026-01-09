@@ -2,13 +2,13 @@ from typing import List, Any
 
 from qoala import QoalaProgramBase
 from qoala.ast.operations.arrays import GetItem, SetItem
-from qoala.ast.operations.numeric import Add, Subtract, Multiply, Divide
 from qoala.ast.operations.control_flow import ReturnResultsOp
+from qoala.ast.operations.numeric import Add, Subtract, Multiply, Divide
 from qoala.ast.value import QoalaInteger, QoalaFloat, QoalaArray
+from qoala.operations.control_flow import return_results
 from qoala.types.classical.arrays import IntArray, FloatArray
 from qoala.types.classical.floats import Float
 from qoala.types.classical.integer import Int
-from qoala.operations.control_flow import return_results
 
 
 class EmptyProgram(QoalaProgramBase):
@@ -62,7 +62,6 @@ class ProgramWithArrayMutation(QoalaProgramBase):
 # Across all the tests of this file, we only make assertions on the AST, so we compile "lazily"
 # (do not transform the AST into Qoala HIR
 class TestQoalaClass:
-
     def test_mt_program(self):
         empty_program = EmptyProgram()
         empty_program.compile(list(), compile_lazy=True)
@@ -72,8 +71,7 @@ class TestQoalaClass:
 
         # We *expect* 1 function, with 1 block, which is empty
         assert len(empty_program.module.functions) == 1
-        assert len(empty_program.module.functions[0].blocks) == 1
-        assert len(empty_program.module.functions[0].blocks[0].operations) == 0
+        assert len(empty_program.module.functions[0]._main_block.operations) == 0
 
     def test_basic_arith_program(self):
         arithmetic_program = ArithmeticProgram()
@@ -81,9 +79,8 @@ class TestQoalaClass:
 
         # Basic check
         assert len(arithmetic_program.module.functions) == 1
-        assert len(arithmetic_program.module.functions[0].blocks) == 1
-        assert len(arithmetic_program.module.functions[0].blocks[0].operations) == 7
-        program_body = arithmetic_program.module.functions[0].blocks[0].operations
+        assert len(arithmetic_program.module.functions[0]._main_block.operations) == 7
+        program_body = arithmetic_program.module.functions[0]._main_block.operations
 
         assert isinstance(program_body[0], QoalaInteger)
         assert isinstance(program_body[1], QoalaInteger)
@@ -113,9 +110,8 @@ class TestQoalaClass:
 
         # Basic check
         assert len(program_with_arg.module.functions) == 1
-        assert len(program_with_arg.module.functions[0].blocks) == 1
-        assert len(program_with_arg.module.functions[0].blocks[0].operations) == 3
-        program_body = program_with_arg.module.functions[0].blocks[0].operations
+        assert len(program_with_arg.module.functions[0]._main_block.operations) == 3
+        program_body = program_with_arg.module.functions[0]._main_block.operations
 
         assert isinstance(program_body[0], QoalaInteger)
         assert isinstance(program_body[1], QoalaFloat)
@@ -128,13 +124,13 @@ class TestQoalaClass:
 
         # Basic check
         assert len(program_with_array_access.module.functions) == 1
-        assert len(program_with_array_access.module.functions[0].blocks) == 1
         assert (
-            len(program_with_array_access.module.functions[0].blocks[0].operations) == 5
+            len(program_with_array_access.module.functions[0]._main_block.operations)
+            == 5
         )
-        program_body = (
-            program_with_array_access.module.functions[0].blocks[0].operations
-        )
+        program_body = program_with_array_access.module.functions[
+            0
+        ]._main_block.operations
 
         assert isinstance(program_body[0], QoalaInteger)
         assert isinstance(program_body[1], QoalaInteger)
@@ -155,14 +151,13 @@ class TestQoalaClass:
 
         # Basic check
         assert len(program_with_array_mutation.module.functions) == 1
-        assert len(program_with_array_mutation.module.functions[0].blocks) == 1
         assert (
-            len(program_with_array_mutation.module.functions[0].blocks[0].operations)
+            len(program_with_array_mutation.module.functions[0]._main_block.operations)
             == 6
         )
-        program_body = (
-            program_with_array_mutation.module.functions[0].blocks[0].operations
-        )
+        program_body = program_with_array_mutation.module.functions[
+            0
+        ]._main_block.operations
 
         assert len(program_body) == 6
         assert isinstance(program_body[0], QoalaArray)

@@ -39,6 +39,15 @@ class QoalaModule:
         self._current_function = new_function
         self._functions.append(new_function)
 
+    def remove_function(self, name: str):
+        to_remove = None
+        for function in self._functions:
+            if function._function_name == name:
+                to_remove = function
+        if to_remove is not None:
+            self._functions.remove(to_remove)
+            del self._current_function
+
     @property
     def current_function(self) -> QoalaFunction:
         return self._current_function
