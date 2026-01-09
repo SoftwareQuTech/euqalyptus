@@ -33,7 +33,7 @@ dev = [
 # pytest configuration - Leave untoched unless specified
 [tool.pytest.ini_options]
 minversion = "6.0"
-pythonpath = "src"
+pythonpath = ["src", "."]
 addopts = [
     "-ra -q",
     "--import-mode=importlib"

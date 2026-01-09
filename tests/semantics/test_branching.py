@@ -1,5 +1,6 @@
 import pytest
 
+from tests.helpers_tests import DummyQoalaProgram
 from qoala import QoalaProgram
 from qoala.utils import debug_info as dbg_info
 from qoala.ast.model import QoalaBlock, QoalaBranchTerminator
@@ -27,10 +28,6 @@ from qoala.operations.branching import (
 from qoala.types.classical import Int
 
 
-class DummyQoalaProgram(QoalaProgram):
-    pass
-
-
 class TestBranchingSemantics:
     @pytest.fixture(autouse=True, scope="function")
     def setup_debug_info(self, request):
@@ -41,13 +38,15 @@ class TestBranchingSemantics:
             dbg_info.function_name = request.node.name[0:bracket_index]
         else:
             dbg_info.function_name = request.node.name
-
-    def test_branching_simple_if(self):
         # For testing purposes, we manually create a dummy program and attach a function to it.
         # With this hack, we can assert the structure of the generated program
-        QoalaProgram._instance = DummyQoalaProgram(self.test_branching_simple_if)
-        QoalaProgram._instance._module.add_function(self.test_branching_simple_if)
+        QoalaProgram._instance = DummyQoalaProgram(getattr(request.cls, request.node.originalname))
+        QoalaProgram._instance._module.add_function(request.node.name)
+        yield
+        QoalaProgram._instance._module.remove_function(request.node.name)
+        del QoalaProgram._instance
 
+    def test_branching_simple_if(self):
         bool_true = Bool(True)
         branching = if_cond(bool_true)
         assert isinstance(branching, ConditionalBranching)

@@ -1,7 +1,8 @@
 import pytest
 
 import qoala.utils.debug_info as dbg_info
-from qoala import QoalaExpression
+from tests.helpers_tests import DummyQoalaProgram
+from qoala import QoalaExpression, QoalaProgram
 from qoala.ast.model import QoalaBlock
 from qoala.ast.operations.branching import ConditionalBranching
 from qoala.operations.branching import (
@@ -27,6 +28,13 @@ class TestBooleanSyntax:
             dbg_info.function_name = request.node.name[0:bracket_index]
         else:
             dbg_info.function_name = request.node.name
+        # For testing purposes, we manually create a dummy program and attach a function to it.
+        # With this hack, we can assert the structure of the generated program
+        QoalaProgram._instance = DummyQoalaProgram(getattr(request.cls, request.node.originalname))
+        QoalaProgram._instance._module.add_function(request.node.name)
+        yield
+        QoalaProgram._instance._module.remove_function(request.node.name)
+        del QoalaProgram._instance
 
     def test_direct_boolean_creation(self):
         bool_true = Bool(True)
@@ -62,6 +70,13 @@ class TestBranchingSyntax:
             dbg_info.function_name = request.node.name[0:bracket_index]
         else:
             dbg_info.function_name = request.node.name
+        # For testing purposes, we manually create a dummy program and attach a function to it.
+        # With this hack, we can assert the structure of the generated program
+        QoalaProgram._instance = DummyQoalaProgram(getattr(request.cls, request.node.originalname))
+        QoalaProgram._instance._module.add_function(request.node.name)
+        yield
+        QoalaProgram._instance._module.remove_function(request.node.name)
+        del QoalaProgram._instance
 
     def test_branching_simple_if(self):
         bool_true = Bool(True)

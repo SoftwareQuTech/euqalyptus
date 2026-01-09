@@ -14,10 +14,6 @@ from qoala.types.classical import Int
 from qoala.utils import debug_info as dbg_info
 
 
-class DummyQoalaProgram(QoalaProgram):
-    pass
-
-
 @QoalaProgram
 def simple_if():
     with if_cond(Int(4) < 7) as (branch_true, branch_false):

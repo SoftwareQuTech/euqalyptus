@@ -5,10 +5,7 @@ from qoala import QoalaProgram
 from qoala.ast.operations.boolean import AndOp, OrOp, XorOp, NotOp
 from qoala.ast.value import QoalaBool
 from qoala.types.classical.booleans import Bool
-
-
-class DummyQoalaProgram(QoalaProgram):
-    pass
+from tests.helpers_tests import DummyQoalaProgram
 
 
 class TestNumbersSemantics:
@@ -21,12 +18,15 @@ class TestNumbersSemantics:
             dbg_info.function_name = request.node.name[0:bracket_index]
         else:
             dbg_info.function_name = request.node.name
+        # For testing purposes, we manually create a dummy program and attach a function to it.
+        # With this hack, we can assert the structure of the generated program
+        QoalaProgram._instance = DummyQoalaProgram(getattr(request.cls, request.node.originalname))
+        QoalaProgram._instance._module.add_function(request.node.name)
+        yield
+        QoalaProgram._instance._module.remove_function(request.node.name)
+        del QoalaProgram._instance
 
     def test_basic_booleans(self):
-        # For testing purposes, we manually create a dummy program and attach a function to it.
-        QoalaProgram._instance = DummyQoalaProgram(self.test_basic_booleans)
-        QoalaProgram._instance._module.add_function(self.test_basic_booleans)
-
         bool_true = Bool(True)
         bool_false = Bool(False)
 
@@ -36,10 +36,6 @@ class TestNumbersSemantics:
         assert bool_false.value == False
 
     def test_boolean_operations(self):
-        # For testing purposes, we manually create a dummy program and attach a function to it.
-        QoalaProgram._instance = DummyQoalaProgram(self.test_boolean_operations)
-        QoalaProgram._instance._module.add_function(self.test_boolean_operations)
-
         bool_true = Bool(True)
         bool_false = Bool(False)
 
