@@ -37,8 +37,9 @@ class ConditionalBranching(QoalaOperation):
     def __exit__(self, exc_type, exc_val, exc_tb):
         # Exiting the conditional branch context marks the finish of the
         # branching on CFG.
-        # We mark the previous block in the nesting sequence as active
-        QoalaProgram.current_function().pop_previous_block()
+        # We don't need to pop the last block, since it will be done by the
+        # __exit__ method (context manager) of the QoalaBlock object.
+        pass
 
     @property
     def true_dest(self) -> QoalaBlock:
