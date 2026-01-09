@@ -1,12 +1,10 @@
 import pytest
 
 import qoala.utils.debug_info as dbg_info
-from qoala.ast.operations.communication import RecvIntOp, RecvFloatOp
-from tests.helpers_tests import DummyQoalaProgram
 from qoala import QoalaProgram, CompilationContext
-from qoala.ast.model import QoalaBlock
 from qoala.ast.operations.branching import ConditionalBranching
 from qoala.ast.operations.casts import IntToFloat
+from qoala.ast.operations.communication import RecvIntOp, RecvFloatOp
 from qoala.ast.operations.numeric import Add, Subtract, Multiply, Divide
 from qoala.ast.operations.order import (
     EqualsOp,
@@ -28,6 +26,8 @@ from qoala.types.classical.arrays import IntArray, FloatArray
 from qoala.types.classical.floats import Float
 from qoala.types.classical.integer import Int32, UInt32, Int
 from qoala.types.quantum import Entangle, LocalQubit
+from tests.helpers_tests import DummyQoalaProgram
+
 
 class TestNumbersSemantics:
     numeric_test_data = [(10, 20, Int32, QoalaInteger), (11.1, 22.2, Float, QoalaFloat)]
@@ -43,7 +43,9 @@ class TestNumbersSemantics:
             dbg_info.function_name = request.node.name
         # For testing purposes, we manually create a dummy program and attach a function to it.
         # With this hack, we can assert the structure of the generated program
-        QoalaProgram._instance = DummyQoalaProgram(getattr(request.cls, request.node.originalname))
+        QoalaProgram._instance = DummyQoalaProgram(
+            getattr(request.cls, request.node.originalname)
+        )
         QoalaProgram._instance._module.add_function(request.node.name)
         yield
         QoalaProgram._instance._module.remove_function(request.node.name)
@@ -295,7 +297,10 @@ class TestNumbersSemantics:
         # compared as any other integer.
         assert isinstance(main_block.operations[2], RecvIntOp)
         assert isinstance(main_block.operations[4], EqualsOp)
-        assert main_block.operations[4].operand_a is main_block.operations[2] or main_block.operations[4].operand_b is main_block.operations[2]
+        assert (
+            main_block.operations[4].operand_a is main_block.operations[2]
+            or main_block.operations[4].operand_b is main_block.operations[2]
+        )
         assert isinstance(main_block.operations[5], ConditionalBranching)
 
         del QoalaProgram._declared_remotes
@@ -326,7 +331,10 @@ class TestNumbersSemantics:
         # compared as any other integer.
         assert isinstance(main_block.operations[2], RecvFloatOp)
         assert isinstance(main_block.operations[4], EqualsOp)
-        assert main_block.operations[4].operand_a is main_block.operations[2] or main_block.operations[4].operand_b is main_block.operations[2]
+        assert (
+            main_block.operations[4].operand_a is main_block.operations[2]
+            or main_block.operations[4].operand_b is main_block.operations[2]
+        )
         assert isinstance(main_block.operations[5], ConditionalBranching)
 
         del QoalaProgram._declared_remotes

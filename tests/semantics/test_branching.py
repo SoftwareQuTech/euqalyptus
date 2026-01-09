@@ -1,8 +1,6 @@
 import pytest
 
-from tests.helpers_tests import DummyQoalaProgram
 from qoala import QoalaProgram
-from qoala.utils import debug_info as dbg_info
 from qoala.ast.model import QoalaBlock, QoalaBranchTerminator
 from qoala.ast.operations.branching import ConditionalBranching
 from qoala.ast.operations.numeric import Add
@@ -15,7 +13,6 @@ from qoala.ast.operations.order import (
     GreaterThanOrEqualsOp,
 )
 from qoala.ast.value import QoalaBool, QoalaInteger
-from qoala.types.classical.booleans import Bool
 from qoala.operations.branching import (
     if_cond,
     if_eq,
@@ -26,6 +23,9 @@ from qoala.operations.branching import (
     if_ge,
 )
 from qoala.types.classical import Int
+from qoala.types.classical.booleans import Bool
+from qoala.utils import debug_info as dbg_info
+from tests.helpers_tests import DummyQoalaProgram
 
 
 class TestBranchingSemantics:
@@ -40,7 +40,9 @@ class TestBranchingSemantics:
             dbg_info.function_name = request.node.name
         # For testing purposes, we manually create a dummy program and attach a function to it.
         # With this hack, we can assert the structure of the generated program
-        QoalaProgram._instance = DummyQoalaProgram(getattr(request.cls, request.node.originalname))
+        QoalaProgram._instance = DummyQoalaProgram(
+            getattr(request.cls, request.node.originalname)
+        )
         QoalaProgram._instance._module.add_function(request.node.name)
         yield
         QoalaProgram._instance._module.remove_function(request.node.name)

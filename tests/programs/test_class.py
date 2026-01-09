@@ -2,13 +2,13 @@ from typing import List, Any
 
 from qoala import QoalaProgramBase
 from qoala.ast.operations.arrays import GetItem, SetItem
-from qoala.ast.operations.numeric import Add, Subtract, Multiply, Divide
 from qoala.ast.operations.control_flow import ReturnResultsOp
+from qoala.ast.operations.numeric import Add, Subtract, Multiply, Divide
 from qoala.ast.value import QoalaInteger, QoalaFloat, QoalaArray
+from qoala.operations.control_flow import return_results
 from qoala.types.classical.arrays import IntArray, FloatArray
 from qoala.types.classical.floats import Float
 from qoala.types.classical.integer import Int
-from qoala.operations.control_flow import return_results
 
 
 class EmptyProgram(QoalaProgramBase):
@@ -125,11 +125,12 @@ class TestQoalaClass:
         # Basic check
         assert len(program_with_array_access.module.functions) == 1
         assert (
-            len(program_with_array_access.module.functions[0]._main_block.operations) == 5
+            len(program_with_array_access.module.functions[0]._main_block.operations)
+            == 5
         )
-        program_body = (
-            program_with_array_access.module.functions[0]._main_block.operations
-        )
+        program_body = program_with_array_access.module.functions[
+            0
+        ]._main_block.operations
 
         assert isinstance(program_body[0], QoalaInteger)
         assert isinstance(program_body[1], QoalaInteger)
@@ -154,9 +155,9 @@ class TestQoalaClass:
             len(program_with_array_mutation.module.functions[0]._main_block.operations)
             == 6
         )
-        program_body = (
-            program_with_array_mutation.module.functions[0]._main_block.operations
-        )
+        program_body = program_with_array_mutation.module.functions[
+            0
+        ]._main_block.operations
 
         assert len(program_body) == 6
         assert isinstance(program_body[0], QoalaArray)

@@ -1,5 +1,6 @@
 from qoala import QoalaProgram
 from qoala.ast.operations.arrays import GetItem, SetItem
+from qoala.ast.operations.control_flow import ReturnResultsOp
 from qoala.ast.operations.numeric import Add, Subtract, Multiply, Divide
 from qoala.ast.operations.quantum import (
     XGate,
@@ -16,12 +17,11 @@ from qoala.ast.operations.quantum import (
 )
 from qoala.ast.qubit import QoalaLocalQubit
 from qoala.ast.value import QoalaInteger, QoalaFloat, QoalaArray
-from qoala.ast.operations.control_flow import ReturnResultsOp
+from qoala.operations.control_flow import return_results
 from qoala.types.classical.arrays import IntArray, FloatArray
 from qoala.types.classical.floats import Float
 from qoala.types.classical.integer import Int
 from qoala.types.quantum.qubit import LocalQubit
-from qoala.operations.control_flow import return_results
 
 
 @QoalaProgram
@@ -168,11 +168,12 @@ class TestQoalaDecorator:
         # Basic check
         assert len(program_with_array_access.module.functions) == 1
         assert (
-            len(program_with_array_access.module.functions[0]._main_block.operations) == 5
+            len(program_with_array_access.module.functions[0]._main_block.operations)
+            == 5
         )
-        program_body = (
-            program_with_array_access.module.functions[0]._main_block.operations
-        )
+        program_body = program_with_array_access.module.functions[
+            0
+        ]._main_block.operations
 
         assert isinstance(program_body[0], QoalaInteger)
         assert isinstance(program_body[1], QoalaInteger)
@@ -196,9 +197,9 @@ class TestQoalaDecorator:
             len(program_with_array_mutation.module.functions[0]._main_block.operations)
             == 6
         )
-        program_body = (
-            program_with_array_mutation.module.functions[0]._main_block.operations
-        )
+        program_body = program_with_array_mutation.module.functions[
+            0
+        ]._main_block.operations
 
         assert isinstance(program_body[0], QoalaArray)
         assert program_body[0].base_type is float
@@ -224,17 +225,15 @@ class TestQoalaDecorator:
         assert len(program_local_qubit_with_simple_gates.module.functions) == 1
         assert (
             len(
-                program_local_qubit_with_simple_gates.module.functions[0]
-                ._main_block
-                .operations
+                program_local_qubit_with_simple_gates.module.functions[
+                    0
+                ]._main_block.operations
             )
             == 11
         )
-        program_body = (
-            program_local_qubit_with_simple_gates.module.functions[0]
-            ._main_block
-            .operations
-        )
+        program_body = program_local_qubit_with_simple_gates.module.functions[
+            0
+        ]._main_block.operations
 
         assert isinstance(program_body[0], QoalaLocalQubit)
         assert isinstance(program_body[1], XGate)
@@ -268,17 +267,15 @@ class TestQoalaDecorator:
         assert len(program_local_qubit_with_complex_gates.module.functions) == 1
         assert (
             len(
-                program_local_qubit_with_complex_gates.module.functions[0]
-                ._main_block
-                .operations
+                program_local_qubit_with_complex_gates.module.functions[
+                    0
+                ]._main_block.operations
             )
             == 14
         )
-        program_body = (
-            program_local_qubit_with_complex_gates.module.functions[0]
-            ._main_block
-            .operations
-        )
+        program_body = program_local_qubit_with_complex_gates.module.functions[
+            0
+        ]._main_block.operations
 
         assert isinstance(program_body[0], QoalaInteger)
         assert isinstance(program_body[1], QoalaInteger)

@@ -1,11 +1,11 @@
 from dataclasses import dataclass
-from . import QoalaCompilable, QoalaExpression
 from typing import List, Optional
 
 from qnet.dialects import qnet, scf
 from qnet.ir import Context, Location, Block, InsertionPoint, FunctionType
 
 from qoala.utils.debug_info import DebugInfo
+from . import QoalaCompilable, QoalaExpression
 
 
 @dataclass(init=False)
@@ -48,6 +48,7 @@ class QoalaBlock(QoalaCompilable):
 
     def __enter__(self):
         from qoala import QoalaProgram
+
         QoalaProgram.current_function().nest_block(self)
 
     def __exit__(self, exc_type, exc_val, exc_tb):
@@ -55,6 +56,7 @@ class QoalaBlock(QoalaCompilable):
         # outside the scope of the if-then-else operation
         self._operations.append(QoalaBranchTerminator())
         from qoala import QoalaProgram
+
         QoalaProgram.current_function().pop_previous_block()
 
     @property

@@ -1,14 +1,13 @@
 from dataclasses import dataclass
 from typing import List, Type, TypeVar, Optional
 
-import qnet.dialects.tensor as tensor
 import qnet.dialects.qnet as qnet
+import qnet.dialects.tensor as tensor
 from qnet.extras.types import i32, f32
 from qnet.ir import Context, Location, IntegerAttr
 
 from qoala import QoalaProgram
 from qoala.ast import checkbaseir, QoalaExpression
-from qoala.ast.value import QoalaReferenceInsideArray
 from qoala.ast.operations import (
     QoalaOperation,
     with_order_operators,
@@ -23,6 +22,7 @@ from qoala.ast.value import (
     QoalaArray,
     QoalaNumericValue,
 )
+from qoala.ast.value import QoalaReferenceInsideArray
 from qoala.errors import (
     UnknownTypeError,
     UnknownRemoteError,

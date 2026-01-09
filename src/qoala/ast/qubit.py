@@ -3,10 +3,9 @@ from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from typing import Optional
 
-from typing_extensions import Self
-
 import qnet.dialects.qnet as qnet
 from qnet.ir import Context, Location
+from typing_extensions import Self
 
 from qoala import QoalaProgram
 from qoala.ast import QoalaExpression, checkbaseir

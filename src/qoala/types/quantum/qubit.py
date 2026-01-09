@@ -1,5 +1,6 @@
 from abc import ABC
 from typing import Tuple
+
 from typing_extensions import Self
 
 from qoala import QoalaProgram

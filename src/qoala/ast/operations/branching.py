@@ -1,13 +1,13 @@
 from dataclasses import dataclass
 from typing import Optional
 
+from qnet.dialects import scf
 from qnet.dialects._ods_common import get_op_result_or_op_results
 from qnet.ir import Context, Location
-from qnet.dialects import scf
 
 from qoala import QoalaExpression, QoalaProgram
-from qoala.ast.operations import QoalaOperation
 from qoala.ast.model import QoalaBlock
+from qoala.ast.operations import QoalaOperation
 
 
 @dataclass(init=False)
@@ -72,7 +72,8 @@ class ConditionalBranching(QoalaOperation):
         )
         # Create the scf-IfOp object
         if_op = scf.IfOp(
-            self.condition.ir_value, (),
+            self.condition.ir_value,
+            (),
             hasElse=len(self._branch_false.operations) >= 1,
             loc=source_location,
         )
