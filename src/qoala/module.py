@@ -4,6 +4,7 @@ from typing import List
 from qnet.dialects import qnet
 from qnet.ir import Module, Context, Location, InsertionPoint
 
+from qoala import QoalaScope
 from qoala.ast import QoalaExpression
 from qoala.ast.model import QoalaFunction
 from qoala.utils.debug_info import DebugInfo
@@ -24,6 +25,7 @@ class QoalaModule:
     _qir_module: Module
     _is_initialized: bool
     _current_function: QoalaFunction
+    _current_scope: QoalaScope
 
     def __init__(self, module_dbg_info: DebugInfo):
         self._functions = []
@@ -51,6 +53,14 @@ class QoalaModule:
     @property
     def current_function(self) -> QoalaFunction:
         return self._current_function
+
+    @property
+    def current_scope(self) -> QoalaScope:
+        return self._current_scope
+
+    @current_scope.setter
+    def current_scope(self, new_scope: QoalaScope):
+        self._current_scope = new_scope
 
     @property
     def functions(self) -> List[QoalaFunction]:

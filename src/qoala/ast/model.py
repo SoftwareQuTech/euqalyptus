@@ -9,12 +9,47 @@ from . import QoalaCompilable, QoalaExpression
 
 
 @dataclass(init=False)
+class QoalaScope:
+    """
+    Defines a scope for values to be defined within. Any value defined will be
+    attached to a scope.
+    When a value needs to be retrieved (the ir_value), we should resolve it
+    depending on whether if it is within the scope (direct line of sight) or
+    if it needs to be "exported" from a sibling scope.
+
+    Some scopes might be "locked", either up- or downwards. This means that the
+    values defined within this scope cannot be "exported" to outside scopes; if
+    locked upwards, then values cannot be returned to parent scopes. If locked
+    downwards then values cannot be used in (grand*)children scopes.
+    """
+    # The structure to support scopes must be a tree:
+    # * The initial scope must be defined at module level (maybe)
+    # * One scope defined at function level
+    # * One scope defined at "nesting" operations (if, for, while)
+    # Once that a nesting level closes, the scope is closed (no mor values defined within)
+    # If a new operation defines a new nesting level, then the "current" visible
+    #  scope gets a new children scope and becomes the currently active.
+    # New values are defined within the currently active scope
+    # When generating IR, any referenced value *must* be resolved within the scope
+    # tree:
+    # * First, a bottom-up search: first in the current scope; then in all the direct parents.
+    # * If not found, start a top-down.
+    #   * If not found, the value is not defined.
+    #   * If found, check if there is a *valid* path from the scope requesting the value
+    #     until the one that contains it.
+    #   * A path is deemed "valid" iff all the scopes that the value need to go through
+    #     are not locked up- or downwards as needed.
+    # TODO - Implement the scope
+    pass
+
+
+@dataclass(init=False)
 class QoalaBranchTerminator(QoalaExpression):
     """
     Simple class that can be compiled into a scf.yield operation. These operations
     are *always* needed as block terminators, even if the scf.if block does not
     yield a value (in which case, this operation will not be printed in the simplified
-    version of the IR)
+    version of the IR).
     """
 
     def can_evaluate_to(self, cls) -> bool:

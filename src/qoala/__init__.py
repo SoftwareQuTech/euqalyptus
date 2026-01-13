@@ -10,7 +10,7 @@ from typing_extensions import Self
 
 import qoala.utils.debug_info as dbg_info
 from qoala.ast import QoalaExpression
-from qoala.ast.model import QoalaFunction
+from qoala.ast.model import QoalaFunction, QoalaScope
 from qoala.errors import NotYetCompiledError, QuantumProgramNotImplementedError
 from qoala.module import QoalaModule
 
@@ -88,10 +88,11 @@ class QoalaProgram:
         raise RuntimeError(f"Program with no instance!")
 
     @classmethod
-    def get_last_block_id(cls) -> int:
+    def current_scope(cls) -> QoalaScope:
         if hasattr(cls, "_instance"):
-            return len(cls._instance._module.functions[-1].blocks)
-        return -1
+            return cls._instance._module.current_scope
+        # This should never happen
+        raise RuntimeError(f"Program with no instance!")
 
     @classmethod
     def get_declared_remote(cls, remote_name: str) -> Any:
