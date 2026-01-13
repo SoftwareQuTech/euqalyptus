@@ -112,6 +112,16 @@ def branching_nested():
     b = Int(15) + 10
 
 
+@QoalaProgram
+def value_from_branching():
+    with if_cond(Int(4) < 7) as (branch_true, branch_false):
+        with branch_true:
+            a = Int(15)
+        with branch_false:
+            a = Int(25)
+    b = a + 10
+
+
 class TestBranchingInstructionsBindings:
     @pytest.fixture(autouse=True, scope="function")
     def setup_debug_info(self, request):
@@ -411,6 +421,36 @@ class TestBranchingInstructionsBindings:
     %c15_i32 = arith.constant 15 : i32
     %c10_i32 = arith.constant 10 : i32
     %1 = arith.addi %c15_i32, %c10_i32 : i32
+    qnet.return
+  }
+}
+"""
+        assert str(module.asm) == expected_asm
+
+    def test_value_from_branching(self):
+        with pytest.raises(NotYetCompiledError) as ex:
+            _, _ = value_from_branching.module
+        assert (
+            str(ex.value)
+            == "The program has not been compiled yet. Did you invoke 'compile()' on it?"
+        )
+        _, module = value_from_branching.compile()
+        assert isinstance(module, QoalaModule)
+        # Note - MLIR does not offer a "boolean" type. values "true" and "false" are modeled as i1 values.
+        expected_asm = """module {
+  qnet.func @value_from_branching() {
+    %c4_i32 = arith.constant 4 : i32
+    %c7_i32 = arith.constant 7 : i32
+    %0 = arith.cmpi slt, %c4_i32, %c7_i32 : i32
+    %1 = scf.if %0 -> (i32) {
+      %c15_i32 = arith.constant 15 : i32
+      scf.yield %c15_i32 : i32
+    } else {
+      %c25_i32 = arith.constant 25 : i32
+      scf.yield %c25_i32 : i32
+    }
+    %c10_i32 = arith.constant 10 : i32
+    %2= arith.addi %1, %c10_i32 : i32
     qnet.return
   }
 }
