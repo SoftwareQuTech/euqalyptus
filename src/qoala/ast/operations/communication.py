@@ -21,6 +21,7 @@ from qoala.ast.value import (
     QoalaFloat,
     QoalaArray,
     QoalaNumericValue,
+    Signedness
 )
 from qoala.ast.value import QoalaReferenceInsideArray
 from qoala.errors import (
@@ -38,6 +39,9 @@ class DeclaredRemote(QoalaOperation):
     def __init__(self, remote_name: str):
         super().__init__()
         self.remote_name = remote_name
+        # Declared remotes are just "hanging" in the module, so they don't
+        # have a "containing_block"
+        self._containing_block = None
         QoalaProgram.add_declared_remote(remote_name, self)
 
     def can_evaluate_to(self, cls) -> bool:
@@ -243,6 +247,9 @@ class RecvFloatsOp(BasePluralRecvOp[QoalaFloat, float]):
 class RecvIntOp(BaseSingularRecvOp[QoalaInteger]):
     def __init__(self, remote_name: DeclaredRemote | str):
         super().__init__(remote_name=remote_name, base_type=int)
+        self.signedness = Signedness.SIGNED
+        self.width = 32
+        self.value = None
 
 
 @with_arith_operators
