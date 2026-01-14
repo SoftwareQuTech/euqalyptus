@@ -3,7 +3,7 @@ import pytest
 import qoala.utils.debug_info as dbg_info
 from qoala import QoalaProgram, CompilationContext
 from qoala.ast.operations.branching import ConditionalBranching
-from qoala.ast.operations.casts import IntToFloat
+from qoala.ast.operations.casts import IntToFloat, BitToInt
 from qoala.ast.operations.communication import RecvIntOp, RecvFloatOp
 from qoala.ast.operations.numeric import Add, Subtract, Multiply, Divide
 from qoala.ast.operations.order import (
@@ -11,7 +11,7 @@ from qoala.ast.operations.order import (
     LessThanOp,
     GreaterThanOp,
     LessThanOrEqualsOp,
-    GreaterThanOrEqualsOp,
+    GreaterThanOrEqualsOp, NotEqualsOp,
 )
 from qoala.ast.value import QoalaInteger, QoalaFloat, Signedness
 from qoala.errors import (
@@ -338,6 +338,42 @@ class TestNumbersSemantics:
             or main_block.operations[4].operand_b is main_block.operations[2]
         )
         assert isinstance(main_block.operations[5], ConditionalBranching)
+
+        del QoalaProgram._declared_remotes
+        del QoalaProgram._compilation_context
+
+    def test_compare_qubit_measurement_comparison(self):
+        # We also manually set the internal structures for registering remotes and compilation options
+        QoalaProgram._declared_remotes = {}
+        compilation_context = CompilationContext()
+        compilation_context.options.use_singular_classical_comm_ops = True
+        QoalaProgram._compilation_context = compilation_context
+
+        remote = Remote("Bob")
+        q1 = LocalQubit()
+        # This operation yields a Bit
+        int_m = q1.measure()
+        int_c = recv_int(remote)
+
+        # We compare a measure (integer of width 1) with a recv_int (integer of width 32)
+        # In this case we need to upcast the bit to an integer
+        cmp = int_m != int_c
+
+        main_block = QoalaProgram._instance.current_function()._main_block
+
+        # Here we expect 5 operations:
+        # qubit, measure, recv_int, cast(bit to int), NotEquals
+        assert len(main_block.operations) == 5
+        # In this example, we only assert that the value returned by recv_int can be
+        # compared as any other integer.
+
+        assert isinstance(main_block.operations[2], RecvIntOp)
+        assert isinstance(main_block.operations[3], BitToInt)
+        assert isinstance(main_block.operations[4], NotEqualsOp)
+        assert (
+            main_block.operations[4].operand_a is main_block.operations[2]
+            or main_block.operations[4].operand_b is main_block.operations[3]
+        )
 
         del QoalaProgram._declared_remotes
         del QoalaProgram._compilation_context
