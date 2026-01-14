@@ -34,8 +34,8 @@ class QoalaModule:
     def clear(self):
         self._functions.clear()
 
-    def add_function(self, name: str):
-        new_function = QoalaFunction(name)
+    def add_function(self, name: str, dbg_info: DebugInfo | None = None):
+        new_function = QoalaFunction(name, dbg_info)
         self._current_function = new_function
         self._functions.append(new_function)
 
