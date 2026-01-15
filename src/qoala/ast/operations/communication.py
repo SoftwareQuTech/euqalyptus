@@ -21,7 +21,7 @@ from qoala.ast.value import (
     QoalaFloat,
     QoalaArray,
     QoalaNumericValue,
-    Signedness
+    Signedness,
 )
 from qoala.ast.value import QoalaReferenceInsideArray
 from qoala.errors import (

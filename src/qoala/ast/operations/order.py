@@ -48,16 +48,16 @@ class BaseBinaryOrderOp(QoalaOperation, ABC):
                 f"One of the operands '{casted_operands[1]}' cannot evaluate to "
                 f"either Integer or Float"
             )
-        elif casted_operands[0].can_evaluate_to(QoalaFloat) and casted_operands[1].can_evaluate_to(
-            QoalaInteger
-        ):
+        elif casted_operands[0].can_evaluate_to(QoalaFloat) and casted_operands[
+            1
+        ].can_evaluate_to(QoalaInteger):
             # We need to add a cast of operand[1]
             casted_operand_1 = IntToFloat(casted_operands[1])
             self.operand_a = casted_operands[0]
             self.operand_b = casted_operand_1
-        elif casted_operands[1].can_evaluate_to(QoalaFloat) and casted_operands[0].can_evaluate_to(
-            QoalaInteger
-        ):
+        elif casted_operands[1].can_evaluate_to(QoalaFloat) and casted_operands[
+            0
+        ].can_evaluate_to(QoalaInteger):
             # We need to add a cast of operand a
             casted_operand_0 = IntToFloat(casted_operands[0])
             self.operand_a = casted_operand_0

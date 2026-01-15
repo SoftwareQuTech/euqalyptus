@@ -11,7 +11,8 @@ from qoala.ast.operations.order import (
     LessThanOp,
     GreaterThanOp,
     LessThanOrEqualsOp,
-    GreaterThanOrEqualsOp, NotEqualsOp,
+    GreaterThanOrEqualsOp,
+    NotEqualsOp,
 )
 from qoala.ast.value import QoalaInteger, QoalaFloat, Signedness
 from qoala.errors import (
