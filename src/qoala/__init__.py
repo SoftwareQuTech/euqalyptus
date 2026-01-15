@@ -51,11 +51,11 @@ class QoalaProgram:
 
     def __init__(self, entry_fun: Callable):
         self._function_name = entry_fun.__name__
-        module_dbg_info = dbg_info.get_debug_info_for_function(entry_fun)
+        self._module_dbg_info = dbg_info.get_debug_info_for_function(entry_fun)
         self._entry_fun = entry_fun
         self._is_compiled = False
         # Create the module
-        self._module = QoalaModule(module_dbg_info)
+        self._module = QoalaModule(self._module_dbg_info)
 
     @classmethod
     def compile_lazy_flag(cls, new_flag_value: Optional[bool] = None) -> bool:
@@ -158,7 +158,7 @@ class QoalaProgram:
             # We clear the body of this qoala program.
             self._module.clear()
             # For the moment, we create the *only* function of the module
-            self._module.add_function(self._function_name)
+            self._module.add_function(self._function_name, self._module_dbg_info)
             # Then we start "executing" the entry function code, to generate the AST
             ret_val = self._entry_fun(*args, **kwargs)
             # Add the remotes declarations

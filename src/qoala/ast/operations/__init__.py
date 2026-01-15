@@ -127,6 +127,7 @@ def with_order_operators(cls):
 
     dunder_methods = [
         "__eq__",
+        "__ne__",
         "__ge__",
         "__gt__",
         "__le__",

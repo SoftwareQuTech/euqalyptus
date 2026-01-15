@@ -8,8 +8,8 @@ from qnet.ir import Context, Location
 
 from qoala import QoalaExpression, QoalaProgram
 from qoala.ast.operations import QoalaOperation
-from qoala.ast.operations.casts import IntToFloat
-from qoala.ast.value import QoalaInteger, QoalaFloat, QoalaBool
+from qoala.ast.operations.casts import IntToFloat, BitToInt
+from qoala.ast.value import QoalaInteger, QoalaFloat, QoalaBool, QoalaBit
 from qoala.errors import WrongEvaluationTypeError, UnknownOperationError
 
 
@@ -20,43 +20,51 @@ class BaseBinaryOrderOp(QoalaOperation, ABC):
 
     def __init__(self, *operands: QoalaExpression):
         super().__init__()
-        # We "normalize" the operands, upcasting an integer to a float if needed
         assert len(operands) == 2
+        casted_operands = [operands[0], operands[1]]
+
+        # Edge case: Upcast any bit to int
+        if casted_operands[0].can_evaluate_to(QoalaBit):
+            casted_operands[0] = BitToInt(casted_operands[0])
+        if casted_operands[1].can_evaluate_to(QoalaBit):
+            casted_operands[1] = BitToInt(casted_operands[1])
+
+        # We "normalize" the operands, upcasting an integer to a float if needed
         if not (
-            operands[0].can_evaluate_to(QoalaFloat)
-            or operands[0].can_evaluate_to(QoalaInteger)
+            casted_operands[0].can_evaluate_to(QoalaFloat)
+            or casted_operands[0].can_evaluate_to(QoalaInteger)
         ):
             raise WrongEvaluationTypeError(
                 f"When constructing operation '{self.__class__.__name__}': "
-                f"One of the operands '{operands[0]}' cannot evaluate to "
+                f"One of the operands '{casted_operands[0]}' cannot evaluate to "
                 f"either Integer or Float"
             )
         elif not (
-            operands[1].can_evaluate_to(QoalaFloat)
-            or operands[1].can_evaluate_to(QoalaInteger)
+            casted_operands[1].can_evaluate_to(QoalaFloat)
+            or casted_operands[1].can_evaluate_to(QoalaInteger)
         ):
             raise WrongEvaluationTypeError(
                 f"When constructing operation '{self.__class__.__name__}': "
-                f"One of the operands '{operands[1]}' cannot evaluate to "
+                f"One of the operands '{casted_operands[1]}' cannot evaluate to "
                 f"either Integer or Float"
             )
-        elif operands[0].can_evaluate_to(QoalaFloat) and operands[1].can_evaluate_to(
-            QoalaInteger
-        ):
+        elif casted_operands[0].can_evaluate_to(QoalaFloat) and casted_operands[
+            1
+        ].can_evaluate_to(QoalaInteger):
             # We need to add a cast of operand[1]
-            casted_operand_1 = IntToFloat(operands[1])
-            self.operand_a = operands[0]
+            casted_operand_1 = IntToFloat(casted_operands[1])
+            self.operand_a = casted_operands[0]
             self.operand_b = casted_operand_1
-        elif operands[1].can_evaluate_to(QoalaFloat) and operands[0].can_evaluate_to(
-            QoalaInteger
-        ):
+        elif casted_operands[1].can_evaluate_to(QoalaFloat) and casted_operands[
+            0
+        ].can_evaluate_to(QoalaInteger):
             # We need to add a cast of operand a
-            casted_operand_0 = IntToFloat(operands[0])
+            casted_operand_0 = IntToFloat(casted_operands[0])
             self.operand_a = casted_operand_0
-            self.operand_b = operands[1]
+            self.operand_b = casted_operands[1]
         else:
-            self.operand_a = operands[0]
-            self.operand_b = operands[1]
+            self.operand_a = casted_operands[0]
+            self.operand_b = casted_operands[1]
 
     def _compile_with_predicate(
         self, ctx: Context, int_predicate: CmpIPredicate, float_predicate: CmpFPredicate
@@ -220,6 +228,8 @@ class OrderOperatorFactory:
     def __new__(cls, *operands, operation: str) -> QoalaExpression:
         if operation in ["__eq__"]:
             return EqualsOp(*operands)
+        elif operation in ["__ne__"]:
+            return NotEqualsOp(*operands)
         elif operation in ["__gt__"]:
             return GreaterThanOp(*operands)
         elif operation in ["__ge__"]:

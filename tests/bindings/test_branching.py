@@ -384,6 +384,7 @@ class TestBranchingInstructionsBindings:
 }
 """
         assert str(module.asm) == expected_asm
+
     def test_nested_branching_instructions(self):
         with pytest.raises(NotYetCompiledError) as ex:
             _, _ = branching_nested.module

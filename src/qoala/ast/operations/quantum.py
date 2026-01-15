@@ -29,7 +29,7 @@ class _QubitBaseOperation(QoalaOperation, ABC):
         self.qubit = qubit
 
     def can_evaluate_to(self, cls) -> bool:
-        return cls == QoalaQubit
+        return cls == QoalaBit
 
 
 class QubitMeasure(_QubitBaseOperation, QoalaBit):

@@ -42,6 +42,7 @@ class QoalaBlock(QoalaCompilable):
         self._container_function = qoala_function
         self._qnet_function = None
         self._qnet_block = None
+        self.debug_info = qoala_function.debug_info
 
     def __hash__(self):
         return hash(self._block_id)
@@ -91,8 +92,9 @@ class QoalaFunction(QoalaCompilable):
     _last_block_id: int
     debug_info: DebugInfo
 
-    def __init__(self, name: str):
+    def __init__(self, name: str, dbg_info: DebugInfo | None = None):
         self._function_name = name
+        self.debug_info = dbg_info
         # We start with a single empty block
         self._main_block = QoalaBlock(0, self)
         self._last_block_id = 0

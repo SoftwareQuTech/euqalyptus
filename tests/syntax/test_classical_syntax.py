@@ -38,19 +38,21 @@ class TestIntegerClassicalSyntax(Generic[_Base_Type_Int]):
 
     @pytest.fixture(autouse=True, scope="function")
     def setup_debug_info(self, request):
-        # For allowing debug info
-        # Nuance; parametrized tests use [param-types]... remove that part
-        if "[" in request.node.name:
-            bracket_index = request.node.name.index("[")
-            dbg_info.function_name = request.node.name[0:bracket_index]
-        else:
-            dbg_info.function_name = request.node.name
+        # For allowing debug info on initialization
+        dbg_info.function_name = "setup_debug_info"
         # For testing purposes, we manually create a dummy program and attach a function to it.
         # With this hack, we can assert the structure of the generated program
         QoalaProgram._instance = DummyQoalaProgram(
             getattr(request.cls, request.node.originalname)
         )
         QoalaProgram._instance._module.add_function(request.node.name)
+        # We now set the real function name, so we can obtain meaningful dbg info
+        # Nuance; parametrized tests use [param-types]... remove that part
+        if "[" in request.node.name:
+            bracket_index = request.node.name.index("[")
+            dbg_info.function_name = request.node.name[0:bracket_index]
+        else:
+            dbg_info.function_name = request.node.name
         yield
         QoalaProgram._instance._module.remove_function(request.node.name)
         del QoalaProgram._instance
@@ -118,19 +120,21 @@ class TestFloatClassicalSyntax(Generic[_Base_Type_Float]):
 
     @pytest.fixture(autouse=True, scope="function")
     def setup_debug_info(self, request):
-        # For allowing debug info
-        # Nuance; parametrized tests use [param-types]... remove that part
-        if "[" in request.node.name:
-            bracket_index = request.node.name.index("[")
-            dbg_info.function_name = request.node.name[0:bracket_index]
-        else:
-            dbg_info.function_name = request.node.name
+        # For allowing debug info on initialization
+        dbg_info.function_name = "setup_debug_info"
         # For testing purposes, we manually create a dummy program and attach a function to it.
         # With this hack, we can assert the structure of the generated program
         QoalaProgram._instance = DummyQoalaProgram(
             getattr(request.cls, request.node.originalname)
         )
         QoalaProgram._instance._module.add_function(request.node.name)
+        # We now set the real function name, so we can obtain meaningful dbg info
+        # Nuance; parametrized tests use [param-types]... remove that part
+        if "[" in request.node.name:
+            bracket_index = request.node.name.index("[")
+            dbg_info.function_name = request.node.name[0:bracket_index]
+        else:
+            dbg_info.function_name = request.node.name
         yield
         QoalaProgram._instance._module.remove_function(request.node.name)
         del QoalaProgram._instance
@@ -193,19 +197,21 @@ class TestArrayClassicalSyntax:
 
     @pytest.fixture(autouse=True, scope="function")
     def setup_debug_info(self, request):
-        # For allowing debug info
-        # Nuance; parametrized tests use [param-types]... remove that part
-        if "[" in request.node.name:
-            bracket_index = request.node.name.index("[")
-            dbg_info.function_name = request.node.name[0:bracket_index]
-        else:
-            dbg_info.function_name = request.node.name
+        # For allowing debug info on initialization
+        dbg_info.function_name = "setup_debug_info"
         # For testing purposes, we manually create a dummy program and attach a function to it.
         # With this hack, we can assert the structure of the generated program
         QoalaProgram._instance = DummyQoalaProgram(
             getattr(request.cls, request.node.originalname)
         )
         QoalaProgram._instance._module.add_function(request.node.name)
+        # We now set the real function name, so we can obtain meaningful dbg info
+        # Nuance; parametrized tests use [param-types]... remove that part
+        if "[" in request.node.name:
+            bracket_index = request.node.name.index("[")
+            dbg_info.function_name = request.node.name[0:bracket_index]
+        else:
+            dbg_info.function_name = request.node.name
         yield
         QoalaProgram._instance._module.remove_function(request.node.name)
         del QoalaProgram._instance
