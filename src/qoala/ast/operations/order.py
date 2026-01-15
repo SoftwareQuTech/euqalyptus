@@ -228,6 +228,8 @@ class OrderOperatorFactory:
     def __new__(cls, *operands, operation: str) -> QoalaExpression:
         if operation in ["__eq__"]:
             return EqualsOp(*operands)
+        elif operation in ["__ne__"]:
+            return NotEqualsOp(*operands)
         elif operation in ["__gt__"]:
             return GreaterThanOp(*operands)
         elif operation in ["__ge__"]:
