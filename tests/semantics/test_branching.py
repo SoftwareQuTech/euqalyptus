@@ -24,6 +24,8 @@ from qoala.operations.branching import (
 )
 from qoala.types.classical import Int
 from qoala.types.classical.booleans import Bool
+from qoala.types.classical.branching import ScopedVar, ScopedQubit
+from qoala.types.quantum import LocalQubit
 from qoala.utils import debug_info as dbg_info
 from tests.helpers_tests import DummyQoalaProgram
 
@@ -517,3 +519,70 @@ class TestBranchingSemantics:
         assert isinstance(main_block.operations[4], QoalaInteger)
         assert isinstance(main_block.operations[5], QoalaInteger)
         assert isinstance(main_block.operations[6], Add)
+
+    def test_using_classical_value_from_branching(self):
+        # For testing purposes, we manually create a dummy program and attach a function to it.
+        # With this hack, we can assert the structure of the generated program
+        QoalaProgram._instance = DummyQoalaProgram(
+            self.test_using_classical_value_from_branching
+        )
+        QoalaProgram._instance._module.add_function(
+            self.test_using_classical_value_from_branching
+        )
+
+        with if_cond(Int(4) < 7) as (branch_true, branch_false):
+            # Since there is a single branch, this example should just work
+            # without using the ScopedVar programing protocol.
+            # HOWEVER, we will still require it for harmonization purposes
+            # and to simplify the construction of the AST
+            a = ScopedVar()
+            with branch_true:
+                a.assign(Int(15))
+                branch_true.yield_value(a)
+            with branch_false:
+                a.assign(Int(25))
+                branch_false.yield_value(a)
+        b = a + 10
+
+        main_block = QoalaProgram._instance.current_function()._main_block
+
+        # Assert the types of ops of the main block:
+        # 1. X ops: Int(4), Int(7), EqualsOp, Cond_branch, ....
+        assert len(main_block.operations) == 7
+        assert isinstance(main_block.operations[0], QoalaInteger)
+        assert isinstance(main_block.operations[1], QoalaInteger)
+        assert isinstance(main_block.operations[2], LessThanOp)
+        assert isinstance(main_block.operations[3], ConditionalBranching)
+        # TODO - Update the asserts on the AST once the model is fixed
+
+    def test_using_quantum_value_from_branching(self):
+        # For testing purposes, we manually create a dummy program and attach a function to it.
+        # With this hack, we can assert the structure of the generated program
+        QoalaProgram._instance = DummyQoalaProgram(
+            self.test_using_quantum_value_from_branching
+        )
+        QoalaProgram._instance._module.add_function(
+            self.test_using_quantum_value_from_branching
+        )
+
+        qubit = LocalQubit()  # Holds a qubit value
+        with if_cond(Int(4) < 7) as (branch_true, branch_false):
+            cond_qubit = ScopedQubit(qubit)  # Holds a qubit value
+            with branch_true:
+                cond_qubit.X()
+                branch_true.yield_value(cond_qubit)
+            with branch_false:
+                cond_qubit.Y()
+                branch_false.yield_value(cond_qubit)
+        res = cond_qubit.measure()
+
+        main_block = QoalaProgram._instance.current_function()._main_block
+
+        # Assert the types of ops of the main block:
+        # 1. X ops: Int(4), Int(7), EqualsOp, Cond_branch, ...
+        assert len(main_block.operations) == 7
+        assert isinstance(main_block.operations[0], QoalaInteger)
+        assert isinstance(main_block.operations[1], QoalaInteger)
+        assert isinstance(main_block.operations[2], LessThanOp)
+        assert isinstance(main_block.operations[3], ConditionalBranching)
+        # TODO - Update the asserts on the AST once the model is fixed
