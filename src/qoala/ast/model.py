@@ -107,6 +107,9 @@ class QoalaBlock(QoalaCompilable):
     def qnet_block(self, qnet_block: Block):
         self._qnet_block = qnet_block
 
+    def yield_value(self, val: "ScopedVar | ScopedQubit"):
+        pass
+
     def append_to_block(self, expression: QoalaExpression):
         self.operations.append(expression)
         expression.qoala_block = self
