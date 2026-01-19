@@ -11,6 +11,8 @@ from qoala.operations.branching import (
     if_ge,
 )
 from qoala.types.classical import Int
+from qoala.types.classical.branching import ScopedVar, ScopedQubit
+from qoala.types.quantum import LocalQubit
 from qoala.utils import debug_info as dbg_info
 
 
@@ -113,13 +115,58 @@ def branching_nested():
 
 
 @QoalaProgram
-def value_from_branching():
+def value_from_branching_single_branch_unsupported():
     with if_cond(Int(4) < 7) as (branch_true, branch_false):
+        # Since there is a single branch, this example should just work
+        # without using the ScopedVar programing protocol.
+        # HOWEVER, we will still require it for harmonization purposes
+        # and to simplify the construction of the AST
         with branch_true:
             a = Int(15)
-        with branch_false:
-            a = Int(25)
+    # This line should raise an exception *only* on compilation.
+    # That's why this test case is not present on the syntax and AST tests.
     b = a + 10
+
+
+@QoalaProgram
+def value_from_branching_single_branch():
+    with if_cond(Int(4) < 7) as (branch_true, branch_false):
+        # Since there is a single branch, this example should just work
+        # without using the ScopedVar programing protocol.
+        # HOWEVER, we will still require it for harmonization purposes
+        # and to simplify the construction of the AST
+        a = ScopedVar()
+        with branch_true:
+            a.assign(Int(15))
+            branch_true.yield_value(a)
+    b = a + 10
+
+
+@QoalaProgram
+def classical_value_from_branching():
+    with if_cond(Int(4) < 7) as (branch_true, branch_false):
+        a = ScopedVar()  # Holds a classical value
+        with branch_true:
+            a.assign(Int(15))
+            branch_true.yield_value(a)
+        with branch_false:
+            a.assign(Int(25))
+            branch_false.yield_value(a)
+    b = a + 10
+
+
+@QoalaProgram
+def qubit_value_from_branching():
+    qubit = LocalQubit()  # Holds a qubit value
+    with if_cond(Int(4) < 7) as (branch_true, branch_false):
+        cond_qubit = ScopedQubit(qubit)  # Holds a qubit value
+        with branch_true:
+            cond_qubit.X()
+            branch_true.yield_value(cond_qubit)
+        with branch_false:
+            cond_qubit.Y()
+            branch_false.yield_value(cond_qubit)
+    res = cond_qubit.measure()
 
 
 class TestBranchingInstructionsBindings:
@@ -427,18 +474,58 @@ class TestBranchingInstructionsBindings:
 """
         assert str(module.asm) == expected_asm
 
-    def test_value_from_branching(self):
+    def test_value_from_branching_single_branch_unsupported(self):
         with pytest.raises(NotYetCompiledError) as ex:
-            _, _ = value_from_branching.module
+            _, _ = value_from_branching_single_branch.module
+        assert (
+                str(ex.value)
+                == "The program has not been compiled yet. Did you invoke 'compile()' on it?"
+        )
+        # TODO - Update the error type risen!
+        with pytest.raises(RuntimeError):
+            _, _ = value_from_branching_single_branch.compile()
+        # TODO - assert the error message
+
+    def test_value_from_branching_single_branch(self):
+        with pytest.raises(NotYetCompiledError) as ex:
+            _, _ = value_from_branching_single_branch.module
         assert (
             str(ex.value)
             == "The program has not been compiled yet. Did you invoke 'compile()' on it?"
         )
-        _, module = value_from_branching.compile()
+        _, module = value_from_branching_single_branch.compile()
         assert isinstance(module, QoalaModule)
         # Note - MLIR does not offer a "boolean" type. values "true" and "false" are modeled as i1 values.
         expected_asm = """module {
-  qnet.func @value_from_branching() {
+  qnet.func @value_from_branching_single_branch() {
+    %c4_i32 = arith.constant 4 : i32
+    %c7_i32 = arith.constant 7 : i32
+    %0 = arith.cmpi slt, %c4_i32, %c7_i32 : i32
+    %1 = scf.if %0 -> (i32) {
+      %c15_i32 = arith.constant 15 : i32
+      scf.yield %c15_i32 : i32
+    }
+    %c10_i32 = arith.constant 10 : i32
+    %2 = arith.addi %1, %c10_i32 : i32
+    qnet.return
+  }
+}
+"""
+        assert str(module.asm) == expected_asm
+
+
+    def test_classical_value_from_branching(self):
+        with pytest.raises(NotYetCompiledError) as ex:
+            _, _ = classical_value_from_branching.module
+        assert (
+            str(ex.value)
+            == "The program has not been compiled yet. Did you invoke 'compile()' on it?"
+        )
+        _, module = classical_value_from_branching.compile()
+        assert isinstance(module, QoalaModule)
+        # Note - MLIR does not offer a "boolean" type. values "true" and "false" are modeled as i1 values.
+        expected_asm = """module {
+  qnet.func @classical_value_from_branching() {
     %c4_i32 = arith.constant 4 : i32
     %c7_i32 = arith.constant 7 : i32
     %0 = arith.cmpi slt, %c4_i32, %c7_i32 : i32
@@ -450,7 +537,37 @@ class TestBranchingInstructionsBindings:
       scf.yield %c25_i32 : i32
     }
     %c10_i32 = arith.constant 10 : i32
-    %2= arith.addi %1, %c10_i32 : i32
+    %2 = arith.addi %1, %c10_i32 : i32
+    qnet.return
+  }
+}
+"""
+        assert str(module.asm) == expected_asm
+
+    def test_qubit_value_from_branching(self):
+        with pytest.raises(NotYetCompiledError) as ex:
+            _, _ = qubit_value_from_branching.module
+        assert (
+            str(ex.value)
+            == "The program has not been compiled yet. Did you invoke 'compile()' on it?"
+        )
+        _, module = qubit_value_from_branching.compile()
+        assert isinstance(module, QoalaModule)
+        # Note - MLIR does not offer a "boolean" type. values "true" and "false" are modeled as i1 values.
+        expected_asm = """module {
+  qnet.func @qubit_value_from_branching() {
+    %0 = qnet.new_qubit : !qnet.qubit
+    %c4_i32 = arith.constant 4 : i32
+    %c7_i32 = arith.constant 7 : i32
+    %1 = arith.cmpi slt, %c4_i32, %c7_i32 : i32
+    %2 = scf.if %1 -> (!qnet.qubit) {
+      %3 = qnet.x %0 : !qnet.qubit
+      scf.yield %3 : !qnet.qubit
+    } else {
+      %4 = qnet.y %0 : !qnet.qubit
+      scf.yield %4 : !qnet.qubit
+    }
+    %5 = qnet.measure %2 : i1
     qnet.return
   }
 }
