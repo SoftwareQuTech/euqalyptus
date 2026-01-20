@@ -11,6 +11,7 @@ class ScopedVar(NumericOperandsOverload, BooleanOperandsOverload):
         return QoalaRuntimeValue()
 
     def __init__(self):
+        # Nothing to do here
         pass
 
     def assign(self, value: Any):

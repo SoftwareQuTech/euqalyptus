@@ -1,7 +1,7 @@
 import pytest
 
 from qoala import QoalaProgram
-from qoala.ast.model import QoalaBlock, QoalaBranchTerminator
+from qoala.ast.model import QoalaBlock, QoalaBranchTerminator, QoalaRuntimeValue, QoalaRuntimeQubit
 from qoala.ast.operations.branching import ConditionalBranching
 from qoala.ast.operations.numeric import Add
 from qoala.ast.operations.order import (
@@ -12,6 +12,7 @@ from qoala.ast.operations.order import (
     GreaterThanOp,
     GreaterThanOrEqualsOp,
 )
+from qoala.ast.qubit import QoalaLocalQubit
 from qoala.ast.value import QoalaBool, QoalaInteger
 from qoala.errors import ExpressionNotAllowedInBlockError, AssignationError
 from qoala.operations.branching import (
@@ -506,13 +507,18 @@ class TestBranchingSemantics:
         main_block = QoalaProgram._instance.current_function()._main_block
 
         # Assert the types of ops of the main block:
-        # 1. X ops: Int(4), Int(7), EqualsOp, Cond_branch, ....
-        assert len(main_block.operations) == 7
         assert isinstance(main_block.operations[0], QoalaInteger)
         assert isinstance(main_block.operations[1], QoalaInteger)
         assert isinstance(main_block.operations[2], LessThanOp)
         assert isinstance(main_block.operations[3], ConditionalBranching)
-        # TODO - Update the asserts on the AST once the model is fixed
+        # The conditional branching has 2 blocks:
+        assert isinstance(main_block.operations[3].true_dest, QoalaBlock)
+        assert isinstance(main_block.operations[3].false_dest, QoalaBlock)
+
+        values_in_scope = main_block.operations[3].qoala_block.scope.values
+        assert len(values_in_scope) == 1
+        assert isinstance(values_in_scope[0], QoalaRuntimeValue)
+        assert len(values_in_scope[0]._values) == 2
 
     def test_using_quantum_value_from_branching(self):
         qubit = LocalQubit()  # Holds a qubit value
@@ -528,11 +534,16 @@ class TestBranchingSemantics:
 
         main_block = QoalaProgram._instance.current_function()._main_block
 
-        # Assert the types of ops of the main block:
-        # 1. X ops: Int(4), Int(7), EqualsOp, Cond_branch, ...
-        assert len(main_block.operations) == 7
-        assert isinstance(main_block.operations[0], QoalaInteger)
+        assert isinstance(main_block.operations[0], QoalaLocalQubit)
         assert isinstance(main_block.operations[1], QoalaInteger)
-        assert isinstance(main_block.operations[2], LessThanOp)
-        assert isinstance(main_block.operations[3], ConditionalBranching)
-        # TODO - Update the asserts on the AST once the model is fixed
+        assert isinstance(main_block.operations[2], QoalaInteger)
+        assert isinstance(main_block.operations[3], LessThanOp)
+        assert isinstance(main_block.operations[4], ConditionalBranching)
+        # The conditional branching has 2 blocks:
+        assert isinstance(main_block.operations[4].true_dest, QoalaBlock)
+        assert isinstance(main_block.operations[4].false_dest, QoalaBlock)
+
+        values_in_scope = main_block.operations[4].qoala_block.scope.values
+        assert len(values_in_scope) == 1
+        assert isinstance(values_in_scope[0], QoalaRuntimeQubit)
+        assert len(values_in_scope[0]._values) == 2
