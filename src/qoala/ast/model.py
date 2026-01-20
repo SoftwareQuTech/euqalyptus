@@ -32,6 +32,8 @@ class QoalaRuntimeValue(QoalaExpression, Generic[_NumericValue]):
         self.debug_info = get_debug_info()
         self._values = []
         self._type = None
+        from qoala import QoalaProgram
+        self._containing_block = QoalaProgram.current_function().current_block
 
     def assign(self, value: _NumericValue):
         if len(self._values) <= 0:
@@ -113,6 +115,10 @@ class QoalaBranchTerminator(QoalaExpression):
     yield a value (in which case, this operation will not be printed in the simplified
     version of the IR).
     """
+    def __init__(self, containing_block: "QoalaBlock"):
+        super().__init__()
+        self._containing_block = containing_block
+        self.debug_info = get_debug_info()
 
     def can_evaluate_to(self, cls) -> bool:
         return False
@@ -155,7 +161,7 @@ class QoalaBlock(QoalaCompilable, Generic[_AllowedExprType]):
     def __exit__(self, exc_type, exc_val, exc_tb):
         # We *need* to insert a block terminator, even if we don't return any
         # outside the scope of the if-then-else operation
-        self._operations.append(QoalaBranchTerminator())
+        self._operations.append(QoalaBranchTerminator(self))
         from qoala import QoalaProgram
 
         QoalaProgram.current_function().restrict_current_block(QoalaRuntimeValue)
@@ -221,6 +227,10 @@ class QoalaFunction(QoalaCompilable):
     def get_new_block_id(self):
         self._last_block_id += self._last_block_id
         return self._last_block_id
+
+    @property
+    def current_block(self) -> QoalaBlock:
+        return self._current_block
 
     def nest_block(self, block: QoalaBlock):
         self._block_nesting_path.append(self._main_block)
