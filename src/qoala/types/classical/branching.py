@@ -1,24 +1,20 @@
 from typing import Any
 
-from qoala.ast.operations import with_arith_operators, with_bool_operators, with_order_operators
-from qoala.ast.value import QoalaInteger, QoalaBool, QoalaFloat
+from qoala.ast.model import QoalaRuntimeValue
+from qoala.types.classical import NumericOperandsOverload, BooleanOperandsOverload
 from qoala.types.quantum.qubit import Qubit
 
 
-@with_arith_operators
-@with_bool_operators
-@with_order_operators
-class ScopedVar:
+class ScopedVar(NumericOperandsOverload, BooleanOperandsOverload):
     # TODO - Implement this class
+    def __new__(cls):
+        return QoalaRuntimeValue()
+
     def __init__(self):
-        # No debug info needed for this class, but we need this field
-        # to correctly process the AST
-        self.debug_info = None
+        pass
 
-    def can_evaluate_to(self, cls) -> bool:
-        return cls == QoalaInteger or cls == QoalaBool or cls == QoalaFloat
-
-    def assign(self, expr: Any):
+    def assign(self, value: Any):
+        # Nothing to do here
         pass
 
 

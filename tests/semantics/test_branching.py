@@ -13,6 +13,7 @@ from qoala.ast.operations.order import (
     GreaterThanOrEqualsOp,
 )
 from qoala.ast.value import QoalaBool, QoalaInteger
+from qoala.errors import ExpressionNotAllowedInBlockError, AssignationError
 from qoala.operations.branching import (
     if_cond,
     if_eq,
@@ -22,7 +23,7 @@ from qoala.operations.branching import (
     if_gt,
     if_ge,
 )
-from qoala.types.classical import Int
+from qoala.types.classical import Int, Float
 from qoala.types.classical.booleans import Bool
 from qoala.types.classical.branching import ScopedVar, ScopedQubit
 from qoala.types.quantum import LocalQubit
@@ -519,6 +520,49 @@ class TestBranchingSemantics:
         assert isinstance(main_block.operations[4], QoalaInteger)
         assert isinstance(main_block.operations[5], QoalaInteger)
         assert isinstance(main_block.operations[6], Add)
+
+    def test_invalid_expression_in_block(self):
+        # For testing purposes, we manually create a dummy program and attach a function to it.
+        # With this hack, we can assert the structure of the generated program
+        QoalaProgram._instance = DummyQoalaProgram(
+            self.test_invalid_expression_in_block
+        )
+        QoalaProgram._instance._module.add_function(
+            self.test_invalid_expression_in_block
+        )
+
+        with pytest.raises(ExpressionNotAllowedInBlockError) as error:
+            with if_cond(Int(4) < 7) as (branch_true, branch_false):
+                a = ScopedVar()
+                invalid = Int(30)
+                # Whatever is under this  line will not even get translated into AST
+                with branch_true:
+                    x = Int(15)
+                with branch_false:
+                    y = Int(25)
+            b = Int(30) + 10
+        assert "Trying to add an expression on a restricted block" in str(error.value)
+
+    def test_invalid_assignment_in_block(self):
+        # For testing purposes, we manually create a dummy program and attach a function to it.
+        # With this hack, we can assert the structure of the generated program
+        QoalaProgram._instance = DummyQoalaProgram(
+            self.test_invalid_expression_in_block
+        )
+        QoalaProgram._instance._module.add_function(
+            self.test_invalid_expression_in_block
+        )
+
+        with pytest.raises(AssignationError) as error:
+            with if_cond(Int(4) < 7) as (branch_true, branch_false):
+                a = ScopedVar()
+                with branch_true:
+                    a.assign(Int(15))
+                with branch_false:
+                    # We can't assign a float to a scoped var used with Int
+                    a.assign(Float(25.0))
+            b = Int(30) + 10
+        assert "Assigning a value to a scoped variable of another type" in str(error.value)
 
     def test_using_classical_value_from_branching(self):
         # For testing purposes, we manually create a dummy program and attach a function to it.
