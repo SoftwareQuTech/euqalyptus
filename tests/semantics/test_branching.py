@@ -126,11 +126,6 @@ class TestBranchingSemantics:
         assert isinstance(main_block.operations[7], Add)
 
     def test_branching_equals(self):
-        # For testing purposes, we manually create a dummy program and attach a function to it.
-        # With this hack, we can assert the structure of the generated program
-        QoalaProgram._instance = DummyQoalaProgram(self.test_branching_equals)
-        QoalaProgram._instance._module.add_function(self.test_branching_equals)
-
         branching = if_eq(Int(4), 7)
         assert isinstance(branching, ConditionalBranching)
         assert isinstance(branching.condition, EqualsOp)
@@ -177,11 +172,6 @@ class TestBranchingSemantics:
         assert isinstance(main_block.operations[9], Add)
 
     def test_branching_not_equals(self):
-        # For testing purposes, we manually create a dummy program and attach a function to it.
-        # With this hack, we can assert the structure of the generated program
-        QoalaProgram._instance = DummyQoalaProgram(self.test_branching_not_equals)
-        QoalaProgram._instance._module.add_function(self.test_branching_not_equals)
-
         branching = if_neq(Int(4), 7)
         assert isinstance(branching, ConditionalBranching)
         assert isinstance(branching.condition, NotEqualsOp)
@@ -228,11 +218,6 @@ class TestBranchingSemantics:
         assert isinstance(main_block.operations[9], Add)
 
     def test_branching_less_than(self):
-        # For testing purposes, we manually create a dummy program and attach a function to it.
-        # With this hack, we can assert the structure of the generated program
-        QoalaProgram._instance = DummyQoalaProgram(self.test_branching_less_than)
-        QoalaProgram._instance._module.add_function(self.test_branching_less_than)
-
         branching = if_lt(Int(4), 7)
         assert isinstance(branching, ConditionalBranching)
         assert isinstance(branching.condition, LessThanOp)
@@ -279,15 +264,6 @@ class TestBranchingSemantics:
         assert isinstance(main_block.operations[9], Add)
 
     def test_branching_less_than_or_equals(self):
-        # For testing purposes, we manually create a dummy program and attach a function to it.
-        # With this hack, we can assert the structure of the generated program
-        QoalaProgram._instance = DummyQoalaProgram(
-            self.test_branching_less_than_or_equals
-        )
-        QoalaProgram._instance._module.add_function(
-            self.test_branching_less_than_or_equals
-        )
-
         branching = if_le(Int(4), 7)
         assert isinstance(branching, ConditionalBranching)
         assert isinstance(branching.condition, LessThanOrEqualsOp)
@@ -334,11 +310,6 @@ class TestBranchingSemantics:
         assert isinstance(main_block.operations[9], Add)
 
     def test_branching_greater_than(self):
-        # For testing purposes, we manually create a dummy program and attach a function to it.
-        # With this hack, we can assert the structure of the generated program
-        QoalaProgram._instance = DummyQoalaProgram(self.test_branching_greater_than)
-        QoalaProgram._instance._module.add_function(self.test_branching_greater_than)
-
         branching = if_gt(Int(4), 7)
         assert isinstance(branching, ConditionalBranching)
         assert isinstance(branching.condition, GreaterThanOp)
@@ -385,14 +356,6 @@ class TestBranchingSemantics:
         assert isinstance(main_block.operations[9], Add)
 
     def test_branching_greater_than_or_equals(self):
-        # For testing purposes, we manually create a dummy program and attach a function to it.
-        # With this hack, we can assert the structure of the generated program
-        QoalaProgram._instance = DummyQoalaProgram(
-            self.test_branching_greater_than_or_equals
-        )
-        QoalaProgram._instance._module.add_function(
-            self.test_branching_greater_than_or_equals
-        )
         branching = if_ge(Int(4), 7)
 
         assert isinstance(branching, ConditionalBranching)
@@ -440,14 +403,6 @@ class TestBranchingSemantics:
         assert isinstance(main_block.operations[9], Add)
 
     def test_branching_missing_false_branch(self):
-        # For testing purposes, we manually create a dummy program and attach a function to it.
-        # With this hack, we can assert the structure of the generated program
-        QoalaProgram._instance = DummyQoalaProgram(
-            self.test_branching_missing_false_branch
-        )
-        QoalaProgram._instance._module.add_function(
-            self.test_branching_missing_false_branch
-        )
 
         with if_cond(Int(4) == 7) as (branch_true, branch_false):
             with branch_true:
@@ -481,15 +436,6 @@ class TestBranchingSemantics:
         assert isinstance(main_block.operations[6], Add)
 
     def test_branching_missing_true_branch(self):
-        # For testing purposes, we manually create a dummy program and attach a function to it.
-        # With this hack, we can assert the structure of the generated program
-        QoalaProgram._instance = DummyQoalaProgram(
-            self.test_branching_missing_true_branch
-        )
-        QoalaProgram._instance._module.add_function(
-            self.test_branching_missing_true_branch
-        )
-
         with if_cond(Int(4) == 7) as (branch_true, branch_false):
             with branch_false:
                 a = Int(25)
@@ -522,15 +468,6 @@ class TestBranchingSemantics:
         assert isinstance(main_block.operations[6], Add)
 
     def test_invalid_expression_in_block(self):
-        # For testing purposes, we manually create a dummy program and attach a function to it.
-        # With this hack, we can assert the structure of the generated program
-        QoalaProgram._instance = DummyQoalaProgram(
-            self.test_invalid_expression_in_block
-        )
-        QoalaProgram._instance._module.add_function(
-            self.test_invalid_expression_in_block
-        )
-
         with pytest.raises(ExpressionNotAllowedInBlockError) as error:
             with if_cond(Int(4) < 7) as (branch_true, branch_false):
                 a = ScopedVar()
@@ -544,15 +481,6 @@ class TestBranchingSemantics:
         assert "Trying to add an expression on a restricted block" in str(error.value)
 
     def test_invalid_assignment_in_block(self):
-        # For testing purposes, we manually create a dummy program and attach a function to it.
-        # With this hack, we can assert the structure of the generated program
-        QoalaProgram._instance = DummyQoalaProgram(
-            self.test_invalid_expression_in_block
-        )
-        QoalaProgram._instance._module.add_function(
-            self.test_invalid_expression_in_block
-        )
-
         with pytest.raises(AssignationError) as error:
             with if_cond(Int(4) < 7) as (branch_true, branch_false):
                 a = ScopedVar()
@@ -565,20 +493,7 @@ class TestBranchingSemantics:
         assert "Assigning a value to a scoped variable of another type" in str(error.value)
 
     def test_using_classical_value_from_branching(self):
-        # For testing purposes, we manually create a dummy program and attach a function to it.
-        # With this hack, we can assert the structure of the generated program
-        QoalaProgram._instance = DummyQoalaProgram(
-            self.test_using_classical_value_from_branching
-        )
-        QoalaProgram._instance._module.add_function(
-            self.test_using_classical_value_from_branching
-        )
-
         with if_cond(Int(4) < 7) as (branch_true, branch_false):
-            # Since there is a single branch, this example should just work
-            # without using the ScopedVar programing protocol.
-            # HOWEVER, we will still require it for harmonization purposes
-            # and to simplify the construction of the AST
             a = ScopedVar()
             with branch_true:
                 a.assign(Int(15))
@@ -600,15 +515,6 @@ class TestBranchingSemantics:
         # TODO - Update the asserts on the AST once the model is fixed
 
     def test_using_quantum_value_from_branching(self):
-        # For testing purposes, we manually create a dummy program and attach a function to it.
-        # With this hack, we can assert the structure of the generated program
-        QoalaProgram._instance = DummyQoalaProgram(
-            self.test_using_quantum_value_from_branching
-        )
-        QoalaProgram._instance._module.add_function(
-            self.test_using_quantum_value_from_branching
-        )
-
         qubit = LocalQubit()  # Holds a qubit value
         with if_cond(Int(4) < 7) as (branch_true, branch_false):
             cond_qubit = ScopedQubit(qubit)  # Holds a qubit value

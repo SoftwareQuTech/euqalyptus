@@ -476,14 +476,14 @@ class TestBranchingInstructionsBindings:
 
     def test_value_from_branching_single_branch_unsupported(self):
         with pytest.raises(NotYetCompiledError) as ex:
-            _, _ = value_from_branching_single_branch.module
+            _, _ = value_from_branching_single_branch_unsupported.module
         assert (
                 str(ex.value)
                 == "The program has not been compiled yet. Did you invoke 'compile()' on it?"
         )
         # TODO - Update the error type risen!
-        with pytest.raises(RuntimeError):
-            _, _ = value_from_branching_single_branch.compile()
+        with pytest.raises(RuntimeError) as ex:
+            _, _ = value_from_branching_single_branch_unsupported.compile()
         # TODO - assert the error message
 
     def test_value_from_branching_single_branch(self):
