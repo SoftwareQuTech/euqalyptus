@@ -72,7 +72,7 @@ class QoalaProgram:
         return cls._compilation_context.options.use_singular_classical_comm_ops
 
     @property
-    def module(self):
+    def module(self) -> QoalaModule:
         if not self._is_compiled:
             raise NotYetCompiledError(
                 "The program has not been compiled yet. Did you invoke 'compile()' on it?"

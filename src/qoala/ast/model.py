@@ -1,11 +1,73 @@
 from dataclasses import dataclass
-from typing import List, Optional
+from typing import List, Optional, Dict, Type, TypeVar, Generic
+from typing_extensions import Self
 
 from qnet.dialects import qnet, scf
-from qnet.ir import Context, Location, Block, InsertionPoint, FunctionType
+from qnet.ir import Context, Operation, Location, Block, InsertionPoint, FunctionType
 
-from qoala.utils.debug_info import DebugInfo
-from . import QoalaCompilable, QoalaExpression
+from qoala.ast.operations import with_arith_operators, with_bool_operators, with_order_operators
+from qoala.errors import ExpressionNotAllowedInBlockError, AssignationError
+from qoala.utils.debug_info import DebugInfo, get_debug_info
+from qoala.ast import QoalaCompilable, QoalaExpression
+
+_NumericValue = TypeVar("_NumericValue", "QoalaInteger",  "QoalaFloat", "QoalaBool")
+_AllowedExprType = TypeVar("_AllowedExprType", bound=QoalaExpression)
+
+
+# TODO - Do we need these decorators to support the "use as a value"?
+#  We might need a generic one (that captures all the dunder methods), that extracts
+#  the real value (coming from the scf.if).
+@with_arith_operators
+@with_bool_operators
+@with_order_operators
+@dataclass(init=False)
+class QoalaRuntimeValue(QoalaExpression, Generic[_NumericValue]):
+    _type: _NumericValue
+    _values: List[_NumericValue]
+
+    def __init__(self):
+        super().__init__()
+        # No debug info needed for this class, but we need this field
+        # to correctly process the AST
+        self.debug_info = get_debug_info()
+        self._values = []
+        self._type = None
+
+    def assign(self, value: _NumericValue):
+        if len(self._values) <= 0:
+            self._type = type(value)
+        if type(value) != self._type:
+            raise AssignationError("Assigning a value to a scoped variable of another type")
+        self._values.append(value)
+
+    def can_evaluate_to(self, cls) -> bool:
+        from qoala.ast.value import QoalaInteger, QoalaFloat, QoalaBool
+
+        return cls == QoalaInteger or cls == QoalaBool or cls == QoalaFloat
+
+    def compile(self, ctx: Context, location: Optional[Location] = None) -> None:
+        # TODO - Think whether this class needs to be compiled to something or not.
+        pass
+
+
+class QoalaRuntimeQubit(QoalaExpression):
+    def __init__(self):
+        super().__init__()
+        # No debug info needed for this class, but we need this field
+        # to correctly process the AST
+        self.debug_info = None
+
+    def assign(self, value: "QoalaQubit"):
+        pass
+
+    def can_evaluate_to(self, cls) -> bool:
+        from qoala.ast.value import QoalaInteger, QoalaFloat, QoalaBool
+
+        return cls == QoalaInteger or cls == QoalaBool or cls == QoalaFloat
+
+    def compile(self, ctx: Context, location: Optional[Location] = None) -> None:
+        # TODO - Think whether this class needs to be compiled to something or not.
+        pass
 
 
 @dataclass(init=False)
@@ -60,7 +122,7 @@ class QoalaBranchTerminator(QoalaExpression):
 
 
 @dataclass(init=False)
-class QoalaBlock(QoalaCompilable):
+class QoalaBlock(QoalaCompilable, Generic[_AllowedExprType]):
     # TODO - Rethink the types of the arguments, since they can be the arguments of a function.
     _block_id: int
     _args: List[QoalaExpression]
@@ -68,6 +130,7 @@ class QoalaBlock(QoalaCompilable):
     _qnet_function: Optional[qnet.FuncOp]
     _qnet_block: Optional[Block]
     _container_function: "QoalaFunction"
+    _allowed_types: List[Type[_AllowedExprType]]
     debug_info: DebugInfo
 
     def __init__(self, block_id: int, qoala_function: "QoalaFunction"):
@@ -75,6 +138,7 @@ class QoalaBlock(QoalaCompilable):
         self._args = []
         self._operations = []
         self._container_function = qoala_function
+        self._allowed_types = []
         self._qnet_function = None
         self._qnet_block = None
         self.debug_info = qoala_function.debug_info
@@ -85,6 +149,7 @@ class QoalaBlock(QoalaCompilable):
     def __enter__(self):
         from qoala import QoalaProgram
 
+        QoalaProgram.current_function().lift_type_restrictions_in_current_block()
         QoalaProgram.current_function().nest_block(self)
 
     def __exit__(self, exc_type, exc_val, exc_tb):
@@ -93,6 +158,8 @@ class QoalaBlock(QoalaCompilable):
         self._operations.append(QoalaBranchTerminator())
         from qoala import QoalaProgram
 
+        QoalaProgram.current_function().restrict_current_block(QoalaRuntimeValue)
+        QoalaProgram.current_function().restrict_current_block(QoalaRuntimeQubit)
         QoalaProgram.current_function().pop_previous_block()
 
     @property
@@ -111,8 +178,20 @@ class QoalaBlock(QoalaCompilable):
         pass
 
     def append_to_block(self, expression: QoalaExpression):
+        # Check if we're appending to a restricted block or not
+        if len(self._allowed_types) > 0:
+            if all([not isinstance(expression, allowed_type) for allowed_type in self._allowed_types]):
+                raise ExpressionNotAllowedInBlockError(
+                    "Trying to add an expression on a restricted block", self._allowed_types
+                )
         self.operations.append(expression)
         expression.qoala_block = self
+
+    def restrict_to_expressions(self, allowed_type: Type[_AllowedExprType]):
+        self._allowed_types.append(allowed_type)
+
+    def lift_type_restrictions(self):
+        self._allowed_types = []
 
     def compile(self, ctx: Context, location: Optional[Location] = None) -> None:
         with InsertionPoint(self._qnet_block):
@@ -153,6 +232,12 @@ class QoalaFunction(QoalaCompilable):
 
     def append_to_current_block(self, expression: QoalaExpression):
         self._current_block.append_to_block(expression)
+
+    def restrict_current_block(self, allowed_type: Type[_AllowedExprType]):
+        self._current_block.restrict_to_expressions(allowed_type)
+
+    def lift_type_restrictions_in_current_block(self):
+        self._current_block.lift_type_restrictions()
 
     def compile(self, ctx: Context, location: Optional[Location] = None) -> None:
         # Create the FuncOp object

@@ -6,7 +6,7 @@ from qnet.dialects._ods_common import get_op_result_or_op_results
 from qnet.ir import Context, Location
 
 from qoala import QoalaExpression, QoalaProgram
-from qoala.ast.model import QoalaBlock
+from qoala.ast.model import QoalaBlock, QoalaRuntimeQubit, QoalaRuntimeValue
 from qoala.ast.operations import QoalaOperation
 
 
@@ -31,13 +31,21 @@ class ConditionalBranching(QoalaOperation):
         self._branch_false = QoalaBlock(
             current_function.get_new_block_id(), current_function
         )
-        # And return the true and false branches
+        # At the nesting level of the conditional branch, we only expect having
+        # "variable declarations", either numeric or quantum.
+        # Set the current block in a "locked mode", so no new expressions can be
+        # attached to the block, but we allow QoalaRuntimeValue and QoalaRuntimeQubit.
+        QoalaProgram.current_function().restrict_current_block(QoalaRuntimeQubit)
+        QoalaProgram.current_function().restrict_current_block(QoalaRuntimeValue)
+        # Finally, return the true and false branches
         return self._branch_true, self._branch_false
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         # Exiting the conditional branch context marks the finish of the
         # branching on CFG.
-        # We don't need to pop the last block, since it will be done by the
+        # We lift any type restriction currently being enforced
+        QoalaProgram.current_function().lift_type_restrictions_in_current_block()
+        # We don't need to pop the last block, since it is done by the
         # __exit__ method (context manager) of the QoalaBlock object.
         pass
 

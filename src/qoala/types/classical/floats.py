@@ -4,12 +4,12 @@ from qoala.ast.value import QoalaFloat
 from qoala.types.classical import (
     QoalaClassicalType,
     _Internal_Value_Type,
-    _NumericOperandsOverload,
+    NumericOperandsOverload,
 )
 
 
 class QoalaFloatingPointType(
-    QoalaClassicalType[_Internal_Value_Type], _NumericOperandsOverload
+    QoalaClassicalType[_Internal_Value_Type], NumericOperandsOverload
 ):
     pass
 

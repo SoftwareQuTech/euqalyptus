@@ -7,12 +7,12 @@ from qoala.errors import NotUnsignedIntegerArgumentError, NotIntegerArgumentErro
 from qoala.types.classical import (
     QoalaClassicalType,
     _Internal_Value_Type,
-    _NumericOperandsOverload,
+    NumericOperandsOverload,
 )
 
 
 class QoalaIntegerType(
-    QoalaClassicalType[_Internal_Value_Type], _NumericOperandsOverload
+    QoalaClassicalType[_Internal_Value_Type], NumericOperandsOverload
 ):
     pass
 

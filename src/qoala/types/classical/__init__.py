@@ -19,7 +19,7 @@ class QoalaClassicalType(Generic[_Internal_Value_Type], QoalaType):
     pass
 
 
-class _NumericOperandsOverload:
+class NumericOperandsOverload:
     # We overload the dunder methods operators, so IDEs do not get confused because of
     # the dynamic type of integers, so instances of this class "can use" the overloaded
     # operator. This is because the constructor of the concrete types return an instance
@@ -80,7 +80,7 @@ class _NumericOperandsOverload:
         pass
 
 
-class _BooleanOperandsOverload:
+class BooleanOperandsOverload:
     # We overload the dunder methods operators, so IDEs do not get confused because of
     # the dynamic type of booleans, so instances of this class "can use" the overloaded
     # operator. This is because the constructor of the concrete types return an instance

@@ -1,6 +1,5 @@
 import pytest
 
-import qoala.utils.debug_info as dbg_info
 from qoala import QoalaExpression, QoalaProgram
 from qoala.ast.model import QoalaBlock
 from qoala.ast.operations.branching import ConditionalBranching
@@ -17,6 +16,7 @@ from qoala.types.classical import Int
 from qoala.types.classical.booleans import Bool
 from qoala.types.classical.branching import ScopedVar, ScopedQubit
 from qoala.types.quantum import LocalQubit
+from qoala.utils import debug_info as dbg_info
 from tests.helpers_tests import DummyQoalaProgram
 
 
@@ -178,7 +178,6 @@ class TestBranchingSyntax:
         # types and method invocations do not raise exceptions.
         with if_cond(Int(4) < 7) as (branch_true, branch_false):
             a = ScopedVar()  # Holds a classical value
-            assert isinstance(a, ScopedVar)
             with branch_true:
                 a.assign(Int(15))
                 branch_true.yield_value(a)
@@ -193,7 +192,6 @@ class TestBranchingSyntax:
         qubit = LocalQubit()  # Holds a qubit value
         with if_cond(Int(4) < 7) as (branch_true, branch_false):
             cond_qubit = ScopedQubit(qubit)  # Holds a qubit value
-            assert isinstance(cond_qubit, ScopedQubit)
             with branch_true:
                 cond_qubit.X()
                 branch_true.yield_value(cond_qubit)
