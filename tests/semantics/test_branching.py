@@ -12,6 +12,7 @@ from qoala.ast.operations.order import (
     GreaterThanOp,
     GreaterThanOrEqualsOp,
 )
+from qoala.ast.operations.quantum import QubitMeasure, XGate, YGate
 from qoala.ast.qubit import QoalaLocalQubit
 from qoala.ast.value import QoalaBool, QoalaInteger
 from qoala.errors import ExpressionNotAllowedInBlockError, AssignationError
@@ -514,11 +515,6 @@ class TestBranchingSemantics:
         assert isinstance(main_block.operations[3].true_dest, QoalaBlock)
         assert isinstance(main_block.operations[3].false_dest, QoalaBlock)
 
-        values_in_scope = main_block.operations[3].qoala_block.scope.values
-        assert len(values_in_scope) == 1
-        assert isinstance(values_in_scope[0], QoalaRuntimeValue)
-        assert len(values_in_scope[0]._values) == 2
-
         conditional_branch_op = main_block.operations[3]
         assert len(conditional_branch_op.yielded_values) == 2
         assert isinstance(conditional_branch_op.yielded_values[0], QoalaInteger)
@@ -554,7 +550,11 @@ class TestBranchingSemantics:
         assert isinstance(main_block.operations[4].true_dest, QoalaBlock)
         assert isinstance(main_block.operations[4].false_dest, QoalaBlock)
 
-        values_in_scope = main_block.operations[4].qoala_block.scope.values
-        assert len(values_in_scope) == 1
-        assert isinstance(values_in_scope[0], QoalaRuntimeQubit)
-        assert len(values_in_scope[0]._values) == 2
+        conditional_branch_op = main_block.operations[4]
+        assert len(conditional_branch_op.yielded_values) == 2
+        assert isinstance(conditional_branch_op.yielded_values[0], XGate)
+        assert isinstance(conditional_branch_op.yielded_values[1], YGate)
+
+        assert isinstance(main_block.operations[5], QubitMeasure)
+        measure_op = main_block.operations[5]
+        assert isinstance(measure_op.qubit, QoalaRuntimeQubit)

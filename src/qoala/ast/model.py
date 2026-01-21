@@ -15,6 +15,17 @@ _NumericValue = TypeVar("_NumericValue", "QoalaInteger",  "QoalaFloat", "QoalaBo
 _AllowedExprType = TypeVar("_AllowedExprType", bound=QoalaExpression)
 
 
+def hook_quantum_method(clazz):
+    def qubit_method_wrapper(method_name: str):
+        def method_impl(self, *args, **kwargs):
+            return self._quantum_method_hook(method_name, *args, **kwargs)
+        return method_impl
+    qubit_methods = ["measure","X","Y","Z","T","H","K","S","rot_X","rot_Y","rot_Z","cnot","cphase","cz","free"]
+    for qubit_method in qubit_methods:
+        setattr(clazz, qubit_method, qubit_method_wrapper(qubit_method))
+    return clazz
+
+
 @dataclass(init=False)
 class QoalaScopedVal(ABC):
     _id: str
@@ -71,19 +82,38 @@ class QoalaRuntimeValue(QoalaExpression, QoalaScopedVal, Generic[_NumericValue])
         pass
 
 
+@hook_quantum_method
+@dataclass(init=False)
 class QoalaRuntimeQubit(QoalaExpression, QoalaScopedVal):
-    def __init__(self):
+    _main_qubit: "QoalaQubit"
+    _operations: List[QoalaExpression]
+
+    def __init__(self, qubit: "QoalaQubit"):
         super().__init__()
+        self._main_qubit = qubit
+        self._operations = []
         self._id = str(uuid4())
         self.debug_info = get_debug_info()
+        from qoala import QoalaProgram
 
-    def assign(self, value: "QoalaQubit"):
-        pass
+        self._containing_block = QoalaProgram.current_function().current_block
+        self._containing_block.scope.add_value_in_scope(self)
+
+    def _quantum_method_hook(self, method_name: str, *args, **kwargs):
+        # This method handles any quantum operation used on this "runtime qubit",
+        # The idea here is to apply the quantum operation on the given qubit, but to
+        # also keep track of any operation performed. This is needed to retrieve the
+        # "last qubit value" when returning the value outside the branch.
+        quantum_operation = getattr(self._main_qubit, method_name)
+        op_expr = quantum_operation(*args, **kwargs)
+        self._operations.append(op_expr)
+
+    def get_current_value(self) -> QoalaExpression:
+        return self._operations[-1]
 
     def can_evaluate_to(self, cls) -> bool:
-        from qoala.ast.value import QoalaInteger, QoalaFloat, QoalaBool
-
-        return cls == QoalaInteger or cls == QoalaBool or cls == QoalaFloat
+        from qoala.ast.qubit import QoalaQubit
+        return cls == QoalaQubit
 
     def compile(self, ctx: Context, location: Optional[Location] = None) -> None:
         # TODO - Think whether this class needs to be compiled to something or not.
@@ -237,8 +267,8 @@ class QoalaBlock(QoalaCompilable, Generic[_AllowedExprType]):
         self._qnet_block = qnet_block
 
     def yield_value(self, val: "ScopedVar | ScopedQubit"):
-        # At runtime, the value passed must be a QoalaScopedVal (i.e. either a QoalaRuntimeValue
-        # or a QoalaRuntimeQubit). The signature of this function lets the IDE accept the
+        # At runtime, the value passed must be a QoalaScopedVal (i.e. either a QoalaRuntimeValue,
+        # QoalaRuntimeQubit). The signature of this function lets the IDE accept the
         # programming-time static type.
         assert isinstance(val, QoalaScopedVal)
         # We simply lock attach the current value of the value as one of the values to
