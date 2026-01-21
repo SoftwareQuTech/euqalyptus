@@ -58,7 +58,6 @@ class QoalaRuntimeValue(QoalaExpression, QoalaScopedVal, Generic[_NumericValue])
         from qoala import QoalaProgram
 
         self._containing_block = QoalaProgram.current_function().current_block
-        self._containing_block.scope.add_value_in_scope(self)
 
     def assign(self, value: _NumericValue):
         # When we assign a value to the runtime value, we check the type of any
@@ -97,7 +96,6 @@ class QoalaRuntimeQubit(QoalaExpression, QoalaScopedVal):
         from qoala import QoalaProgram
 
         self._containing_block = QoalaProgram.current_function().current_block
-        self._containing_block.scope.add_value_in_scope(self)
 
     def _quantum_method_hook(self, method_name: str, *args, **kwargs):
         # This method handles any quantum operation used on this "runtime qubit",
@@ -118,64 +116,6 @@ class QoalaRuntimeQubit(QoalaExpression, QoalaScopedVal):
     def compile(self, ctx: Context, location: Optional[Location] = None) -> None:
         # TODO - Think whether this class needs to be compiled to something or not.
         pass
-
-
-@dataclass(init=False)
-class QoalaScope:
-    """
-    Defines a scope for values to be defined within. Any value defined will be
-    attached to a scope.
-    When a value needs to be retrieved (the ir_value), we should resolve it
-    depending on whether if it is within the scope (direct line of sight) or
-    if it needs to be "exported" from a sibling scope.
-
-    Some scopes might be "locked", either up- or downwards. This means that the
-    values defined within this scope cannot be "exported" to outside scopes; if
-    locked upwards, then values cannot be returned to parent scopes. If locked
-    downwards then values cannot be used in (grand*)children scopes.
-    """
-    # The structure to support scopes must be a tree:
-    # * The initial scope must be defined at module level (maybe)
-    # * One scope defined at function level
-    # * One scope defined at "nesting" operations (if, for, while)
-    # Once that a nesting level closes, the scope is closed (no mor values defined within)
-    # If a new operation defines a new nesting level, then the "current" visible
-    #  scope gets a new children scope and becomes the currently active.
-    # New values are defined within the currently active scope
-    # When generating IR, any referenced value *must* be resolved within the scope
-    # tree:
-    # * First, a bottom-up search: first in the current scope; then in all the direct parents.
-    # * If not found, start a top-down.
-    #   * If not found, the value is not defined.
-    #   * If found, check if there is a *valid* path from the scope requesting the value
-    #     until the one that contains it.
-    #   * A path is deemed "valid" iff all the scopes that the value need to go through
-    #     are not locked up- or downwards as needed.
-    # TODO - Implement the scope
-
-    _values_in_scope: List[QoalaScopedVal]
-    _block: "QoalaBlock"
-
-    def __init__(self, block: "QoalaBlock"):
-        self._block = block
-        self._values_in_scope = []
-
-    @property
-    def values(self) -> List[QoalaScopedVal]:
-        return self._values_in_scope
-
-    def add_value_in_scope(self, value: QoalaScopedVal):
-        self._values_in_scope.append(value)
-
-    def get_value(self, expr: QoalaExpression) -> Optional[Operation]:
-        # TODO - Revisit if we need this method
-        # Returns a value in the current scope. If not found here, search for it in the parents recursively.
-        if expr in self._values_in_scope:
-            return self._values_in_scope[expr]
-        else:
-            if self._block.scope is None:
-                return None
-            return self._block.scope.get_value(expr)
 
 
 @dataclass(init=False)
@@ -214,7 +154,6 @@ class QoalaBlock(QoalaCompilable, Generic[_AllowedExprType]):
     _allowed_types: List[Type[_AllowedExprType]]
     _values_to_yield: List[QoalaExpression]
     _branching_operation: "ConditionalBranching"  # Will be "None" in the main block of a function
-    _scope: QoalaScope
     debug_info: DebugInfo
 
     def __init__(self, block_id: int, branch_op: "ConditionalBranching", qoala_function: "QoalaFunction"):
@@ -225,7 +164,6 @@ class QoalaBlock(QoalaCompilable, Generic[_AllowedExprType]):
         self._allowed_types = []
         self._qnet_function = None
         self._qnet_block = None
-        self._scope = QoalaScope(self)
         self._values_to_yield = []
         self._branching_operation = branch_op
         self.debug_info = qoala_function.debug_info
@@ -249,10 +187,6 @@ class QoalaBlock(QoalaCompilable, Generic[_AllowedExprType]):
         QoalaProgram.current_function().restrict_current_block(QoalaRuntimeValue)
         QoalaProgram.current_function().restrict_current_block(QoalaRuntimeQubit)
         QoalaProgram.current_function().pop_previous_block()
-
-    @property
-    def scope(self) -> QoalaScope:
-        return self._scope
 
     @property
     def operations(self) -> List[QoalaExpression]:
