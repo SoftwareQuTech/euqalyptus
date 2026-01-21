@@ -1,3 +1,4 @@
+from abc import ABC, abstractmethod
 from dataclasses import dataclass
 from typing import List, Optional, Type, TypeVar, Generic
 from uuid import uuid4
@@ -15,10 +16,15 @@ _AllowedExprType = TypeVar("_AllowedExprType", bound=QoalaExpression)
 
 
 @dataclass(init=False)
-class QoalaScopedVal:
+class QoalaScopedVal(ABC):
     _id: str
+
     def __hash__(self):
         return hash(self._id)
+
+    @abstractmethod
+    def get_current_value(self) -> QoalaExpression:
+        pass
 
 
 # TODO - Do we need these decorators to support the "use as a value"?
@@ -44,11 +50,18 @@ class QoalaRuntimeValue(QoalaExpression, QoalaScopedVal, Generic[_NumericValue])
         self._containing_block.scope.add_value_in_scope(self)
 
     def assign(self, value: _NumericValue):
+        # When we assign a value to the runtime value, we check the type of any
+        # other already-assigned value. If it matches, we attach the value to the
+        # tracked values. This is needed to retrieve the "last value" when returning
+        # the value outside the branch.
         if len(self._values) <= 0:
             self._type = type(value)
         if type(value) != self._type:
             raise AssignationError("Assigning a value to a scoped variable of another type")
         self._values.append(value)
+
+    def get_current_value(self) -> QoalaExpression:
+        return self._values[-1]
 
     def can_evaluate_to(self, cls) -> bool:
         from qoala.ast.value import QoalaInteger, QoalaFloat, QoalaBool
@@ -145,16 +158,20 @@ class QoalaBranchTerminator(QoalaExpression):
     yield a value (in which case, this operation will not be printed in the simplified
     version of the IR).
     """
-    def __init__(self, containing_block: "QoalaBlock"):
+
+    _values_to_yield: List[QoalaExpression]
+
+    def __init__(self, containing_block: "QoalaBlock", values_to_yield: List[QoalaExpression]):
         super().__init__()
         self._containing_block = containing_block
+        self._values_to_yield = values_to_yield
         self.debug_info = get_debug_info()
 
     def can_evaluate_to(self, cls) -> bool:
         return False
 
     def compile(self, ctx: Context, location: Optional[Location] = None) -> None:
-        self._ir_vals = scf.yield_(())
+        self._ir_vals = scf.yield_((value for value in self._values_to_yield))
 
 
 @dataclass(init=False)
@@ -167,10 +184,12 @@ class QoalaBlock(QoalaCompilable, Generic[_AllowedExprType]):
     _qnet_block: Optional[Block]
     _container_function: "QoalaFunction"
     _allowed_types: List[Type[_AllowedExprType]]
+    _values_to_yield: List[QoalaExpression]
+    _branching_operation: "ConditionalBranching"  # Will be "None" in the main block of a function
     _scope: QoalaScope
     debug_info: DebugInfo
 
-    def __init__(self, block_id: int, qoala_function: "QoalaFunction"):
+    def __init__(self, block_id: int, branch_op: "ConditionalBranching", qoala_function: "QoalaFunction"):
         self._block_id = block_id
         self._args = []
         self._operations = []
@@ -179,6 +198,8 @@ class QoalaBlock(QoalaCompilable, Generic[_AllowedExprType]):
         self._qnet_function = None
         self._qnet_block = None
         self._scope = QoalaScope(self)
+        self._values_to_yield = []
+        self._branching_operation = branch_op
         self.debug_info = qoala_function.debug_info
 
     def __hash__(self):
@@ -193,7 +214,8 @@ class QoalaBlock(QoalaCompilable, Generic[_AllowedExprType]):
     def __exit__(self, exc_type, exc_val, exc_tb):
         # We *need* to insert a block terminator, even if we don't return any
         # outside the scope of the if-then-else operation
-        self._operations.append(QoalaBranchTerminator(self))
+        self._operations.append(QoalaBranchTerminator(self, self._values_to_yield))
+        self._branching_operation.yielded_values = self._values_to_yield
         from qoala import QoalaProgram
 
         QoalaProgram.current_function().restrict_current_block(QoalaRuntimeValue)
@@ -217,7 +239,14 @@ class QoalaBlock(QoalaCompilable, Generic[_AllowedExprType]):
         self._qnet_block = qnet_block
 
     def yield_value(self, val: "ScopedVar | ScopedQubit"):
-        pass
+        # At runtime, the value passed must be a QoalaScopedVal (i.e. either a QoalaRuntimeValue
+        # or a QoalaRuntimeQubit). The signature of this function lets the IDE accept the
+        # programming-time static type.
+        assert isinstance(val, QoalaScopedVal)
+        # We simply lock attach the current value of the value as one of the values to
+        # be returned by scf.yield
+        value_to_yield = val.get_current_value()
+        self._values_to_yield.append(value_to_yield)
 
     def append_to_block(self, expression: QoalaExpression):
         # Check if we're appending to a restricted block or not
@@ -253,8 +282,9 @@ class QoalaFunction(QoalaCompilable):
     def __init__(self, name: str, dbg_info: DebugInfo | None = None):
         self._function_name = name
         self.debug_info = dbg_info
-        # We start with a single empty block
-        self._main_block = QoalaBlock(0, self)
+        # We start with a single empty block, since it is the main block of the function
+        # we can pass "None" as the cond_branch argument.
+        self._main_block = QoalaBlock(0, None,  self)
         self._last_block_id = 0
         self._block_nesting_path = []
         self.nest_block(self._main_block)

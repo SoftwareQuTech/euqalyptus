@@ -6,7 +6,6 @@ from qoala.types.quantum.qubit import Qubit
 
 
 class ScopedVar(NumericOperandsOverload, BooleanOperandsOverload):
-    # TODO - Implement this class
     def __new__(cls):
         return QoalaRuntimeValue()
 

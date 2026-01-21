@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import Optional
+from typing import Optional, List
 
 from qnet.dialects import scf
 from qnet.dialects._ods_common import get_op_result_or_op_results
@@ -16,20 +16,22 @@ class ConditionalBranching(QoalaOperation):
     # Branches need to be a *forward reference* to the place where the code will be
     _branch_true: QoalaBlock
     _branch_false: QoalaBlock
+    _yielded_values: List[QoalaExpression]
 
     def __init__(self, condition: QoalaExpression):
         super().__init__()
         self.condition = condition
+        self._yielded_values = []
         QoalaProgram.current_function().append_to_current_block(self)
 
     def __enter__(self):
         # We create the basic blocks for this conditional branching
         current_function = QoalaProgram.current_function()
         self._branch_true = QoalaBlock(
-            current_function.get_new_block_id(), current_function
+            current_function.get_new_block_id(), self, current_function
         )
         self._branch_false = QoalaBlock(
-            current_function.get_new_block_id(), current_function
+            current_function.get_new_block_id(), self, current_function
         )
         # At the nesting level of the conditional branch, we only expect having
         # "variable declarations", either numeric or quantum.
@@ -68,6 +70,15 @@ class ConditionalBranching(QoalaOperation):
     def false_dest(self, new_block: QoalaBlock):
         assert isinstance(new_block, QoalaBlock)
         self._branch_false = new_block
+
+    @property
+    def yielded_values(self):
+        return self._yielded_values
+
+    @yielded_values.setter
+    def yielded_values(self, yielded_vals: List[QoalaExpression]):
+        self._yielded_values.append(*yielded_vals)
+
 
     def can_evaluate_to(self, cls) -> bool:
         return False
