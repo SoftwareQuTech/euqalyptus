@@ -24,10 +24,9 @@ from qoala.operations.branching import (
     if_gt,
     if_ge,
 )
-from qoala.types.classical import Int, Float
+from qoala.types.classical import Int, Float, ScopedVar
 from qoala.types.classical.booleans import Bool
-from qoala.types.classical.branching import ScopedVar, ScopedQubit
-from qoala.types.quantum import LocalQubit
+from qoala.types.quantum import LocalQubit, ScopedQubit
 from qoala.utils import debug_info as dbg_info
 from tests.helpers_tests import DummyQoalaProgram
 
@@ -514,7 +513,6 @@ class TestBranchingSemantics:
         # The conditional branching has 2 blocks:
         assert isinstance(main_block.operations[3].true_dest, QoalaBlock)
         assert isinstance(main_block.operations[3].false_dest, QoalaBlock)
-        assert isinstance(main_block.operations[5], Add)
 
         values_in_scope = main_block.operations[3].qoala_block.scope.values
         assert len(values_in_scope) == 1
@@ -528,6 +526,7 @@ class TestBranchingSemantics:
         assert isinstance(conditional_branch_op.yielded_values[1], QoalaInteger)
         assert conditional_branch_op.yielded_values[1]. value == 25
 
+        assert isinstance(main_block.operations[5], Add)
         add_op = main_block.operations[5]
         assert isinstance(add_op.operand_a, QoalaRuntimeValue)
         assert isinstance(add_op.operand_b, QoalaInteger)

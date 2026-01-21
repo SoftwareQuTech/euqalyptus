@@ -12,10 +12,9 @@ from qoala.operations.branching import (
     if_gt,
     if_ge,
 )
-from qoala.types.classical import Int
+from qoala.types.classical import Int, ScopedVar
 from qoala.types.classical.booleans import Bool
-from qoala.types.classical.branching import ScopedVar, ScopedQubit
-from qoala.types.quantum import LocalQubit
+from qoala.types.quantum import LocalQubit, ScopedQubit
 from qoala.utils import debug_info as dbg_info
 from tests.helpers_tests import DummyQoalaProgram
 

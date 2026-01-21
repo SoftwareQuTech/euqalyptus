@@ -11,4 +11,4 @@ class QoalaQuantumType(QoalaType, ABC):
     pass
 
 
-from .qubit import LocalQubit, Entangle
+from .qubit import LocalQubit, Entangle, ScopedQubit

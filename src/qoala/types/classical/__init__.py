@@ -1,5 +1,6 @@
-from typing import TypeVar, Generic
+from typing import TypeVar, Generic, Any
 
+from qoala.ast.model import QoalaRuntimeValue
 from qoala.types import QoalaType
 
 _Internal_Value_Type = TypeVar("_Internal_Value_Type")
@@ -108,6 +109,19 @@ class BooleanOperandsOverload:
         pass
 
     def __invert__(self):
+        pass
+
+
+class ScopedVar(NumericOperandsOverload, BooleanOperandsOverload):
+    def __new__(cls):
+        return QoalaRuntimeValue()
+
+    def __init__(self):
+        # Nothing to do here
+        pass
+
+    def assign(self, value: Any):
+        # Nothing to do here
         pass
 
 
