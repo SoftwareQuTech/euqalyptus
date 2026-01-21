@@ -77,7 +77,8 @@ class ConditionalBranching(QoalaOperation):
 
     @yielded_values.setter
     def yielded_values(self, yielded_vals: List[QoalaExpression]):
-        self._yielded_values.append(*yielded_vals)
+        if len(yielded_vals) > 0:
+            self._yielded_values.append(*yielded_vals)
 
 
     def can_evaluate_to(self, cls) -> bool:

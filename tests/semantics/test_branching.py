@@ -529,7 +529,6 @@ class TestBranchingSemantics:
         assert conditional_branch_op.yielded_values[1]. value == 25
 
         add_op = main_block.operations[5]
-        # TODO - add_op.operand_a should be a QoalaRuntimeValue?
         assert isinstance(add_op.operand_a, QoalaRuntimeValue)
         assert isinstance(add_op.operand_b, QoalaInteger)
 
