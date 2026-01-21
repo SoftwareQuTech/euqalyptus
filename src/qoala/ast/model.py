@@ -64,9 +64,7 @@ class QoalaRuntimeValue(QoalaExpression, QoalaScopedVal, Generic[_NumericValue])
         return self._values[-1]
 
     def can_evaluate_to(self, cls) -> bool:
-        from qoala.ast.value import QoalaInteger, QoalaFloat, QoalaBool
-
-        return cls == QoalaInteger or cls == QoalaBool or cls == QoalaFloat
+        return cls == self._type
 
     def compile(self, ctx: Context, location: Optional[Location] = None) -> None:
         # TODO - Think whether this class needs to be compiled to something or not.

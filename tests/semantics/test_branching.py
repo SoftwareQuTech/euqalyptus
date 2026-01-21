@@ -514,7 +514,7 @@ class TestBranchingSemantics:
         # The conditional branching has 2 blocks:
         assert isinstance(main_block.operations[3].true_dest, QoalaBlock)
         assert isinstance(main_block.operations[3].false_dest, QoalaBlock)
-        assert isinstance(main_block.operations[6], Add)
+        assert isinstance(main_block.operations[5], Add)
 
         values_in_scope = main_block.operations[3].qoala_block.scope.values
         assert len(values_in_scope) == 1
@@ -528,7 +528,7 @@ class TestBranchingSemantics:
         assert isinstance(conditional_branch_op.yielded_values[1], QoalaInteger)
         assert conditional_branch_op.yielded_values[1]. value == 25
 
-        add_op = main_block.operations[6]
+        add_op = main_block.operations[5]
         # TODO - add_op.operand_a should be a QoalaRuntimeValue?
         assert isinstance(add_op.operand_a, QoalaRuntimeValue)
         assert isinstance(add_op.operand_b, QoalaInteger)
