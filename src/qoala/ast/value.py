@@ -9,7 +9,6 @@ from qnet.extras.types import i32, ui32, f32, index, bool as mlir_bool
 from qnet.ir import Context, Location
 from typing_extensions import Self
 
-from qoala import QoalaProgram
 from qoala.ast import QoalaExpression, checkbaseir
 from qoala.ast.operations import (
     QoalaOperation,
@@ -106,6 +105,8 @@ class QoalaInteger(QoalaNumericValue[int]):
             self.debug_info = debug_info
         else:
             self.debug_info = get_debug_info()
+        from qoala import QoalaProgram
+
         QoalaProgram.current_function().append_to_current_block(self)
 
     def can_evaluate_to(self, cls) -> bool:
@@ -159,6 +160,8 @@ class QoalaFloat(QoalaNumericValue[float]):
             self.debug_info = debug_info
         else:
             self.debug_info = get_debug_info()
+        from qoala import QoalaProgram
+
         QoalaProgram.current_function().append_to_current_block(self)
 
     def can_evaluate_to(self, cls) -> bool:
@@ -205,6 +208,8 @@ class QoalaBool(QoalaValue[bool]):
             self.debug_info = debug_info
         else:
             self.debug_info = get_debug_info()
+        from qoala import QoalaProgram
+
         QoalaProgram.current_function().append_to_current_block(self)
 
     def compile(self, ctx: Context, location: Optional[Location] = None) -> None:
@@ -293,6 +298,8 @@ class QoalaArray(
         else:
             self.length = length
         self.debug_info = get_debug_info()
+        from qoala import QoalaProgram
+
         QoalaProgram.current_function().append_to_current_block(self)
 
     def store(
@@ -378,6 +385,8 @@ class QoalaReferenceInsideArray(QoalaExpression):
         super().__init__()
         self._base_expression = base_expression
         self._index = idx
+        from qoala import QoalaProgram
+
         QoalaProgram.current_function().append_to_current_block(self)
 
     def compile(self, ctx: Context, location: Optional[Location] = None) -> None:

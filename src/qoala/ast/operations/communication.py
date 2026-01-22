@@ -6,7 +6,6 @@ import qnet.dialects.tensor as tensor
 from qnet.extras.types import i32, f32
 from qnet.ir import Context, Location, IntegerAttr
 
-from qoala import QoalaProgram
 from qoala.ast import checkbaseir, QoalaExpression
 from qoala.ast.operations import (
     QoalaOperation,
@@ -42,6 +41,8 @@ class DeclaredRemote(QoalaOperation):
         # Declared remotes are just "hanging" in the module, so they don't
         # have a "containing_block"
         self._containing_block = None
+        from qoala import QoalaProgram
+
         QoalaProgram.add_declared_remote(remote_name, self)
 
     def can_evaluate_to(self, cls) -> bool:
@@ -74,6 +75,8 @@ class BasePluralRecvOp(QoalaArray[_Qoala_Base_Type, _Native_Base_Type]):
         super().__init__(
             base_size=32, base_type=base_type, length=length, base_clone=None
         )
+        from qoala import QoalaProgram
+
         self.remote = remote_name
         self.base_type = base_type
         self.index_op = None
@@ -91,6 +94,8 @@ class BasePluralRecvOp(QoalaArray[_Qoala_Base_Type, _Native_Base_Type]):
         # by the constructor of the parent class.
 
     def __getitem__(self, item_index: QoalaExpression | int) -> QoalaExpression:
+        from qoala import QoalaProgram
+
         if QoalaProgram.compile_singular_comm_ops():
             if not isinstance(item_index, int):
                 raise ValueUnknownAtCompileTimeError(
@@ -116,6 +121,8 @@ class BasePluralRecvOp(QoalaArray[_Qoala_Base_Type, _Native_Base_Type]):
 
     @checkbaseir
     def compile(self, ctx: Context, location: Optional[Location] = None) -> None:
+        from qoala import QoalaProgram
+
         source_location = Location.file(
             filename=self.debug_info.filename,
             line=self.debug_info.line_start,
@@ -186,6 +193,8 @@ class BaseSingularRecvOp(QoalaNumericValue[_Qoala_Base_Type]):
         self.remote = remote_name
         self.base_type = base_type
         self.debug_info = get_debug_info()
+        from qoala import QoalaProgram
+
         QoalaProgram.current_function().append_to_current_block(self)
 
     def can_evaluate_to(self, cls) -> bool:
@@ -200,6 +209,8 @@ class BaseSingularRecvOp(QoalaNumericValue[_Qoala_Base_Type]):
 
     @checkbaseir
     def compile(self, ctx: Context, location: Optional[Location] = None) -> None:
+        from qoala import QoalaProgram
+
         source_location = Location.file(
             filename=self.debug_info.filename,
             line=self.debug_info.line_start,
@@ -317,6 +328,8 @@ class BaseSendOp(QoalaOperation):
                     f"Send operation: value '{val}' cannot be converted to '{self.base_type}'"
                 )
             self.values.append(val_to_add)
+        from qoala import QoalaProgram
+
         QoalaProgram.current_function().append_to_current_block(self)
 
     def can_evaluate_to(self, cls) -> bool:
@@ -324,6 +337,8 @@ class BaseSendOp(QoalaOperation):
 
     @checkbaseir
     def compile(self, ctx: Context, location: Optional[Location] = None) -> None:
+        from qoala import QoalaProgram
+
         source_location = Location.file(
             filename=self.debug_info.filename,
             line=self.debug_info.line_start,

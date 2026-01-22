@@ -6,7 +6,7 @@ from qnet.dialects._ods_common import get_op_result_or_op_results
 from qnet.ir import Context, Location
 
 from qoala import QoalaExpression, QoalaProgram
-from qoala.ast.model import QoalaBlock, QoalaRuntimeQubit, QoalaRuntimeValue
+from qoala.ast.model import QoalaBlock, QoalaRuntimeQubit, QoalaRuntimeValue, QoalaScopedVal
 from qoala.ast.operations import QoalaOperation
 
 
@@ -16,11 +16,13 @@ class ConditionalBranching(QoalaOperation):
     # Branches need to be a *forward reference* to the place where the code will be
     _branch_true: QoalaBlock
     _branch_false: QoalaBlock
+    _used_scoped_vals: List[QoalaScopedVal]
     _yielded_values: List[QoalaExpression]
 
     def __init__(self, condition: QoalaExpression):
         super().__init__()
         self.condition = condition
+        self._used_scoped_vals = []
         self._yielded_values = []
         QoalaProgram.current_function().append_to_current_block(self)
 
@@ -47,9 +49,14 @@ class ConditionalBranching(QoalaOperation):
         # branching on CFG.
         # We lift any type restriction currently being enforced
         QoalaProgram.current_function().lift_type_restrictions_in_current_block()
+        for used_scoped_val in self._used_scoped_vals:
+            used_scoped_val.locked = True
         # We don't need to pop the last block, since it is done by the
         # __exit__ method (context manager) of the QoalaBlock object.
         pass
+
+    def report_used_scoped_val(self, scoped_val: QoalaScopedVal):
+        self._used_scoped_vals.append(scoped_val)
 
     @property
     def true_dest(self) -> QoalaBlock:

@@ -6,7 +6,6 @@ import qnet.dialects.tensor as tensor
 from qnet.extras.types import index
 from qnet.ir import Context, Location
 
-from qoala import QoalaProgram
 from qoala.ast import checkbaseir
 from qoala.ast.operations import QoalaOperation, with_arith_operators
 from qoala.ast.value import QoalaExpression, QoalaInteger, QoalaArray
@@ -22,6 +21,8 @@ class CastToIndex(QoalaOperation):
         super().__init__()
         assert len(operands) == 1
         self.index_val: QoalaExpression = operands[0]
+        from qoala import QoalaProgram
+
         QoalaProgram.current_function().append_to_current_block(self)
 
     def can_evaluate_to(self, cls) -> bool:
@@ -58,6 +59,8 @@ class GetItem(QoalaOperation):
         assert isinstance(operands[0], QoalaArray)
         self.base_array: QoalaArray = operands[0]
         self.index: QoalaExpression = operands[1]
+        from qoala import QoalaProgram
+
         QoalaProgram.current_function().append_to_current_block(self)
 
     def can_evaluate_to(self, cls) -> bool:
@@ -89,6 +92,8 @@ class SetItem(QoalaOperation):
         assert isinstance(operands[0], QoalaArray)
         self.base_array: QoalaArray = operands[0]
         self.index: QoalaExpression = operands[1]
+        from qoala import QoalaProgram
+
         QoalaProgram.current_function().append_to_current_block(self)
 
     def can_evaluate_to(self, cls) -> bool:

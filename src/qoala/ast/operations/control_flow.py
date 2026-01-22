@@ -4,7 +4,6 @@ from typing import Optional
 import qnet.dialects.qnet as qnet
 from qnet.ir import Context, Location
 
-from qoala import QoalaProgram
 from qoala.ast import checkbaseir, QoalaExpression
 from qoala.ast.operations import QoalaOperation
 from qoala.ast.value import QoalaNumericValue, QoalaBool
@@ -34,6 +33,7 @@ class ReturnResultsOp(QoalaOperation):
                 raise UnknownTypeError(
                     f"Return operation: value '{v}' of type '{type(v)}' is not supported"
                 )
+        from qoala import QoalaProgram
 
         # Return should terminate the current block, so append it to the current block now
         # TODO - Actually should terminate the program, can we do something?

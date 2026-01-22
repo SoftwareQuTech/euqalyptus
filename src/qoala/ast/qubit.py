@@ -7,7 +7,6 @@ import qnet.dialects.qnet as qnet
 from qnet.ir import Context, Location
 from typing_extensions import Self
 
-from qoala import QoalaProgram
 from qoala.ast import QoalaExpression, checkbaseir
 from qoala.ast.operations import QoalaOperation
 from qoala.ast.operations.numeric import Pow2, Divide, Multiply
@@ -95,7 +94,7 @@ class QoalaQubit(QoalaExpression, ABC):
         pass
 
 
-class QbitBaseOperations(QoalaQubit, ABC):
+class QubitBaseOperations(QoalaQubit, ABC):
 
     @staticmethod
     def _process_angles(
@@ -194,7 +193,7 @@ class QbitBaseOperations(QoalaQubit, ABC):
         d: ImmediateQIntOrExpression = 0,
         angle: ImmediateQFloatOrExpression | None = None,
     ) -> QoalaOperation:
-        angle_val = QbitBaseOperations._process_angles(n, d, angle, self.debug_info)
+        angle_val = QubitBaseOperations._process_angles(n, d, angle, self.debug_info)
         from qoala.ast.operations.quantum import RotateX
 
         return QoalaOperation.create_expression_for_op(
@@ -207,7 +206,7 @@ class QbitBaseOperations(QoalaQubit, ABC):
         d: ImmediateQIntOrExpression = 0,
         angle: ImmediateQFloatOrExpression | None = None,
     ) -> QoalaOperation:
-        angle_val = QbitBaseOperations._process_angles(n, d, angle, self.debug_info)
+        angle_val = QubitBaseOperations._process_angles(n, d, angle, self.debug_info)
         from qoala.ast.operations.quantum import RotateY
 
         return QoalaOperation.create_expression_for_op(
@@ -220,7 +219,7 @@ class QbitBaseOperations(QoalaQubit, ABC):
         d: ImmediateQIntOrExpression = 0,
         angle: ImmediateQFloatOrExpression | None = None,
     ) -> QoalaOperation:
-        angle_val = QbitBaseOperations._process_angles(n, d, angle, self.debug_info)
+        angle_val = QubitBaseOperations._process_angles(n, d, angle, self.debug_info)
         from qoala.ast.operations.quantum import RotateZ
 
         return QoalaOperation.create_expression_for_op(
@@ -249,11 +248,13 @@ class QbitBaseOperations(QoalaQubit, ABC):
         pass
 
 
-class QoalaLocalQubit(QbitBaseOperations):
+class QoalaLocalQubit(QubitBaseOperations):
 
     def __init__(self):
         super().__init__()
         self.debug_info = get_debug_info()
+        from qoala import QoalaProgram
+
         QoalaProgram.current_function().append_to_current_block(self)
 
     def can_evaluate_to(self, cls) -> bool:
@@ -274,7 +275,7 @@ class QoalaLocalQubit(QbitBaseOperations):
 # It behaves like a single qubit, so you can perform any "traditional"
 # operations on this qubit
 @dataclass(init=False)
-class QoalaEprs(QbitBaseOperations):
+class QoalaEprs(QubitBaseOperations):
     remote_name: str
 
     def __init__(self, name: str):
@@ -282,6 +283,8 @@ class QoalaEprs(QbitBaseOperations):
         # We assume the remote was declared before using the name (symbol)
         self.remote_name = name
         self.debug_info = get_debug_info()
+        from qoala import QoalaProgram
+
         QoalaProgram.current_function().append_to_current_block(self)
 
     def can_evaluate_to(self, cls) -> bool:

@@ -6,7 +6,6 @@ from qnet.dialects import arith
 from qnet.extras.types import bool as mlir_bool
 from qnet.ir import Context, Location
 
-from qoala import QoalaProgram
 from qoala.ast import QoalaExpression, checkbaseir
 from qoala.ast.operations import QoalaOperation, with_bool_operators
 from qoala.ast.value import QoalaBool
@@ -70,6 +69,8 @@ class BaseBinaryBoolOp(QoalaOperation, ABC):
 class AndOp(BaseBinaryBoolOp):
     def __init__(self, *operands: QoalaExpression):
         super().__init__(*operands)
+        from qoala import QoalaProgram
+
         QoalaProgram.current_function().append_to_current_block(self)
 
     def can_evaluate_to(self, cls) -> bool:
@@ -98,6 +99,8 @@ class AndOp(BaseBinaryBoolOp):
 class OrOp(BaseBinaryBoolOp):
     def __init__(self, *operands: QoalaExpression):
         super().__init__(*operands)
+        from qoala import QoalaProgram
+
         QoalaProgram.current_function().append_to_current_block(self)
 
     def can_evaluate_to(self, cls) -> bool:
@@ -126,6 +129,8 @@ class OrOp(BaseBinaryBoolOp):
 class XorOp(BaseBinaryBoolOp):
     def __init__(self, *operands: QoalaExpression):
         super().__init__(*operands)
+        from qoala import QoalaProgram
+
         QoalaProgram.current_function().append_to_current_block(self)
 
     def can_evaluate_to(self, cls) -> bool:
@@ -154,6 +159,8 @@ class XorOp(BaseBinaryBoolOp):
 class NotOp(BaseUnaryBoolOp):
     def __init__(self, *operands: QoalaExpression):
         super().__init__(*operands)
+        from qoala import QoalaProgram
+
         QoalaProgram.current_function().append_to_current_block(self)
 
     def can_evaluate_to(self, cls) -> bool:

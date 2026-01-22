@@ -6,7 +6,6 @@ import qnet.dialects.arith as arith
 import qnet.dialects.math as math
 from qnet.ir import Context, Location
 
-from qoala import QoalaProgram
 from qoala.ast import QoalaExpression, checkbaseir
 from qoala.ast.operations import (
     QoalaOperation,
@@ -72,6 +71,8 @@ class Add(BaseBinaryArithOp):
 
     def __init__(self, *operands: QoalaExpression):
         super().__init__(*operands)
+        from qoala import QoalaProgram
+
         QoalaProgram.current_function().append_to_current_block(self)
 
     def can_evaluate_to(self, cls) -> bool:
@@ -115,6 +116,8 @@ class Subtract(BaseBinaryArithOp):
 
     def __init__(self, *operands: QoalaExpression):
         super().__init__(*operands)
+        from qoala import QoalaProgram
+
         QoalaProgram.current_function().append_to_current_block(self)
 
     def can_evaluate_to(self, cls) -> bool:
@@ -158,6 +161,8 @@ class Multiply(BaseBinaryArithOp):
 
     def __init__(self, *operands: QoalaExpression):
         super().__init__(*operands)
+        from qoala import QoalaProgram
+
         QoalaProgram.current_function().append_to_current_block(self)
 
     def can_evaluate_to(self, cls) -> bool:
@@ -207,6 +212,8 @@ class Divide(BaseBinaryArithOp):
 
     def __init__(self, *operands: QoalaExpression):
         super().__init__(*operands)
+        from qoala import QoalaProgram
+
         QoalaProgram.current_function().append_to_current_block(self)
 
     def can_evaluate_to(self, cls) -> bool:
@@ -256,6 +263,8 @@ class Pow(QoalaOperation):
         self.base = operands[0]
         self.exponent = operands[1]
         self.debug_info = get_debug_info()
+        from qoala import QoalaProgram
+
         QoalaProgram.current_function().append_to_current_block(self)
 
     def can_evaluate_to(self, cls) -> bool:
@@ -317,6 +326,8 @@ class Pow2(QoalaOperation):
         else:
             self.exponent = operands[0]
         self.debug_info = get_debug_info()
+        from qoala import QoalaProgram
+
         QoalaProgram.current_function().append_to_current_block(self)
 
     def can_evaluate_to(self, cls) -> bool:

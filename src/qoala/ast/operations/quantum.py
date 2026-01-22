@@ -6,7 +6,6 @@ from typing import Type, Optional
 import qnet.dialects.qnet as qnet
 from qnet.ir import Context, Location
 
-from qoala import QoalaProgram
 from qoala.ast import checkbaseir, QoalaExpression
 from qoala.ast.operations import QoalaOperation
 from qoala.ast.qubit import QoalaQubit
@@ -37,6 +36,8 @@ class QubitMeasure(_QubitBaseOperation, QoalaBit):
     def __init__(self, *operands: QoalaExpression):
         assert len(operands) == 1
         super().__init__(qubit=operands[0])
+        from qoala import QoalaProgram
+
         QoalaProgram.current_function().append_to_current_block(self)
 
     @checkbaseir
@@ -58,6 +59,8 @@ class Rotate(_QubitBaseOperation, ABC):
         super().__init__(qubit=qubit)
         # We assume the users of this class will pass _at least_ default values for all operands
         self.angle = angle
+        from qoala import QoalaProgram
+
         QoalaProgram.current_function().append_to_current_block(self)
 
 
@@ -157,6 +160,8 @@ def RotationAlias(base_clazz: Type, base_rotation: float):
 class XGate(_QubitBaseOperation):
     def __init__(self, qubit: QoalaExpression):
         super().__init__(qubit=qubit)
+        from qoala import QoalaProgram
+
         QoalaProgram.current_function().append_to_current_block(self)
 
     @checkbaseir
@@ -175,6 +180,8 @@ class XGate(_QubitBaseOperation):
 class YGate(_QubitBaseOperation):
     def __init__(self, qubit: QoalaExpression):
         super().__init__(qubit=qubit)
+        from qoala import QoalaProgram
+
         QoalaProgram.current_function().append_to_current_block(self)
 
     @checkbaseir
@@ -193,6 +200,8 @@ class YGate(_QubitBaseOperation):
 class ZGate(_QubitBaseOperation):
     def __init__(self, qubit: QoalaExpression):
         super().__init__(qubit=qubit)
+        from qoala import QoalaProgram
+
         QoalaProgram.current_function().append_to_current_block(self)
 
     @checkbaseir
@@ -224,6 +233,8 @@ class HGate(_QubitBaseOperation):
     def __init__(self, *operands: QoalaExpression):
         assert len(operands) == 1
         super().__init__(qubit=operands[0])
+        from qoala import QoalaProgram
+
         QoalaProgram.current_function().append_to_current_block(self)
 
     @checkbaseir
@@ -247,6 +258,8 @@ class CNotGate(_QubitBaseOperation):
         super().__init__(qubit=qubit)
         assert target.can_evaluate_to(QoalaQubit)
         self.target = target
+        from qoala import QoalaProgram
+
         QoalaProgram.current_function().append_to_current_block(self)
 
     @checkbaseir
@@ -275,6 +288,8 @@ class CPhaseGate(_QubitBaseOperation):
         super().__init__(qubit=qubit)
         assert target.can_evaluate_to(QoalaQubit)
         self.target = target
+        from qoala import QoalaProgram
+
         QoalaProgram.current_function().append_to_current_block(self)
 
     @checkbaseir

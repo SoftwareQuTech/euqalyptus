@@ -12,7 +12,7 @@ from qoala.ast.operations.order import (
     GreaterThanOp,
     GreaterThanOrEqualsOp,
 )
-from qoala.ast.operations.quantum import QubitMeasure, XGate, YGate
+from qoala.ast.operations.quantum import QubitMeasure, XGate, YGate, HGate
 from qoala.ast.qubit import QoalaLocalQubit
 from qoala.ast.value import QoalaBool, QoalaInteger
 from qoala.errors import ExpressionNotAllowedInBlockError, AssignationError
@@ -493,6 +493,8 @@ class TestBranchingSemantics:
             b = Int(30) + 10
         assert "Assigning a value to a scoped variable of another type" in str(error.value)
 
+    # WARNING - The next two tests might not be exhaustive enough to test all the scenarios where to use
+    # a value coming from different conditional branches.
     def test_using_classical_value_from_branching(self):
         with if_cond(Int(4) < 7) as (branch_true, branch_false):
             a = ScopedVar()
@@ -537,6 +539,7 @@ class TestBranchingSemantics:
             with branch_false:
                 cond_qubit.Y()
                 branch_false.yield_value(cond_qubit)
+        cond_qubit.H()
         res = cond_qubit.measure()
 
         main_block = QoalaProgram._instance.current_function()._main_block
@@ -555,6 +558,10 @@ class TestBranchingSemantics:
         assert isinstance(conditional_branch_op.yielded_values[0], XGate)
         assert isinstance(conditional_branch_op.yielded_values[1], YGate)
 
-        assert isinstance(main_block.operations[5], QubitMeasure)
+        assert isinstance(main_block.operations[5], HGate)
         measure_op = main_block.operations[5]
+        assert isinstance(measure_op.qubit, QoalaRuntimeQubit)
+
+        assert isinstance(main_block.operations[6], QubitMeasure)
+        measure_op = main_block.operations[6]
         assert isinstance(measure_op.qubit, QoalaRuntimeQubit)

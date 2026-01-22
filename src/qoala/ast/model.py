@@ -4,9 +4,10 @@ from typing import List, Optional, Type, TypeVar, Generic
 from uuid import uuid4
 
 from qnet.dialects import qnet, scf
-from qnet.ir import Context, Operation, Location, Block, InsertionPoint, FunctionType
+from qnet.ir import Context, Location, Block, InsertionPoint, FunctionType
 
 from qoala.ast.operations import with_arith_operators, with_bool_operators, with_order_operators
+from qoala.ast.qubit import QubitBaseOperations
 from qoala.errors import ExpressionNotAllowedInBlockError, AssignationError
 from qoala.utils.debug_info import DebugInfo, get_debug_info
 from qoala.ast import QoalaCompilable, QoalaExpression
@@ -29,9 +30,18 @@ def hook_quantum_method(clazz):
 @dataclass(init=False)
 class QoalaScopedVal(ABC):
     _id: str
+    _locked: bool
 
     def __hash__(self):
         return hash(self._id)
+
+    @property
+    def locked(self) -> bool:
+        return self._locked
+
+    @locked.setter
+    def locked(self, locked: bool):
+        self._locked = locked
 
     @abstractmethod
     def get_current_value(self) -> QoalaExpression:
@@ -54,6 +64,7 @@ class QoalaRuntimeValue(QoalaExpression, QoalaScopedVal, Generic[_NumericValue])
         self._values = []
         self._type = None
         self._id = str(uuid4())
+        self._locked = False
         self.debug_info = get_debug_info()
         from qoala import QoalaProgram
 
@@ -81,17 +92,21 @@ class QoalaRuntimeValue(QoalaExpression, QoalaScopedVal, Generic[_NumericValue])
         pass
 
 
+# The inheritance order is *very* important. This is needed to correctly refer to
+# the super class when this object becomes "locked". The order defines the Method
+# Resolution Order (MRO) for the "super()" reference.
 @hook_quantum_method
 @dataclass(init=False)
-class QoalaRuntimeQubit(QoalaExpression, QoalaScopedVal):
+class QoalaRuntimeQubit(QubitBaseOperations, QoalaExpression, QoalaScopedVal):
     _main_qubit: "QoalaQubit"
     _operations: List[QoalaExpression]
 
     def __init__(self, qubit: "QoalaQubit"):
-        super().__init__()
+        super(QoalaExpression, self).__init__()
         self._main_qubit = qubit
         self._operations = []
         self._id = str(uuid4())
+        self._locked = False
         self.debug_info = get_debug_info()
         from qoala import QoalaProgram
 
@@ -102,11 +117,22 @@ class QoalaRuntimeQubit(QoalaExpression, QoalaScopedVal):
         # The idea here is to apply the quantum operation on the given qubit, but to
         # also keep track of any operation performed. This is needed to retrieve the
         # "last qubit value" when returning the value outside the branch.
-        quantum_operation = getattr(self._main_qubit, method_name)
+        if self.locked:
+            # Since "QubitBaseOperations" is the first class in the inheritance order
+            # "super()" returns a proxy object whose MRO starts looking for
+            # methods on "QubitBaseOperations".
+            # This is important, since when the qubit is locked, we want to use "self"
+            # as the qubit operand of the trapped method, so we need to invoke the
+            # method fo "QubitBaseOperations".
+            quantum_operation = getattr(super(), method_name)
+        else:
+            quantum_operation = getattr(self._main_qubit, method_name)
         op_expr = quantum_operation(*args, **kwargs)
         self._operations.append(op_expr)
 
     def get_current_value(self) -> QoalaExpression:
+        if self._locked:
+            return self
         return self._operations[-1]
 
     def can_evaluate_to(self, cls) -> bool:
@@ -207,6 +233,7 @@ class QoalaBlock(QoalaCompilable, Generic[_AllowedExprType]):
         assert isinstance(val, QoalaScopedVal)
         # We simply lock attach the current value of the value as one of the values to
         # be returned by scf.yield
+        self._branching_operation.report_used_scoped_val(val)
         value_to_yield = val.get_current_value()
         self._values_to_yield.append(value_to_yield)
 
