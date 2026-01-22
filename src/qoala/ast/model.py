@@ -56,7 +56,7 @@ class QoalaScopedVal(ABC):
 @with_order_operators
 @dataclass(init=False)
 class QoalaRuntimeValue(QoalaExpression, QoalaScopedVal, Generic[_NumericValue]):
-    _type: _NumericValue
+    _type: Type[_NumericValue]
     _values: List[_NumericValue]
 
     def __init__(self):
@@ -69,6 +69,10 @@ class QoalaRuntimeValue(QoalaExpression, QoalaScopedVal, Generic[_NumericValue])
         from qoala import QoalaProgram
 
         self._containing_block = QoalaProgram.current_function().current_block
+
+    @property
+    def type(self) -> Type[_NumericValue]:
+        return self._type
 
     def assign(self, value: _NumericValue):
         # When we assign a value to the runtime value, we check the type of any
@@ -165,7 +169,7 @@ class QoalaBranchTerminator(QoalaExpression):
         return False
 
     def compile(self, ctx: Context, location: Optional[Location] = None) -> None:
-        self._ir_vals = scf.yield_((value for value in self._values_to_yield))
+        self._ir_vals = scf.yield_([value.ir_value for value in self._values_to_yield])
 
 
 @dataclass(init=False)

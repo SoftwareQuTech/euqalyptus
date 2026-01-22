@@ -1,13 +1,15 @@
 from dataclasses import dataclass
 from typing import Optional, List
 
-from qnet.dialects import scf
+from qnet.dialects import scf, qnet
 from qnet.dialects._ods_common import get_op_result_or_op_results
+from qnet.extras.types import i32, f32, bool as mlir_bool
 from qnet.ir import Context, Location
 
 from qoala import QoalaExpression, QoalaProgram
 from qoala.ast.model import QoalaBlock, QoalaRuntimeQubit, QoalaRuntimeValue, QoalaScopedVal
 from qoala.ast.operations import QoalaOperation
+from qoala.ast.value import QoalaInteger, QoalaFloat, QoalaBool
 
 
 @dataclass(init=False)
@@ -98,10 +100,23 @@ class ConditionalBranching(QoalaOperation):
             col=self.debug_info.col_start,
             context=ctx,
         )
+        return_types = []
+        for scoped_val in self._used_scoped_vals:
+            if isinstance(scoped_val, QoalaRuntimeValue):
+                if scoped_val.type == QoalaInteger:
+                    return_types.append(i32())
+                elif scoped_val.type == QoalaFloat:
+                    return_types.append(f32())
+                elif scoped_val.type == QoalaBool:
+                    return_types.append(mlir_bool())
+                else:
+                    raise RuntimeError("Unkown runtime value type")
+            if isinstance(scoped_val, QoalaRuntimeQubit):
+                return_types.append(qnet.QubitType.get(ctx))
         # Create the scf-IfOp object
         if_op = scf.IfOp(
             self.condition.ir_value,
-            (),
+            return_types,
             hasElse=len(self._branch_false.operations) >= 1,
             loc=source_location,
         )
