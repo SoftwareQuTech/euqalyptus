@@ -153,3 +153,4 @@ class ConditionalBranching(QoalaOperation):
         # Manually map the ir values of the runtime values
         for runtime_val, ir_val in zip(self._used_scoped_vals, iterable_ir_vals):
             runtime_val.ir_value = ir_val
+        print("eso")

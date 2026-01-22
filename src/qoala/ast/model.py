@@ -71,9 +71,6 @@ class QoalaScopedVal(ABC):
         pass
 
 
-# TODO - Do we need these decorators to support the "use as a value"?
-#  We might need a generic one (that captures all the dunder methods), that extracts
-#  the real value (coming from the scf.if).
 @with_arith_operators
 @with_bool_operators
 @with_order_operators
@@ -115,7 +112,8 @@ class QoalaRuntimeValue(QoalaExpression, QoalaScopedVal, Generic[_NumericValue])
         return cls == self._type
 
     def compile(self, ctx: Context, location: Optional[Location] = None) -> None:
-        # TODO - Think whether this class needs to be compiled to something or not.
+        # We don't need to compile this object: It only acts as a container
+        # used to capture the value when entering a branching operation
         pass
 
 
@@ -165,7 +163,8 @@ class QoalaRuntimeQubit(QubitBaseOperations, QoalaExpression, QoalaScopedVal):
         return cls == QoalaQubit
 
     def compile(self, ctx: Context, location: Optional[Location] = None) -> None:
-        # TODO - Think whether this class needs to be compiled to something or not.
+        # We don't need to compile this object: It only acts as a container
+        # used to capture the value when entering a branching operation
         pass
 
 
