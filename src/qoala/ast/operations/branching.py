@@ -91,6 +91,15 @@ class ConditionalBranching(QoalaOperation):
         if len(yielded_vals) > 0:
             self._yielded_values.append(*yielded_vals)
 
+    def _capture_scoped_values(self):
+        for scoped_val in self._used_scoped_vals:
+            if scoped_val.captured_expression is not None:
+                scoped_val.captured_value = scoped_val.captured_expression.ir_value
+
+    def _reset_scoped_values(self):
+        for scoped_val in self._used_scoped_vals:
+            if scoped_val.captured_value is not None:
+                scoped_val.captured_expression.ir_value = scoped_val.captured_value
 
     def can_evaluate_to(self, cls) -> bool:
         return False
@@ -123,14 +132,17 @@ class ConditionalBranching(QoalaOperation):
             loc=source_location,
         )
         # Compile the then/else block, only if they have operations.
+        self._capture_scoped_values()
         if len(self._branch_true.operations) >= 1:
             qnet_then_block = if_op.thenRegion.blocks[0]
             self._branch_true.qnet_block = qnet_then_block
             self._branch_true.compile(ctx, location)
+        self._reset_scoped_values()
         if len(self._branch_false.operations) >= 1:
             qnet_else_block = if_op.elseRegion.blocks[0]
             self._branch_false.qnet_block = qnet_else_block
             self._branch_false.compile(ctx, location)
+        self._reset_scoped_values()
         # Set the IR value for this conditional branching op
         branching_ir_vals = get_op_result_or_op_results(if_op)
         self._ir_vals = branching_ir_vals

@@ -31,9 +31,32 @@ def hook_quantum_method(clazz):
 class QoalaScopedVal(ABC):
     _id: str
     _locked: bool
+    _captured_expression: QoalaExpression
+    _captured_value: qnet.Operation
+
+    def __init__(self):
+        self._locked = False
+        self._id = str(uuid4())
+        self._captured_value = None
 
     def __hash__(self):
         return hash(self._id)
+
+    @property
+    def captured_value(self) -> qnet.Operation:
+        return self._captured_value
+
+    @captured_value.setter
+    def captured_value(self, value: qnet.Operation):
+        self._captured_value = value
+
+    @property
+    def captured_expression(self) -> QoalaExpression:
+        return self._captured_expression
+
+    @captured_expression.setter
+    def captured_expression(self, value: QoalaExpression):
+        self._captured_expression = value
 
     @property
     def locked(self) -> bool:
@@ -59,12 +82,12 @@ class QoalaRuntimeValue(QoalaExpression, QoalaScopedVal, Generic[_NumericValue])
     _type: Type[_NumericValue]
     _values: List[_NumericValue]
 
-    def __init__(self):
+    def __init__(self, original_value: Optional[_NumericValue] = None):
         super().__init__()
+        QoalaScopedVal.__init__(self)
         self._values = []
+        self._captured_expression = original_value
         self._type = None
-        self._id = str(uuid4())
-        self._locked = False
         self.debug_info = get_debug_info()
         from qoala import QoalaProgram
 
@@ -102,15 +125,13 @@ class QoalaRuntimeValue(QoalaExpression, QoalaScopedVal, Generic[_NumericValue])
 @hook_quantum_method
 @dataclass(init=False)
 class QoalaRuntimeQubit(QubitBaseOperations, QoalaExpression, QoalaScopedVal):
-    _main_qubit: "QoalaQubit"
     _operations: List[QoalaExpression]
 
     def __init__(self, qubit: "QoalaQubit"):
-        super(QoalaExpression, self).__init__()
-        self._main_qubit = qubit
+        QoalaExpression.__init__(self)
+        QoalaScopedVal.__init__(self)
+        self._captured_expression = qubit
         self._operations = []
-        self._id = str(uuid4())
-        self._locked = False
         self.debug_info = get_debug_info()
         from qoala import QoalaProgram
 
@@ -130,7 +151,7 @@ class QoalaRuntimeQubit(QubitBaseOperations, QoalaExpression, QoalaScopedVal):
             # method fo "QubitBaseOperations".
             quantum_operation = getattr(super(), method_name)
         else:
-            quantum_operation = getattr(self._main_qubit, method_name)
+            quantum_operation = getattr(self._captured_expression, method_name)
         op_expr = quantum_operation(*args, **kwargs)
         self._operations.append(op_expr)
 

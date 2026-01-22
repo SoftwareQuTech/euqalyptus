@@ -570,13 +570,13 @@ class TestBranchingInstructionsBindings:
     %c7_i32 = arith.constant 7 : i32
     %1 = arith.cmpi slt, %c4_i32, %c7_i32 : i32
     %2 = scf.if %1 -> (!qnet.qubit) {
-      %3 = qnet.x %0 : !qnet.qubit
-      scf.yield %3 : !qnet.qubit
+      %4 = qnet.x %0 : !qnet.qubit
+      scf.yield %4 : !qnet.qubit
     } else {
       %4 = qnet.y %0 : !qnet.qubit
       scf.yield %4 : !qnet.qubit
     }
-    %5 = qnet.measure %2 : i1
+    %3 = qnet.measure %2 : i1
     qnet.return
   }
 }
