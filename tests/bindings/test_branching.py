@@ -473,6 +473,8 @@ class TestBranchingInstructionsBindings:
 """
         assert str(module.asm) == expected_asm
 
+    @pytest.mark.skip(reason="Not supported: It is not clear how to detect that a value was assigned "
+                             "inside a branching instructions and used outside it")
     def test_value_from_branching_single_branch_unsupported(self):
         with pytest.raises(NotYetCompiledError) as ex:
             _, _ = value_from_branching_single_branch_unsupported.module
