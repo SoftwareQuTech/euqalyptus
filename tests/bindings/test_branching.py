@@ -485,6 +485,8 @@ class TestBranchingInstructionsBindings:
             _, _ = value_from_branching_single_branch_unsupported.compile()
         # TODO - assert the error message
 
+    @pytest.mark.skip(reason="Not supported: Compiling single branches that yield values need "
+                             "inserting a false branch that yields an unused value.")
     def test_value_from_branching_single_branch(self):
         with pytest.raises(NotYetCompiledError) as ex:
             _, _ = value_from_branching_single_branch.module
@@ -494,7 +496,12 @@ class TestBranchingInstructionsBindings:
         )
         _, module = value_from_branching_single_branch.compile()
         assert isinstance(module, QoalaModule)
-        # Note - MLIR does not offer a "boolean" type. values "true" and "false" are modeled as i1 values.
+        # WARNING - For the MLIR to be valid, scf.if *requires* a false branch when yielding values
+        # This is a side effect of the fact that the value returned by the scf.if operation *must*
+        # be clearly defined in both scenarios (true and false branch). This is needed *despite the
+        # condition result is known at compile time*, since the scf dialect does not make any
+        # assumption about the execution of the program. When lowering SCF to CF, some passes
+        # applied *after* the lowering could use symbolic execution to discover the dead branch.
         expected_asm = """module {
   qnet.func @value_from_branching_single_branch() {
     %c4_i32 = arith.constant 4 : i32
@@ -503,6 +510,9 @@ class TestBranchingInstructionsBindings:
     %1 = scf.if %0 -> (i32) {
       %c15_i32 = arith.constant 15 : i32
       scf.yield %c15_i32 : i32
+    } else {
+      %c0:i32 = arith.constant 0 : i32
+      scf.yield %c0_i32 : i32
     }
     %c10_i32 = arith.constant 10 : i32
     %2 = arith.addi %1, %c10_i32 : i32

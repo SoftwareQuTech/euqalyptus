@@ -1,6 +1,7 @@
 from dataclasses import dataclass
 from typing import Optional, List
 
+from mypy.stubgen import Iterable
 from qnet.dialects import scf, qnet
 from qnet.dialects._ods_common import get_op_result_or_op_results
 from qnet.extras.types import i32, f32, bool as mlir_bool
@@ -58,7 +59,8 @@ class ConditionalBranching(QoalaOperation):
         pass
 
     def report_used_scoped_val(self, scoped_val: QoalaScopedVal):
-        self._used_scoped_vals.append(scoped_val)
+        if scoped_val not in self._used_scoped_vals:
+            self._used_scoped_vals.append(scoped_val)
 
     @property
     def true_dest(self) -> QoalaBlock:
@@ -110,7 +112,7 @@ class ConditionalBranching(QoalaOperation):
                 elif scoped_val.type == QoalaBool:
                     return_types.append(mlir_bool())
                 else:
-                    raise RuntimeError("Unkown runtime value type")
+                    raise RuntimeError("Unknown runtime value type")
             if isinstance(scoped_val, QoalaRuntimeQubit):
                 return_types.append(qnet.QubitType.get(ctx))
         # Create the scf-IfOp object
@@ -130,4 +132,12 @@ class ConditionalBranching(QoalaOperation):
             self._branch_false.qnet_block = qnet_else_block
             self._branch_false.compile(ctx, location)
         # Set the IR value for this conditional branching op
-        self._ir_vals = get_op_result_or_op_results(if_op)
+        branching_ir_vals = get_op_result_or_op_results(if_op)
+        self._ir_vals = branching_ir_vals
+        if not isinstance(branching_ir_vals, Iterable):
+            iterable_ir_vals = [branching_ir_vals]
+        else:
+            iterable_ir_vals = branching_ir_vals
+        # Manually map the ir values of the runtime values
+        for runtime_val, ir_val in zip(self._used_scoped_vals, iterable_ir_vals):
+            runtime_val.ir_value = ir_val
