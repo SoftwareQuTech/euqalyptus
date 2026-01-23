@@ -74,10 +74,10 @@ class AndOp(BaseBinaryBoolOp):
         QoalaProgram.current_function().append_to_current_block(self)
 
     def can_evaluate_to(self, cls) -> bool:
-        return cls == QoalaBool
+        return cls is QoalaBool
 
     @checkbaseir
-    def compile(self, ctx: Context, location: Optional[Location] = None) -> None:
+    def compile(self, ctx: Context, location: Optional[Location] = None) -> None:  # type: ignore[override]
         source_location = Location.file(
             filename=self.debug_info.filename,
             line=self.debug_info.line_start,
@@ -104,10 +104,10 @@ class OrOp(BaseBinaryBoolOp):
         QoalaProgram.current_function().append_to_current_block(self)
 
     def can_evaluate_to(self, cls) -> bool:
-        return cls == QoalaBool
+        return cls is QoalaBool
 
     @checkbaseir
-    def compile(self, ctx: Context, location: Optional[Location] = None) -> None:
+    def compile(self, ctx: Context, location: Optional[Location] = None) -> None:  # type: ignore[override]
         source_location = Location.file(
             filename=self.debug_info.filename,
             line=self.debug_info.line_start,
@@ -134,10 +134,10 @@ class XorOp(BaseBinaryBoolOp):
         QoalaProgram.current_function().append_to_current_block(self)
 
     def can_evaluate_to(self, cls) -> bool:
-        return cls == QoalaBool
+        return cls is QoalaBool
 
     @checkbaseir
-    def compile(self, ctx: Context, location: Optional[Location] = None) -> None:
+    def compile(self, ctx: Context, location: Optional[Location] = None) -> None:  # type: ignore[override]
         source_location = Location.file(
             filename=self.debug_info.filename,
             line=self.debug_info.line_start,
@@ -164,10 +164,10 @@ class NotOp(BaseUnaryBoolOp):
         QoalaProgram.current_function().append_to_current_block(self)
 
     def can_evaluate_to(self, cls) -> bool:
-        return cls == QoalaBool
+        return cls is QoalaBool
 
     @checkbaseir
-    def compile(self, ctx: Context, location: Optional[Location] = None) -> None:
+    def compile(self, ctx: Context, location: Optional[Location] = None) -> None:  # type: ignore[override]
         # There is no "bitwise negate" operation in arith, but we can xor with 0xFF
         if self.operand.can_evaluate_to(QoalaBool):
             bool_type = mlir_bool()
@@ -190,7 +190,7 @@ class NotOp(BaseUnaryBoolOp):
 
 
 class BooleanOperatorFactory:
-    def __new__(cls, *operands, operation: str) -> QoalaExpression:
+    def __new__(cls, *operands, operation: str) -> QoalaExpression:  # type: ignore[misc]
         if operation in ["__and__", "__rand__"]:
             return AndOp(*operands)
         elif operation in ["__or__", "__ror__"]:

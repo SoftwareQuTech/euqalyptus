@@ -32,7 +32,6 @@ class IfCondition:
             return arg
         from qoala.ast.value import QoalaNumericValue
 
-        # TODO - Get the actual debug info somehow!
         return QoalaNumericValue.from_immediate(arg, get_debug_info())
 
     def __init__(self, condition: Bool | bool):

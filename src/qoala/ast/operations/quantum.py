@@ -8,9 +8,10 @@ from qnet.ir import Context, Location
 
 from qoala.ast import checkbaseir, QoalaExpression
 from qoala.ast.operations import QoalaOperation
-from qoala.ast.qubit import QoalaQubit
+from qoala.ast.qubit import QoalaQubit, QubitBaseOperations
 from qoala.ast.value import (
-    QoalaFloatOrExpression,
+    QoalaInteger,
+    QoalaFloat,
     QoalaNumericValue,
     QoalaBit,
 )
@@ -28,7 +29,7 @@ class _QubitBaseOperation(QoalaOperation, ABC):
         self.qubit = qubit
 
     def can_evaluate_to(self, cls) -> bool:
-        return cls == QoalaBit
+        return cls is QoalaBit
 
 
 class QubitMeasure(_QubitBaseOperation, QoalaBit):
@@ -41,7 +42,7 @@ class QubitMeasure(_QubitBaseOperation, QoalaBit):
         QoalaProgram.current_function().append_to_current_block(self)
 
     @checkbaseir
-    def compile(self, ctx: Context, location: Optional[Location] = None) -> None:
+    def compile(self, ctx: Context, location: Optional[Location] = None) -> None:  # type: ignore[override]
         source_location = Location.file(
             filename=self.debug_info.filename,
             line=self.debug_info.line_start,
@@ -53,9 +54,9 @@ class QubitMeasure(_QubitBaseOperation, QoalaBit):
 
 @dataclass(init=False)
 class Rotate(_QubitBaseOperation, ABC):
-    angle: QoalaFloatOrExpression
+    angle: QoalaFloat | QoalaExpression | float
 
-    def __init__(self, qubit: QoalaExpression, angle: QoalaFloatOrExpression):
+    def __init__(self, qubit: QoalaExpression, angle: QoalaFloat | QoalaExpression | float):
         super().__init__(qubit=qubit)
         # We assume the users of this class will pass _at least_ default values for all operands
         self.angle = angle
@@ -66,11 +67,11 @@ class Rotate(_QubitBaseOperation, ABC):
 
 class RotateX(Rotate):
 
-    def __init__(self, qubit: QoalaExpression, angle: QoalaFloatOrExpression):
+    def __init__(self, qubit: QoalaExpression, angle: QoalaFloat | QoalaExpression | float):
         super().__init__(qubit=qubit, angle=angle)
 
     @checkbaseir
-    def compile(self, ctx: Context, location: Optional[Location] = None) -> None:
+    def compile(self, ctx: Context, location: Optional[Location] = None) -> None:  # type: ignore[override]
         source_location = Location.file(
             filename=self.debug_info.filename,
             line=self.debug_info.line_start,
@@ -78,6 +79,7 @@ class RotateX(Rotate):
             context=ctx,
         )
         # We first add this operation to the program
+        assert isinstance(self.angle, (QoalaFloat, QoalaExpression))
         self.ir_value = qnet.rot_x(
             qin=self.qubit.ir_value, angle=self.angle.ir_value, loc=source_location
         )
@@ -87,11 +89,11 @@ class RotateX(Rotate):
 
 class RotateY(Rotate):
 
-    def __init__(self, qubit: QoalaExpression, angle: QoalaFloatOrExpression):
+    def __init__(self, qubit: QoalaExpression, angle: QoalaFloat | QoalaExpression | float):
         super().__init__(qubit=qubit, angle=angle)
 
     @checkbaseir
-    def compile(self, ctx: Context, location: Optional[Location] = None) -> None:
+    def compile(self, ctx: Context, location: Optional[Location] = None) -> None:  # type: ignore[override]
         source_location = Location.file(
             filename=self.debug_info.filename,
             line=self.debug_info.line_start,
@@ -99,6 +101,7 @@ class RotateY(Rotate):
             context=ctx,
         )
         # We first add this operation to the program
+        assert isinstance(self.angle, (QoalaFloat, QoalaExpression))
         self.ir_value = qnet.rot_y(
             qin=self.qubit.ir_value, angle=self.angle.ir_value, loc=source_location
         )
@@ -108,11 +111,11 @@ class RotateY(Rotate):
 
 class RotateZ(Rotate):
 
-    def __init__(self, qubit: QoalaExpression, angle: QoalaFloatOrExpression):
+    def __init__(self, qubit: QoalaExpression, angle: QoalaFloat | QoalaExpression | float):
         super().__init__(qubit=qubit, angle=angle)
 
     @checkbaseir
-    def compile(self, ctx: Context, location: Optional[Location] = None) -> None:
+    def compile(self, ctx: Context, location: Optional[Location] = None) -> None:  # type: ignore[override]
         source_location = Location.file(
             filename=self.debug_info.filename,
             line=self.debug_info.line_start,
@@ -120,6 +123,7 @@ class RotateZ(Rotate):
             context=ctx,
         )
         # We first add this operation to the program
+        assert isinstance(self.angle, (QoalaFloat, QoalaExpression))
         self.ir_value = qnet.rot_z(
             qin=self.qubit.ir_value, angle=self.angle.ir_value, loc=source_location
         )
@@ -147,7 +151,7 @@ def RotationAlias(base_clazz: Type, base_rotation: float):
                 super().__init__(qubit=operands[0], angle=rotation_angle)
 
             @checkbaseir
-            def compile(
+            def compile(  # type: ignore[override]
                 self, ctx: Context, location: Optional[Location] = None
             ) -> None:
                 super().compile(ctx)
@@ -165,7 +169,7 @@ class XGate(_QubitBaseOperation):
         QoalaProgram.current_function().append_to_current_block(self)
 
     @checkbaseir
-    def compile(self, ctx: Context, location: Optional[Location] = None) -> None:
+    def compile(self, ctx: Context, location: Optional[Location] = None) -> None:  # type: ignore[override]
         source_location = Location.file(
             filename=self.debug_info.filename,
             line=self.debug_info.line_start,
@@ -185,7 +189,7 @@ class YGate(_QubitBaseOperation):
         QoalaProgram.current_function().append_to_current_block(self)
 
     @checkbaseir
-    def compile(self, ctx: Context, location: Optional[Location] = None) -> None:
+    def compile(self, ctx: Context, location: Optional[Location] = None) -> None:  # type: ignore[override]
         source_location = Location.file(
             filename=self.debug_info.filename,
             line=self.debug_info.line_start,
@@ -205,7 +209,7 @@ class ZGate(_QubitBaseOperation):
         QoalaProgram.current_function().append_to_current_block(self)
 
     @checkbaseir
-    def compile(self, ctx: Context, location: Optional[Location] = None) -> None:
+    def compile(self, ctx: Context, location: Optional[Location] = None) -> None:  # type: ignore[override]
         source_location = Location.file(
             filename=self.debug_info.filename,
             line=self.debug_info.line_start,
@@ -219,12 +223,12 @@ class ZGate(_QubitBaseOperation):
 
 # Definition of the "Rotation Aliases"; basic rotations with a fixed given angle
 @RotationAlias(RotateZ, base_rotation=math.pi / 2.0)
-class SGate:
+class SGate(_QubitBaseOperation, QoalaOperation):
     pass
 
 
 @RotationAlias(RotateZ, base_rotation=math.pi / 4.0)
-class TGate:
+class TGate(_QubitBaseOperation, QoalaOperation):
     pass
 
 
@@ -238,7 +242,7 @@ class HGate(_QubitBaseOperation):
         QoalaProgram.current_function().append_to_current_block(self)
 
     @checkbaseir
-    def compile(self, ctx: Context, location: Optional[Location] = None) -> None:
+    def compile(self, ctx: Context, location: Optional[Location] = None) -> None:  # type: ignore[override]
         source_location = Location.file(
             filename=self.debug_info.filename,
             line=self.debug_info.line_start,
@@ -252,7 +256,7 @@ class HGate(_QubitBaseOperation):
 
 @dataclass(init=False)
 class CNotGate(_QubitBaseOperation):
-    target: QoalaQubit
+    target: QoalaExpression
 
     def __init__(self, qubit: QoalaExpression, target: QoalaExpression):
         super().__init__(qubit=qubit)
@@ -263,7 +267,7 @@ class CNotGate(_QubitBaseOperation):
         QoalaProgram.current_function().append_to_current_block(self)
 
     @checkbaseir
-    def compile(self, ctx: Context, location: Optional[Location] = None) -> None:
+    def compile(self, ctx: Context, location: Optional[Location] = None) -> None:  # type: ignore[override]
         source_location = Location.file(
             filename=self.debug_info.filename,
             line=self.debug_info.line_start,
@@ -293,7 +297,7 @@ class CPhaseGate(_QubitBaseOperation):
         QoalaProgram.current_function().append_to_current_block(self)
 
     @checkbaseir
-    def compile(self, ctx: Context, location: Optional[Location] = None) -> None:
+    def compile(self, ctx: Context, location: Optional[Location] = None) -> None:  # type: ignore[override]
         source_location = Location.file(
             filename=self.debug_info.filename,
             line=self.debug_info.line_start,

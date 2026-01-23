@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import Optional, List
+from typing import Optional, List, Any
 
 from mypy.stubgen import Iterable
 from qnet.dialects import scf, qnet
@@ -7,7 +7,7 @@ from qnet.dialects._ods_common import get_op_result_or_op_results
 from qnet.extras.types import i32, f32, bool as mlir_bool
 from qnet.ir import Context, Location
 
-from qoala import QoalaExpression, QoalaProgram
+from qoala.ast import QoalaExpression
 from qoala.ast.model import QoalaBlock, QoalaRuntimeQubit, QoalaRuntimeValue, QoalaScopedVal
 from qoala.ast.operations import QoalaOperation
 from qoala.ast.value import QoalaInteger, QoalaFloat, QoalaBool
@@ -19,7 +19,7 @@ class ConditionalBranching(QoalaOperation):
     # Branches need to be a *forward reference* to the place where the code will be
     _branch_true: QoalaBlock
     _branch_false: QoalaBlock
-    _used_scoped_vals: List[QoalaScopedVal]
+    _used_scoped_vals: List[QoalaRuntimeValue | QoalaRuntimeQubit]
     _yielded_values: List[QoalaExpression]
 
     def __init__(self, condition: QoalaExpression):
@@ -27,9 +27,13 @@ class ConditionalBranching(QoalaOperation):
         self.condition = condition
         self._used_scoped_vals = []
         self._yielded_values = []
+        from qoala import QoalaProgram
+
         QoalaProgram.current_function().append_to_current_block(self)
 
     def __enter__(self):
+        from qoala import QoalaProgram
+
         # We create the basic blocks for this conditional branching
         current_function = QoalaProgram.current_function()
         self._branch_true = QoalaBlock(
@@ -48,6 +52,8 @@ class ConditionalBranching(QoalaOperation):
         return self._branch_true, self._branch_false
 
     def __exit__(self, exc_type, exc_val, exc_tb):
+        from qoala import QoalaProgram
+
         # Exiting the conditional branch context marks the finish of the
         # branching on CFG.
         # We lift any type restriction currently being enforced
@@ -58,7 +64,7 @@ class ConditionalBranching(QoalaOperation):
         # __exit__ method (context manager) of the QoalaBlock object.
         pass
 
-    def report_used_scoped_val(self, scoped_val: QoalaScopedVal):
+    def report_used_scoped_val(self, scoped_val: QoalaRuntimeValue | QoalaRuntimeQubit):
         if scoped_val not in self._used_scoped_vals:
             self._used_scoped_vals.append(scoped_val)
 
@@ -98,7 +104,8 @@ class ConditionalBranching(QoalaOperation):
 
     def _reset_scoped_values(self):
         for scoped_val in self._used_scoped_vals:
-            if scoped_val.captured_value is not None:
+            if scoped_val is not None and scoped_val.captured_value is not None:
+                assert scoped_val.captured_expression is not None
                 scoped_val.captured_expression.ir_value = scoped_val.captured_value
 
     def can_evaluate_to(self, cls) -> bool:
@@ -146,6 +153,7 @@ class ConditionalBranching(QoalaOperation):
         # Set the IR value for this conditional branching op
         branching_ir_vals = get_op_result_or_op_results(if_op)
         self._ir_vals = branching_ir_vals
+        iterable_ir_vals: Iterable[Any]
         if not isinstance(branching_ir_vals, Iterable):
             iterable_ir_vals = [branching_ir_vals]
         else:
@@ -153,4 +161,3 @@ class ConditionalBranching(QoalaOperation):
         # Manually map the ir values of the runtime values
         for runtime_val, ir_val in zip(self._used_scoped_vals, iterable_ir_vals):
             runtime_val.ir_value = ir_val
-        print("eso")

@@ -9,8 +9,7 @@ from typing import List, Any, Dict, Tuple, Optional
 from typing_extensions import Self
 
 import qoala.utils.debug_info as dbg_info
-from qoala.ast import QoalaExpression
-from qoala.ast.model import QoalaFunction
+from qoala.ast import QoalaExpression, QoalaFunction
 from qoala.errors import NotYetCompiledError, QuantumProgramNotImplementedError
 from qoala.module import QoalaModule
 
@@ -216,7 +215,7 @@ class QoalaProgramBase(QoalaProgram, ABC):
         instance = QoalaProgram(entry_fun=cls.main)
         # We override that, partially initializing the entry function with the
         # instance (self) argument
-        instance._entry_fun = partial(cls.main, instance)
+        instance._entry_fun = partial(cls.main, instance)  # type: ignore[arg-type]
         # We return the instance of the newly created object
         return instance
 

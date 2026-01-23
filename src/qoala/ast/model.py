@@ -7,12 +7,13 @@ from qnet.dialects import qnet, scf
 from qnet.ir import Context, Location, Block, InsertionPoint, FunctionType
 
 from qoala.ast.operations import with_arith_operators, with_bool_operators, with_order_operators
-from qoala.ast.qubit import QubitBaseOperations
+from qoala.ast.qubit import QubitBaseOperations, QoalaQubit
+from qoala.ast.value import QoalaInteger, QoalaFloat, QoalaBool
 from qoala.errors import ExpressionNotAllowedInBlockError, AssignationError
 from qoala.utils.debug_info import DebugInfo, get_debug_info
 from qoala.ast import QoalaCompilable, QoalaExpression
 
-_NumericValue = TypeVar("_NumericValue", "QoalaInteger",  "QoalaFloat", "QoalaBool")
+_NumericValue = TypeVar("_NumericValue", QoalaInteger,  QoalaFloat, QoalaBool)
 _AllowedExprType = TypeVar("_AllowedExprType", bound=QoalaExpression)
 
 
@@ -31,8 +32,8 @@ def hook_quantum_method(clazz):
 class QoalaScopedVal(ABC):
     _id: str
     _locked: bool
-    _captured_expression: QoalaExpression
-    _captured_value: qnet.Operation
+    _captured_expression: QoalaExpression | None
+    _captured_value: qnet.Operation | None
 
     def __init__(self):
         self._locked = False
@@ -43,7 +44,7 @@ class QoalaScopedVal(ABC):
         return hash(self._id)
 
     @property
-    def captured_value(self) -> qnet.Operation:
+    def captured_value(self) -> qnet.Operation | None:
         return self._captured_value
 
     @captured_value.setter
@@ -51,7 +52,7 @@ class QoalaScopedVal(ABC):
         self._captured_value = value
 
     @property
-    def captured_expression(self) -> QoalaExpression:
+    def captured_expression(self) -> QoalaExpression | None:
         return self._captured_expression
 
     @captured_expression.setter
@@ -84,7 +85,8 @@ class QoalaRuntimeValue(QoalaExpression, QoalaScopedVal, Generic[_NumericValue])
         QoalaScopedVal.__init__(self)
         self._values = []
         self._captured_expression = original_value
-        self._type = None
+        # This will be filled later
+        self._type = None  # type: ignore[assignment]
         self.debug_info = get_debug_info()
         from qoala import QoalaProgram
 
@@ -109,7 +111,7 @@ class QoalaRuntimeValue(QoalaExpression, QoalaScopedVal, Generic[_NumericValue])
         return self._values[-1]
 
     def can_evaluate_to(self, cls) -> bool:
-        return cls == self._type
+        return cls is self._type
 
     def compile(self, ctx: Context, location: Optional[Location] = None) -> None:
         # We don't need to compile this object: It only acts as a container
@@ -125,7 +127,7 @@ class QoalaRuntimeValue(QoalaExpression, QoalaScopedVal, Generic[_NumericValue])
 class QoalaRuntimeQubit(QubitBaseOperations, QoalaExpression, QoalaScopedVal):
     _operations: List[QoalaExpression]
 
-    def __init__(self, qubit: "QoalaQubit"):
+    def __init__(self, qubit: QoalaQubit):
         QoalaExpression.__init__(self)
         QoalaScopedVal.__init__(self)
         self._captured_expression = qubit
@@ -150,7 +152,7 @@ class QoalaRuntimeQubit(QubitBaseOperations, QoalaExpression, QoalaScopedVal):
             quantum_operation = getattr(super(), method_name)
         else:
             quantum_operation = getattr(self._captured_expression, method_name)
-        op_expr = quantum_operation(*args, **kwargs)
+        op_expr: QoalaExpression = quantum_operation(*args, **kwargs)
         self._operations.append(op_expr)
         return op_expr
 
@@ -161,7 +163,7 @@ class QoalaRuntimeQubit(QubitBaseOperations, QoalaExpression, QoalaScopedVal):
 
     def can_evaluate_to(self, cls) -> bool:
         from qoala.ast.qubit import QoalaQubit
-        return cls == QoalaQubit
+        return cls is QoalaQubit
 
     def compile(self, ctx: Context, location: Optional[Location] = None) -> None:
         # We don't need to compile this object: It only acts as a container
@@ -204,10 +206,16 @@ class QoalaBlock(QoalaCompilable, Generic[_AllowedExprType]):
     _container_function: "QoalaFunction"
     _allowed_types: List[Type[_AllowedExprType]]
     _values_to_yield: List[QoalaExpression]
-    _branching_operation: "ConditionalBranching"  # Will be "None" in the main block of a function
+    # Will be "None" in the main block of a function
+    _branching_operation: "ConditionalBranching"  # type: ignore[name-defined]
     debug_info: DebugInfo
 
-    def __init__(self, block_id: int, branch_op: "ConditionalBranching", qoala_function: "QoalaFunction"):
+    def __init__(
+            self,
+            block_id: int,
+            branch_op: "ConditionalBranching",  # type: ignore[name-defined]
+            qoala_function: "QoalaFunction"
+    ):
         self._block_id = block_id
         self._args = []
         self._operations = []
@@ -251,7 +259,7 @@ class QoalaBlock(QoalaCompilable, Generic[_AllowedExprType]):
     def qnet_block(self, qnet_block: Block):
         self._qnet_block = qnet_block
 
-    def yield_value(self, val: "ScopedVar | ScopedQubit"):
+    def yield_value(self, val: "ScopedVar | ScopedQubit"):  # type: ignore[name-defined]
         # At runtime, the value passed must be a QoalaScopedVal (i.e. either a QoalaRuntimeValue,
         # QoalaRuntimeQubit). The signature of this function lets the IDE accept the
         # programming-time static type.
@@ -295,7 +303,7 @@ class QoalaFunction(QoalaCompilable):
 
     def __init__(self, name: str, dbg_info: DebugInfo | None = None):
         self._function_name = name
-        self.debug_info = dbg_info
+        self.debug_info = dbg_info  # type: ignore[assignment]
         # We start with a single empty block, since it is the main block of the function
         # we can pass "None" as the cond_branch argument.
         self._main_block = QoalaBlock(0, None,  self)
@@ -335,6 +343,7 @@ class QoalaFunction(QoalaCompilable):
             loc=location,
         )
 
+        assert self._main_block is not None
         qnet_main_block = Block.create_at_start(function.body)
         self._main_block.qnet_block = qnet_main_block
         self._main_block.compile(ctx, location)

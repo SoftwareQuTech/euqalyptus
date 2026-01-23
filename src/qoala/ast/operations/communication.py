@@ -49,7 +49,7 @@ class DeclaredRemote(QoalaOperation):
         return False
 
     @checkbaseir
-    def compile(self, ctx: Context, location: Optional[Location] = None) -> None:
+    def compile(self, ctx: Context, location: Optional[Location] = None) -> None:  # type: ignore[override]
         source_location = Location.file(
             filename=self.debug_info.filename,
             line=self.debug_info.line_start,
@@ -109,18 +109,18 @@ class BasePluralRecvOp(QoalaArray[_Qoala_Base_Type, _Native_Base_Type]):
     def can_evaluate_to(self, cls) -> bool:
         if self.length == 1:
             if self.base_type == int:
-                return cls == QoalaInteger
+                return cls is QoalaInteger
             elif self.base_type == float:
-                return cls == QoalaFloat
+                return cls is QoalaFloat
             else:
                 raise UnknownTypeError(
                     f"Recv with base type '{self.base_type} cannot evaluate to '{cls}"
                 )
         else:
-            return cls == QoalaArray
+            return cls is QoalaArray
 
     @checkbaseir
-    def compile(self, ctx: Context, location: Optional[Location] = None) -> None:
+    def compile(self, ctx: Context, location: Optional[Location] = None) -> None:  # type: ignore[override]
         from qoala import QoalaProgram
 
         source_location = Location.file(
@@ -178,6 +178,7 @@ class BasePluralRecvOp(QoalaArray[_Qoala_Base_Type, _Native_Base_Type]):
                 )
             if self.length == 1:
                 # In this case the IR of the Recv operation is the value of the extract operation
+                assert self.index_op is not None
                 self.index_op.compile(ctx)
                 self.extract_op.compile(ctx)
                 self.ir_value = self.extract_op.ir_value
@@ -199,16 +200,16 @@ class BaseSingularRecvOp(QoalaNumericValue[_Qoala_Base_Type]):
 
     def can_evaluate_to(self, cls) -> bool:
         if self.base_type == int:
-            return cls == QoalaInteger
+            return cls is QoalaInteger
         elif self.base_type == float:
-            return cls == QoalaFloat
+            return cls is QoalaFloat
         else:
             raise UnknownTypeError(
                 f"Recv with base type '{self.base_type} cannot evaluate to '{cls}"
             )
 
     @checkbaseir
-    def compile(self, ctx: Context, location: Optional[Location] = None) -> None:
+    def compile(self, ctx: Context, location: Optional[Location] = None) -> None:  # type: ignore[override]
         from qoala import QoalaProgram
 
         source_location = Location.file(
@@ -260,7 +261,9 @@ class RecvIntOp(BaseSingularRecvOp[QoalaInteger]):
         super().__init__(remote_name=remote_name, base_type=int)
         self.signedness = Signedness.SIGNED
         self.width = 32
-        self.value = None
+        # recv_int behaves like a value, but since it is not known at compile
+        # time, we allow to have "None" as the value.
+        self.value = None  # type: ignore[assignment]
 
 
 @with_arith_operators
@@ -280,8 +283,8 @@ class BaseSendOp(QoalaOperation):
 
     def __init__(
         self,
-        *vals: QoalaExpression,
-        remote_name: str,
+        *vals: QoalaExpression | int | float,
+        remote_name: DeclaredRemote | str,
         base_type: Type,
         qoala_type: Type,
     ):
@@ -292,6 +295,7 @@ class BaseSendOp(QoalaOperation):
         for val in vals:
             # TODO - Check if the value can evaluate to an array (tensor is already defined)
             # TODO - Think what happens if we mix single values and an array... flatmap?
+            val_to_add: QoalaExpression
             if isinstance(val, QoalaArray):
                 # If the argument is an array, we will simply "open" the array...
                 # If an already-packed array is the ONLY argument, this wastefully creates a new tensor
@@ -303,6 +307,7 @@ class BaseSendOp(QoalaOperation):
             elif isinstance(val, QubitMeasure):
                 # Measure yields an i1 value, we need to extend it to an i32 before we can send it
                 cast_op = BitToInt(val)
+                final_casted_val: BitToInt | IntToFloat
                 if qoala_type is QoalaInteger:
                     # Nothing extra to add in this case
                     final_casted_val = cast_op
@@ -321,8 +326,8 @@ class BaseSendOp(QoalaOperation):
                 val_to_add = final_casted_val
             elif isinstance(val, base_type):
                 val_to_add = QoalaNumericValue.from_immediate(val, self.debug_info)
-            elif val.can_evaluate_to(qoala_type):
-                val_to_add = val
+            elif val.can_evaluate_to(qoala_type):  # type: ignore[union-attr]
+                val_to_add = val  # type: ignore[assignment]
             else:
                 raise UnknownTypeError(
                     f"Send operation: value '{val}' cannot be converted to '{self.base_type}'"
@@ -336,7 +341,7 @@ class BaseSendOp(QoalaOperation):
         return False
 
     @checkbaseir
-    def compile(self, ctx: Context, location: Optional[Location] = None) -> None:
+    def compile(self, ctx: Context, location: Optional[Location] = None) -> None:  # type: ignore[override]
         from qoala import QoalaProgram
 
         source_location = Location.file(

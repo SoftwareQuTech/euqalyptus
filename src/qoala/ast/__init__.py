@@ -32,7 +32,7 @@ class QoalaCompilable(ABC):
 @dataclass(init=False)
 class QoalaExpression(QoalaCompilable, ABC):
     _ir_vals: List[Operation]
-    _containing_block: "QoalaBlock"  # type: ignore[name-defined]
+    _containing_block: "QoalaBlock | None"  # type: ignore[name-defined]
     debug_info: DebugInfo
 
     def __init__(self):
@@ -54,7 +54,7 @@ class QoalaExpression(QoalaCompilable, ABC):
         return self._ir_vals
 
     @property
-    def qoala_block(self) -> "QoalaBlock":  # type: ignore[name-defined]
+    def qoala_block(self) -> "QoalaBlock | None":  # type: ignore[name-defined]
         return self._containing_block
 
     @qoala_block.setter
@@ -128,3 +128,5 @@ class checkbaseir:
         # partial initialization of that method; this will simply set an argument on the "__call__"
         # function, so we can "save" the instance of the object on which we are applying the call.
         return partial(self.__call__, instance)
+
+from .model import QoalaFunction, QoalaBlock
