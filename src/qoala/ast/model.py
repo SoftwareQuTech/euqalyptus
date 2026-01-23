@@ -135,7 +135,7 @@ class QoalaRuntimeQubit(QubitBaseOperations, QoalaExpression, QoalaScopedVal):
 
         self._containing_block = QoalaProgram.current_function().current_block
 
-    def _quantum_method_hook(self, method_name: str, *args, **kwargs):
+    def _quantum_method_hook(self, method_name: str, *args, **kwargs) -> QoalaExpression:
         # This method handles any quantum operation used on this "runtime qubit",
         # The idea here is to apply the quantum operation on the given qubit, but to
         # also keep track of any operation performed. This is needed to retrieve the
@@ -152,6 +152,7 @@ class QoalaRuntimeQubit(QubitBaseOperations, QoalaExpression, QoalaScopedVal):
             quantum_operation = getattr(self._captured_expression, method_name)
         op_expr = quantum_operation(*args, **kwargs)
         self._operations.append(op_expr)
+        return op_expr
 
     def get_current_value(self) -> QoalaExpression:
         if self._locked:
