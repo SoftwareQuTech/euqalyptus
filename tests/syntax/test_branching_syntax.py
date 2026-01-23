@@ -13,6 +13,7 @@ from qoala.operations.branching import (
     if_gt,
     if_ge,
 )
+from qoala.operations.control_flow import return_results
 from qoala.types.classical import Int, ScopedVar
 from qoala.types.classical.booleans import Bool
 from qoala.types.quantum import LocalQubit, ScopedQubit
@@ -199,7 +200,8 @@ class TestBranchingSyntax:
             with branch_false:
                 cond_qubit.Y()
                 branch_false.yield_value(cond_qubit)
-        res = cond_qubit.measure()
+        meas = cond_qubit.measure()
+        return_results(meas)
 
     def test_using_entangled_quantum_value_from_branching(self):
         # We also manually set the internal structures for registering remotes and compilation options
@@ -220,7 +222,8 @@ class TestBranchingSyntax:
             with branch_false:
                 cond_qubit.Y()
                 branch_false.yield_value(cond_qubit)
-        res = cond_qubit.measure()
+        meas = cond_qubit.measure()
+        return_results(meas)
 
         del QoalaProgram._declared_remotes
         del QoalaProgram._compilation_context

@@ -3,6 +3,7 @@ import pytest
 from qoala import QoalaProgram, CompilationContext
 from qoala.ast.model import QoalaBlock, QoalaBranchTerminator, QoalaRuntimeValue, QoalaRuntimeQubit
 from qoala.ast.operations.branching import ConditionalBranching
+from qoala.ast.operations.control_flow import ReturnResultsOp
 from qoala.ast.operations.numeric import Add
 from qoala.ast.operations.order import (
     EqualsOp,
@@ -26,6 +27,7 @@ from qoala.operations.branching import (
     if_gt,
     if_ge,
 )
+from qoala.operations.control_flow import return_results
 from qoala.types.classical import Int, Float, ScopedVar
 from qoala.types.classical.booleans import Bool
 from qoala.types.quantum import LocalQubit, ScopedQubit
@@ -542,7 +544,8 @@ class TestBranchingSemantics:
                 cond_qubit.Y()
                 branch_false.yield_value(cond_qubit)
         cond_qubit.H()
-        res = cond_qubit.measure()
+        meas = cond_qubit.measure()
+        return_results(meas)
 
         main_block = QoalaProgram._instance.current_function()._main_block
 
@@ -567,6 +570,11 @@ class TestBranchingSemantics:
         assert isinstance(main_block.operations[6], QubitMeasure)
         measure_op = main_block.operations[6]
         assert isinstance(measure_op.qubit, QoalaRuntimeQubit)
+        assert isinstance(main_block.operations[7], ReturnResultsOp)
+
+        return_results_op = main_block.operations[7]
+        assert len(return_results_op.values) == 1
+        assert return_results_op.values[0] is main_block.operations[6]
 
     def test_using_entangled_quantum_value_from_branching(self):
         # We also manually set the internal structures for registering remotes and compilation options
@@ -586,7 +594,8 @@ class TestBranchingSemantics:
                 cond_qubit.Y()
                 branch_false.yield_value(cond_qubit)
         cond_qubit.H()
-        res = cond_qubit.measure()
+        meas = cond_qubit.measure()
+        return_results(meas)
 
         main_block = QoalaProgram._instance.current_function()._main_block
 
@@ -611,6 +620,11 @@ class TestBranchingSemantics:
         assert isinstance(main_block.operations[6], QubitMeasure)
         measure_op = main_block.operations[6]
         assert isinstance(measure_op.qubit, QoalaRuntimeQubit)
+        assert isinstance(main_block.operations[7], ReturnResultsOp)
+
+        return_results_op = main_block.operations[7]
+        assert len(return_results_op.values) == 1
+        assert return_results_op.values[0] is main_block.operations[6]
 
         del QoalaProgram._declared_remotes
         del QoalaProgram._compilation_context
