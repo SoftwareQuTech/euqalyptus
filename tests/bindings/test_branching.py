@@ -131,7 +131,7 @@ def value_from_branching_single_branch_unsupported():
 
 
 @QoalaProgram
-def value_from_branching_single_branch():
+def yield_classical_value_from_single_branch():
     with if_cond(Int(4) < 7) as (branch_true, branch_false):
         # Since there is a single branch, this example should just work
         # without using the ScopedVar programing protocol.
@@ -142,6 +142,39 @@ def value_from_branching_single_branch():
             a.assign(Int(15))
             branch_true.yield_value(a)
     b = a + 10
+
+
+@QoalaProgram
+def yield_local_quantum_value_from_single_branch():
+    qubit = LocalQubit()
+    with if_cond(Int(4) < 7) as (branch_true, branch_false):
+        # Since there is a single branch, this example should just work
+        # without using the ScopedVar programing protocol.
+        # HOWEVER, we will still require it for harmonization purposes
+        # and to simplify the construction of the AST
+        scoped_qubit = ScopedQubit(qubit)
+        with branch_true:
+            scoped_qubit.X()
+            branch_true.yield_value(scoped_qubit)
+    measurement = scoped_qubit.measure()
+    return_results(measurement)
+
+
+@QoalaProgram
+def yield_entangled_quantum_value_from_single_branch():
+    remote = Remote("Bob")
+    qubit = Entangle("Bob")
+    with if_cond(Int(4) < 7) as (branch_true, branch_false):
+        # Since there is a single branch, this example should just work
+        # without using the ScopedVar programing protocol.
+        # HOWEVER, we will still require it for harmonization purposes
+        # and to simplify the construction of the AST
+        scoped_qubit = ScopedQubit(qubit)
+        with branch_true:
+            scoped_qubit.X()
+            branch_true.yield_value(scoped_qubit)
+    measurement = scoped_qubit.measure()
+    return_results(measurement)
 
 
 @QoalaProgram
@@ -516,18 +549,14 @@ class TestBranchingInstructionsBindings:
             _, _ = value_from_branching_single_branch_unsupported.compile()
         # TODO - assert the error message
 
-    @pytest.mark.skip(
-        reason="Not supported: Compiling single branches that yield values need "
-        "inserting a false branch that yields an unused value."
-    )
-    def test_value_from_branching_single_branch(self):
+    def test_yield_classical_value_from_branching_single_branch(self):
         with pytest.raises(NotYetCompiledError) as ex:
-            _, _ = value_from_branching_single_branch.module
+            _, _ = yield_classical_value_from_single_branch.module
         assert (
             str(ex.value)
             == "The program has not been compiled yet. Did you invoke 'compile()' on it?"
         )
-        _, module = value_from_branching_single_branch.compile()
+        _, module = yield_classical_value_from_single_branch.compile()
         assert isinstance(module, QoalaModule)
         # WARNING - For the MLIR to be valid, scf.if *requires* a false branch when yielding values
         # This is a side effect of the fact that the value returned by the scf.if operation *must*
@@ -536,7 +565,7 @@ class TestBranchingInstructionsBindings:
         # assumption about the execution of the program. When lowering SCF to CF, some passes
         # applied *after* the lowering could use symbolic execution to discover the dead branch.
         expected_asm = """module {
-  qnet.func @value_from_branching_single_branch() {
+  qnet.func @yield_classical_value_from_single_branch() {
     %c4_i32 = arith.constant 4 : i32
     %c7_i32 = arith.constant 7 : i32
     %0 = arith.cmpi slt, %c4_i32, %c7_i32 : i32
@@ -544,12 +573,81 @@ class TestBranchingInstructionsBindings:
       %c15_i32 = arith.constant 15 : i32
       scf.yield %c15_i32 : i32
     } else {
-      %c0:i32 = arith.constant 0 : i32
+      %c0_i32 = arith.constant 0 : i32
       scf.yield %c0_i32 : i32
     }
     %c10_i32 = arith.constant 10 : i32
     %2 = arith.addi %1, %c10_i32 : i32
     qnet.return
+  }
+}
+"""
+        assert str(module.asm) == expected_asm
+
+    def test_yield_local_quantum_value_from_branching_single_branch(self):
+        with pytest.raises(NotYetCompiledError) as ex:
+            _, _ = yield_local_quantum_value_from_single_branch.module
+        assert (
+            str(ex.value)
+            == "The program has not been compiled yet. Did you invoke 'compile()' on it?"
+        )
+        _, module = yield_local_quantum_value_from_single_branch.compile()
+        assert isinstance(module, QoalaModule)
+        # WARNING - For the MLIR to be valid, scf.if *requires* a false branch when yielding values
+        # This is a side effect of the fact that the value returned by the scf.if operation *must*
+        # be clearly defined in both scenarios (true and false branch). This is needed *despite the
+        # condition result is known at compile time*, since the scf dialect does not make any
+        # assumption about the execution of the program. When lowering SCF to CF, some passes
+        # applied *after* the lowering could use symbolic execution to discover the dead branch.
+        expected_asm = """module {
+  qnet.func @yield_local_quantum_value_from_single_branch() {
+    %0 = qnet.new_qubit : !qnet.qubit
+    %c4_i32 = arith.constant 4 : i32
+    %c7_i32 = arith.constant 7 : i32
+    %1 = arith.cmpi slt, %c4_i32, %c7_i32 : i32
+    %2 = scf.if %1 -> (!qnet.qubit) {
+      %4 = qnet.x %0 : !qnet.qubit
+      scf.yield %4 : !qnet.qubit
+    } else {
+      scf.yield %0 : !qnet.qubit
+    }
+    %3 = qnet.measure %2 : i1
+    qnet.return %3 : i1
+  }
+}
+"""
+        assert str(module.asm) == expected_asm
+
+    def test_yield_entangled_quantum_value_from_branching_single_branch(self):
+        with pytest.raises(NotYetCompiledError) as ex:
+            _, _ = yield_entangled_quantum_value_from_single_branch.module
+        assert (
+            str(ex.value)
+            == "The program has not been compiled yet. Did you invoke 'compile()' on it?"
+        )
+        _, module = yield_entangled_quantum_value_from_single_branch.compile()
+        assert isinstance(module, QoalaModule)
+        # WARNING - For the MLIR to be valid, scf.if *requires* a false branch when yielding values
+        # This is a side effect of the fact that the value returned by the scf.if operation *must*
+        # be clearly defined in both scenarios (true and false branch). This is needed *despite the
+        # condition result is known at compile time*, since the scf dialect does not make any
+        # assumption about the execution of the program. When lowering SCF to CF, some passes
+        # applied *after* the lowering could use symbolic execution to discover the dead branch.
+        expected_asm = """module {
+  qnet.remote @Bob
+  qnet.func @yield_entangled_quantum_value_from_single_branch() {
+    %0 = qnet.eprs  {remote = @Bob} : !qnet.qubit
+    %c4_i32 = arith.constant 4 : i32
+    %c7_i32 = arith.constant 7 : i32
+    %1 = arith.cmpi slt, %c4_i32, %c7_i32 : i32
+    %2 = scf.if %1 -> (!qnet.qubit) {
+      %4 = qnet.x %0 : !qnet.qubit
+      scf.yield %4 : !qnet.qubit
+    } else {
+      scf.yield %0 : !qnet.qubit
+    }
+    %3 = qnet.measure %2 : i1
+    qnet.return %3 : i1
   }
 }
 """

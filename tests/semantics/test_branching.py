@@ -723,4 +723,3 @@ class TestBranchingSemantics:
 
         del QoalaProgram._declared_remotes
         del QoalaProgram._compilation_context
-
