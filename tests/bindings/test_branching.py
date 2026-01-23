@@ -13,7 +13,7 @@ from qoala.operations.branching import (
 )
 from qoala.operations.communication import recv_int
 from qoala.operations.control_flow import return_results
-from qoala.types.classical import Int, ScopedVar
+from qoala.types.classical import Int, ScopedVar, Float
 from qoala.types.quantum import LocalQubit, ScopedQubit, Entangle
 from qoala.utils import debug_info as dbg_info
 
@@ -142,6 +142,20 @@ def yield_classical_value_from_single_branch():
             a.assign(Int(15))
             branch_true.yield_value(a)
     b = a + 10
+
+
+@QoalaProgram
+def yield_classical_value_from_single_branch_b():
+    with if_cond(Int(4) < 7) as (branch_true, branch_false):
+        # Since there is a single branch, this example should just work
+        # without using the ScopedVar programing protocol.
+        # HOWEVER, we will still require it for harmonization purposes
+        # and to simplify the construction of the AST
+        a = ScopedVar()
+        with branch_true:
+            a.assign(Float(15.0))
+            branch_true.yield_value(a)
+    b = a + 10.0
 
 
 @QoalaProgram
@@ -578,6 +592,41 @@ class TestBranchingInstructionsBindings:
     }
     %c10_i32 = arith.constant 10 : i32
     %2 = arith.addi %1, %c10_i32 : i32
+    qnet.return
+  }
+}
+"""
+        assert str(module.asm) == expected_asm
+
+    def test_yield_classical_value_from_branching_single_branch_b(self):
+        with pytest.raises(NotYetCompiledError) as ex:
+            _, _ = yield_classical_value_from_single_branch_b.module
+        assert (
+            str(ex.value)
+            == "The program has not been compiled yet. Did you invoke 'compile()' on it?"
+        )
+        _, module = yield_classical_value_from_single_branch_b.compile()
+        assert isinstance(module, QoalaModule)
+        # WARNING - For the MLIR to be valid, scf.if *requires* a false branch when yielding values
+        # This is a side effect of the fact that the value returned by the scf.if operation *must*
+        # be clearly defined in both scenarios (true and false branch). This is needed *despite the
+        # condition result is known at compile time*, since the scf dialect does not make any
+        # assumption about the execution of the program. When lowering SCF to CF, some passes
+        # applied *after* the lowering could use symbolic execution to discover the dead branch.
+        expected_asm = """module {
+  qnet.func @yield_classical_value_from_single_branch_b() {
+    %c4_i32 = arith.constant 4 : i32
+    %c7_i32 = arith.constant 7 : i32
+    %0 = arith.cmpi slt, %c4_i32, %c7_i32 : i32
+    %1 = scf.if %0 -> (f32) {
+      %cst_0 = arith.constant 1.500000e+01 : f32
+      scf.yield %cst_0 : f32
+    } else {
+      %cst_0 = arith.constant 0.000000e+00 : f32
+      scf.yield %cst_0 : f32
+    }
+    %cst = arith.constant 1.000000e+01 : f32
+    %2 = arith.addf %1, %cst : f32
     qnet.return
   }
 }
