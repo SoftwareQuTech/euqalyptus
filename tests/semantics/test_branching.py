@@ -75,44 +75,14 @@ class TestBranchingSemantics:
                 a = Int(15)
             with branch_false:
                 a = Int(25)
-        # WARNING - This test uses values that depend on the actual branch taken, which is only known at
-        # runtime. This feature is *not*  supported by the frontend just yet. See below.
-        # TODO - In the following "add" operation, the frontend captures the value of "a" **coming from the false
-        #  branch** (25), so the value coming from true (15) will never be captured in MLIR. The actual value is
-        #  not known until runtime, but the frontend does not have a way to figure this out. This is a bug!!!
-        #  In LLVM this issue is solved with "stack allocations", which return a *pointer* to the stack:
-        #    %ptr_to_a = alloc i32 ;; Local variable: it is a pointer to the stack containing an i32 value
-        #    %cond = cmpi eq %val_1, %val_2  ;; really doesn't matter
-        #    cond_br %cond, ^bb1, ^bb2... ;; True -> ^bb1, False -> ^bb2
-        #    ^bb1:
-        #      store $4, %ptr_to_a  ;; store value 4 in ptr_to_a
-        #      br ^bb3
-        #    ^bb2:
-        #      store $5, %ptr_to_a  ;; store value 5 in ptr_to_a
-        #      br ^bb3
-        #    ^bb3:
-        #    %val_of_a = load %ptr_to_a : i32 ;;; "val_of_a" is 4 if %cond is true, 5 otherwise
-        #  To see this in action, compile the following C code:
-        #  int main(int argc, char **argv) {
-        #      int a;
-        #      if (argc < 2) {
-        #          a = 4;
-        #      } else {
-        #          a = 5;
-        #      }
-        #      return a;
-        #  }
-        #  Compile it with: `clang -S -emit-llvm -o test.ll test.c`
-        #  We need to find a way to emulate the same in this frontend (and translate it into MLIR)
-        #  Idea: Maybe we can check how MLIR emulates this behavior in the cf dialect?
-        b = a + 10
+        b = Int(30) + 10
 
         main_block = QoalaProgram._instance.current_function()._main_block
 
         # Assert the types of ops on the main block:
         # 1. 8 ops: Bool(true), Cond_branch, Int(7), Int(4), LessThanOp,
         #            Cond_branch, Int(10), Add
-        assert len(main_block.operations) == 8
+        assert len(main_block.operations) == 9
         assert isinstance(main_block.operations[0], QoalaBool)
         assert isinstance(main_block.operations[1], ConditionalBranching)
         assert isinstance(main_block.operations[2], QoalaInteger)
@@ -133,7 +103,8 @@ class TestBranchingSemantics:
         assert isinstance(false_branch.operations[1], QoalaBranchTerminator)
         # Rest of the ops of the main block
         assert isinstance(main_block.operations[6], QoalaInteger)
-        assert isinstance(main_block.operations[7], Add)
+        assert isinstance(main_block.operations[7], QoalaInteger)
+        assert isinstance(main_block.operations[8], Add)
 
     def test_branching_equals(self):
         branching = if_eq(Int(4), 7)
@@ -482,7 +453,7 @@ class TestBranchingSemantics:
             with if_cond(Int(4) < 7) as (branch_true, branch_false):
                 a = ScopedVar()
                 invalid = Int(30)
-                # Whatever is under this  line will not even get translated into AST
+                # Anything under this line, it will not even get translated into AST
                 with branch_true:
                     x = Int(15)
                 with branch_false:
@@ -635,3 +606,121 @@ class TestBranchingSemantics:
 
         del QoalaProgram._declared_remotes
         del QoalaProgram._compilation_context
+
+    def test_yield_classical_value_from_single_branch(self):
+        with if_cond(Int(4) < 7) as (branch_true, branch_false):
+            a = ScopedVar()
+            with branch_true:
+                a.assign(Int(15))
+                branch_true.yield_value(a)
+        b = a + 10
+
+        main_block = QoalaProgram._instance.current_function()._main_block
+
+        # Assert the types of ops of the main block:
+        assert isinstance(main_block.operations[0], QoalaInteger)
+        assert isinstance(main_block.operations[1], QoalaInteger)
+        assert isinstance(main_block.operations[2], LessThanOp)
+        assert isinstance(main_block.operations[3], ConditionalBranching)
+        # The conditional branching has 2 blocks:
+        assert isinstance(main_block.operations[3].true_dest, QoalaBlock)
+        assert isinstance(main_block.operations[3].false_dest, QoalaBlock)
+
+        conditional_branch_op = main_block.operations[3]
+        assert len(conditional_branch_op.yielded_values) == 1
+        assert isinstance(conditional_branch_op.yielded_values[0], QoalaInteger)
+        assert conditional_branch_op.yielded_values[0].value == 15
+
+        assert isinstance(main_block.operations[5], Add)
+        add_op = main_block.operations[5]
+        assert isinstance(add_op.operand_a, QoalaRuntimeValue)
+        assert isinstance(add_op.operand_b, QoalaInteger)
+
+    def test_yield_local_quantum_value_from_single_branch(self):
+        qubit = LocalQubit()
+        with if_cond(Int(4) < 7) as (branch_true, branch_false):
+            cond_qubit = ScopedQubit(qubit)  # Holds a qubit value
+            with branch_true:
+                cond_qubit.X()
+                branch_true.yield_value(cond_qubit)
+        cond_qubit.H()
+        meas = cond_qubit.measure()
+        return_results(meas)
+
+        main_block = QoalaProgram._instance.current_function()._main_block
+
+        assert isinstance(main_block.operations[0], QoalaLocalQubit)
+        assert isinstance(main_block.operations[1], QoalaInteger)
+        assert isinstance(main_block.operations[2], QoalaInteger)
+        assert isinstance(main_block.operations[3], LessThanOp)
+        assert isinstance(main_block.operations[4], ConditionalBranching)
+        # The conditional branching has 2 blocks:
+        assert isinstance(main_block.operations[4].true_dest, QoalaBlock)
+        assert isinstance(main_block.operations[4].false_dest, QoalaBlock)
+
+        conditional_branch_op = main_block.operations[4]
+        assert len(conditional_branch_op.yielded_values) == 1
+        assert isinstance(conditional_branch_op.yielded_values[0], XGate)
+
+        assert isinstance(main_block.operations[5], HGate)
+        measure_op = main_block.operations[5]
+        assert isinstance(measure_op.qubit, QoalaRuntimeQubit)
+
+        assert isinstance(main_block.operations[6], QubitMeasure)
+        measure_op = main_block.operations[6]
+        assert isinstance(measure_op.qubit, QoalaRuntimeQubit)
+        assert isinstance(main_block.operations[7], ReturnResultsOp)
+
+        return_results_op = main_block.operations[7]
+        assert len(return_results_op.values) == 1
+        assert return_results_op.values[0] is main_block.operations[6]
+
+    def test_yield_entangled_quantum_value_from_single_branch(self):
+        # We also manually set the internal structures for registering remotes and compilation options
+        QoalaProgram._declared_remotes = {}
+        compilation_context = CompilationContext()
+        compilation_context.options.use_singular_classical_comm_ops = True
+        QoalaProgram._compilation_context = compilation_context
+
+        remote = Remote("Bob")
+        qubit = Entangle("Bob")
+        with if_cond(Int(4) < 7) as (branch_true, branch_false):
+            cond_qubit = ScopedQubit(qubit)  # Holds a qubit value
+            with branch_true:
+                cond_qubit.X()
+                branch_true.yield_value(cond_qubit)
+        cond_qubit.H()
+        meas = cond_qubit.measure()
+        return_results(meas)
+
+        main_block = QoalaProgram._instance.current_function()._main_block
+
+        assert isinstance(main_block.operations[0], QoalaEprs)
+        assert isinstance(main_block.operations[1], QoalaInteger)
+        assert isinstance(main_block.operations[2], QoalaInteger)
+        assert isinstance(main_block.operations[3], LessThanOp)
+        assert isinstance(main_block.operations[4], ConditionalBranching)
+        # The conditional branching has 2 blocks:
+        assert isinstance(main_block.operations[4].true_dest, QoalaBlock)
+        assert isinstance(main_block.operations[4].false_dest, QoalaBlock)
+
+        conditional_branch_op = main_block.operations[4]
+        assert len(conditional_branch_op.yielded_values) == 1
+        assert isinstance(conditional_branch_op.yielded_values[0], XGate)
+
+        assert isinstance(main_block.operations[5], HGate)
+        measure_op = main_block.operations[5]
+        assert isinstance(measure_op.qubit, QoalaRuntimeQubit)
+
+        assert isinstance(main_block.operations[6], QubitMeasure)
+        measure_op = main_block.operations[6]
+        assert isinstance(measure_op.qubit, QoalaRuntimeQubit)
+        assert isinstance(main_block.operations[7], ReturnResultsOp)
+
+        return_results_op = main_block.operations[7]
+        assert len(return_results_op.values) == 1
+        assert return_results_op.values[0] is main_block.operations[6]
+
+        del QoalaProgram._declared_remotes
+        del QoalaProgram._compilation_context
+

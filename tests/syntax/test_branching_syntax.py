@@ -227,3 +227,46 @@ class TestBranchingSyntax:
 
         del QoalaProgram._declared_remotes
         del QoalaProgram._compilation_context
+
+    def test_yield_classical_value_from_single_branch(self):
+        # Since this is a syntax test, we only need to make sure that the
+        # types and method invocations do not raise exceptions.
+        qubit = LocalQubit()  # Holds a qubit value
+        with if_cond(Int(4) < 7) as (branch_true, branch_false):
+            cond_qubit = ScopedQubit(qubit)  # Holds a qubit value
+            with branch_true:
+                cond_qubit.X()
+                branch_true.yield_value(cond_qubit)
+        meas = cond_qubit.measure()
+        return_results(meas)
+
+    def test_yield_local_quantum_value_from_single_branch(self):
+        # Since this is a syntax test, we only need to make sure that the
+        # types and method invocations do not raise exceptions.
+        qubit = LocalQubit()  # Holds a qubit value
+        with if_cond(Int(4) < 7) as (branch_true, branch_false):
+            cond_qubit = ScopedQubit(qubit)  # Holds a qubit value
+            with branch_true:
+                cond_qubit.X()
+                branch_true.yield_value(cond_qubit)
+        meas = cond_qubit.measure()
+        return_results(meas)
+
+    def test_yield_entangled_quantum_value_from_single_branch(self):
+        # We also manually set the internal structures for registering remotes and compilation options
+        QoalaProgram._declared_remotes = {}
+        compilation_context = CompilationContext()
+        compilation_context.options.use_singular_classical_comm_ops = True
+        QoalaProgram._compilation_context = compilation_context
+
+        # Since this is a syntax test, we only need to make sure that the
+        # types and method invocations do not raise exceptions.
+        remote = Remote("Bob")
+        qubit = Entangle("Bob")  # Holds a qubit value
+        with if_cond(Int(4) < 7) as (branch_true, branch_false):
+            cond_qubit = ScopedQubit(qubit)  # Holds a qubit value
+            with branch_true:
+                cond_qubit.X()
+                branch_true.yield_value(cond_qubit)
+        meas = cond_qubit.measure()
+        return_results(meas)
