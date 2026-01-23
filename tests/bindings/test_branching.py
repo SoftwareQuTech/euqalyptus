@@ -1,6 +1,7 @@
 import pytest
 
 from qoala import QoalaProgram, NotYetCompiledError, QoalaModule
+from qoala.operations import Remote
 from qoala.operations.branching import (
     if_cond,
     if_eq,
@@ -10,8 +11,10 @@ from qoala.operations.branching import (
     if_gt,
     if_ge,
 )
+from qoala.operations.communication import recv_int
+from qoala.operations.control_flow import return_results
 from qoala.types.classical import Int, ScopedVar
-from qoala.types.quantum import LocalQubit, ScopedQubit
+from qoala.types.quantum import LocalQubit, ScopedQubit, Entangle
 from qoala.utils import debug_info as dbg_info
 
 
@@ -166,6 +169,25 @@ def qubit_value_from_branching():
             cond_qubit.Y()
             branch_false.yield_value(cond_qubit)
     res = cond_qubit.measure()
+
+
+@QoalaProgram
+def sample_ghz_end_node(prev_node: str):
+    prev_remote = Remote(prev_node)
+    qubit = Entangle(prev_node)
+
+    int_c = recv_int(prev_remote)
+    with if_eq(int_c, 1) as (branch_true, branch_false):
+        cond_qubit = ScopedQubit(qubit)
+        with branch_true:
+            cond_qubit.X()
+            branch_true.yield_value(cond_qubit)
+        with branch_false:
+            cond_qubit.Z()
+            branch_false.yield_value(cond_qubit)
+
+    meas = cond_qubit.measure()
+    return_results(meas)
 
 # TODO - Test a double nested if that returns a value from the inner-most level
 
@@ -582,6 +604,37 @@ class TestBranchingInstructionsBindings:
     }
     %3 = qnet.measure %2 : i1
     qnet.return
+  }
+}
+"""
+        assert str(module.asm) == expected_asm
+
+    def test_sample_ghz_end_node(self):
+        with pytest.raises(NotYetCompiledError) as ex:
+            _, _ = sample_ghz_end_node.module
+        assert (
+            str(ex.value)
+            == "The program has not been compiled yet. Did you invoke 'compile()' on it?"
+        )
+        _, module = sample_ghz_end_node.compile("Bob")
+        assert isinstance(module, QoalaModule)
+        # Note - MLIR does not offer a "boolean" type. values "true" and "false" are modeled as i1 values.
+        expected_asm = """module {
+  qnet.remote @Bob
+  qnet.func @sample_ghz_end_node() {
+    %0 = qnet.eprs  {remote = @Bob} : !qnet.qubit
+    %1 = qnet.recv_int  {remote = @Bob} : i32
+    %c1_i32 = arith.constant 1 : i32
+    %2 = arith.cmpi eq, %1, %c1_i32 : i32
+    %3 = scf.if %2 -> (!qnet.qubit) {
+      %5 = qnet.x %0 : !qnet.qubit
+      scf.yield %5 : !qnet.qubit
+    } else {
+      %5 = qnet.z %0 : !qnet.qubit
+      scf.yield %5 : !qnet.qubit
+    }
+    %4 = qnet.measure %3 : i1
+    qnet.return %4 : i1
   }
 }
 """
