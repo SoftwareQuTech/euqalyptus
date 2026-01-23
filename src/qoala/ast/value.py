@@ -110,7 +110,7 @@ class QoalaInteger(QoalaNumericValue[int]):
         QoalaProgram.current_function().append_to_current_block(self)
 
     def can_evaluate_to(self, cls) -> bool:
-        return cls == QoalaInteger
+        return cls is QoalaInteger
 
     @checkbaseir
     def compile(self, ctx: Context, location: Optional[Location] = None) -> None:
@@ -165,7 +165,7 @@ class QoalaFloat(QoalaNumericValue[float]):
         QoalaProgram.current_function().append_to_current_block(self)
 
     def can_evaluate_to(self, cls) -> bool:
-        return cls == QoalaFloat
+        return cls is QoalaFloat
 
     @checkbaseir
     def compile(self, ctx: Context, location: Optional[Location] = None) -> None:
@@ -225,7 +225,7 @@ class QoalaBool(QoalaValue[bool]):
         )
 
     def can_evaluate_to(self, cls) -> bool:
-        return cls == QoalaBool
+        return cls is QoalaBool
 
 
 # FIXME - In the meantime, we will model arrays as if they were
@@ -318,6 +318,9 @@ class QoalaArray(
         raise NotImplementedError("'len' operation for arrays not implemented")
 
     def __getitem__(self, item_index: QoalaExpression | int) -> QoalaExpression:
+        from qoala.ast.operations.arrays import CastToIndex
+
+        index_operand: QoalaInteger | QoalaFloat | QoalaBool | CastToIndex
         if isinstance(item_index, int):
             index_operand = QoalaNumericValue.from_immediate(
                 item_index, self.debug_info, is_index=True
@@ -330,7 +333,6 @@ class QoalaArray(
                     f"The index operand '{item_index}' cannot evaluate to an integer, "
                     f"hence it cannot be used index an array."
                 )
-            from qoala.ast.operations.arrays import CastToIndex
 
             casted_index = QoalaOperation.create_expression_for_op(
                 CastToIndex, item_index
@@ -341,7 +343,7 @@ class QoalaArray(
         return QoalaOperation.create_expression_for_op(GetItem, self, index_operand)
 
     def can_evaluate_to(self, cls) -> bool:
-        return cls == QoalaArray
+        return cls is QoalaArray
 
     def members_can_evaluate_to(self, cls):
         return cls == self.qoala_type
@@ -393,7 +395,7 @@ class QoalaReferenceInsideArray(QoalaExpression):
         self.ir_value = self._base_expression.ir_values[self._index]
 
     def can_evaluate_to(self, cls) -> bool:
-        return self._base_expression.qoala_type == cls
+        return self._base_expression.qoala_type is cls
 
 
 class QoalaBit(QoalaValue[int], ABC):

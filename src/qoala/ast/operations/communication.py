@@ -397,7 +397,7 @@ class BaseSendOp(QoalaOperation):
 @dataclass(init=False)
 class SendIntsOp(BaseSendOp):
 
-    def __init__(self, *vals: QoalaExpression, remote_name: DeclaredRemote | str):
+    def __init__(self, *vals: QoalaExpression | int, remote_name: DeclaredRemote | str):
         super().__init__(
             *vals, remote_name=remote_name, qoala_type=QoalaInteger, base_type=int
         )
@@ -406,7 +406,7 @@ class SendIntsOp(BaseSendOp):
 @dataclass(init=False)
 class SendFloatsOp(BaseSendOp):
 
-    def __init__(self, *vals: QoalaExpression, remote_name: DeclaredRemote | str):
+    def __init__(self, *vals: QoalaExpression | float, remote_name: DeclaredRemote | str):
         super().__init__(
             *vals, remote_name=remote_name, qoala_type=QoalaFloat, base_type=float
         )

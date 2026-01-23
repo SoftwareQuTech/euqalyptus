@@ -1,6 +1,6 @@
 from typing import Generic, TypeVar, Type
 
-from qoala.ast.value import QoalaArray, QoalaExpression
+from qoala.ast.value import QoalaArray, QoalaExpression, QoalaInteger
 from qoala.errors import InvalidArrayArgumentError
 from qoala.types.classical import QoalaClassicalType, Float, Double, Int, Int32
 
@@ -44,7 +44,7 @@ class _Array(Generic[_Qoala_Base_Type, _Native_Base_Type]):
         # Nothing to do here
         pass
 
-    def __getitem__(self, item) -> _Qoala_Base_Type:
+    def __getitem__(self, item) -> _Qoala_Base_Type:  # type: ignore[empty-body]
         """
         "Brackets" operator for the qoala arrays. This method allows using qoala arrays
         using the indexing operator int the same way as an ordinary python array:
@@ -75,7 +75,7 @@ class IntArray(_Array[Int, int]):
         else:
             kwargs["base_clone"] = None
         _Array._assert_elements(*elements, base_type=int, array_type=IntArray)
-        return super().__new__(cls, *elements, **kwargs)
+        return super().__new__(cls, *elements, **kwargs)  # type: ignore[arg-type]
 
     def __init__(
         self, *elements: Int | Int32 | int, base: QoalaArray[Int, int] | None = None
@@ -115,7 +115,7 @@ class FloatArray(_Array[Float, float]):
         else:
             kwargs["base_clone"] = None
         _Array._assert_elements(*elements, base_type=float, array_type=FloatArray)
-        return super().__new__(cls, *elements, **kwargs)
+        return super().__new__(cls, *elements, **kwargs)  # type: ignore[arg-type]
 
     def __init__(
         self,

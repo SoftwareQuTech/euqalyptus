@@ -27,7 +27,7 @@ class Qubit(QoalaQuantumType, ABC):
     methods on a `Qubit` instance.
     """
 
-    def measure(self) -> QoalaIntegerType:
+    def measure(self) -> QoalaIntegerType:  # type: ignore[empty-body]
         """
         Measure the qubit in the standard basis and get the measurement outcome.
 

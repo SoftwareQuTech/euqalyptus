@@ -1,3 +1,5 @@
+from typing import List
+
 from qoala.ast import QoalaExpression
 from qoala.ast.operations.control_flow import ReturnResultsOp
 
@@ -15,9 +17,14 @@ class ReturnResults:
     """
 
     def __new__(cls, *args: QoalaExpression | int | float | list | tuple):
-        if len(args) == 1 and isinstance(args[0], (list, tuple)):
-            return ReturnResultsOp(*args[0])
-        return ReturnResultsOp(*args)
+        processed_args: List[QoalaExpression | int | float] = []
+        # Flatten all the args
+        for arg in args:
+            if isinstance(arg, (list, tuple)):
+                processed_args.extend(arg)
+            else:
+                processed_args.append(arg)
+        return ReturnResultsOp(*processed_args)
 
     def __init__(self, *args, **kwargs):
         pass

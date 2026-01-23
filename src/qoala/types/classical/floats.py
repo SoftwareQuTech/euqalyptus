@@ -40,8 +40,8 @@ class Float(QoalaFloatingPointType[float]):
 
     def __init__(
         self,
-        immediate: float = 0,
-        other: Self = 0,
+        immediate: float = 0.0,
+        other: Self = None,  # type: ignore[assignment]
         # TODO - The next arguments are used when creating a Float from other types
     ):
         # Nothing to do here

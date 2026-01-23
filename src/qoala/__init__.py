@@ -83,7 +83,7 @@ class QoalaProgram:
     @classmethod
     def current_function(cls) -> QoalaFunction:
         if hasattr(cls, "_instance"):
-            return cls._instance._module.current_function
+            return cls._instance._module.current_function  # type: ignore[no-any-return]
         # This should never happen
         raise RuntimeError(f"Program with no instance!")
 
@@ -142,7 +142,7 @@ class QoalaProgram:
             # TODO - Change this ugly way to set the name of the function for the debug info engine
             dbg_info.function_name = self._function_name
             _compiler_lock.acquire()
-            QoalaProgram._instance = self
+            QoalaProgram._instance = self  # type: ignore[misc]
             QoalaProgram._declared_remotes = {}
             QoalaProgram._compilation_context = CompilationContext()
             # We save the compilation options
@@ -164,7 +164,7 @@ class QoalaProgram:
             if not self.compile_lazy_flag():
                 self.module.generate_qoala_hir()
             # We delete the reference to the QoalaProgram under compilation
-            del QoalaProgram._instance
+            del QoalaProgram._instance  # type: ignore[misc]
             return ret_val, self._module
         finally:
             _compiler_lock.release()

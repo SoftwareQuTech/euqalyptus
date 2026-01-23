@@ -21,8 +21,11 @@ def get_debug_info() -> DebugInfo:
 
 def get_debug_info_for_function(function: Callable) -> DebugInfo:
     filename = getsourcefile(function)
-    _, line_number = getsourcelines(function)
-    return DebugInfo(filename, line_number, line_number, 0, 0)
+    if filename is None:
+        raise RuntimeError(f"Cannot obtain source file name for function '{function}'")
+    else:
+        _, line_number = getsourcelines(function)
+        return DebugInfo(filename, line_number, line_number, 0, 0)
 
 
 def get_debug_info_for_function_name(func_name: str) -> DebugInfo:
@@ -33,13 +36,14 @@ def get_debug_info_for_function_name(func_name: str) -> DebugInfo:
         )
     else:
         frame_info = matching_frames[0]
-        if hasattr(frame_info, "positions"):
+        if hasattr(frame_info, "positions") and frame_info.positions is not None:
+            frame_pos = frame_info.positions
             return DebugInfo(
                 frame_info.filename,
-                frame_info.positions.lineno,
-                frame_info.positions.end_lineno,
-                frame_info.positions.col_offset,
-                frame_info.positions.end_col_offset,
+                frame_pos.lineno if frame_pos.lineno is not None else 0,
+                frame_pos.end_lineno if frame_pos.end_lineno is not None else 0,
+                frame_pos.col_offset if frame_pos.col_offset is not None else 0,
+                frame_pos.end_col_offset if frame_pos.end_col_offset is not None else 0,
             )
         else:
             return DebugInfo(frame_info.filename, frame_info.lineno, 0, 0, 0)

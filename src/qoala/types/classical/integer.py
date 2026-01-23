@@ -110,7 +110,7 @@ class UInt32(_UnsignedIntegerType[int]):
     def __init__(
         self,
         immediate: int = 0,
-        other: Optional[Self] = 0,
+        other: Optional[Self] = None,
         # TODO - The next arguments are used when creating an UInt32 from other types
     ):
         """
