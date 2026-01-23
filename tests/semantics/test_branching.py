@@ -1,6 +1,6 @@
 import pytest
 
-from qoala import QoalaProgram
+from qoala import QoalaProgram, CompilationContext
 from qoala.ast.model import QoalaBlock, QoalaBranchTerminator, QoalaRuntimeValue, QoalaRuntimeQubit
 from qoala.ast.operations.branching import ConditionalBranching
 from qoala.ast.operations.numeric import Add
@@ -13,9 +13,10 @@ from qoala.ast.operations.order import (
     GreaterThanOrEqualsOp,
 )
 from qoala.ast.operations.quantum import QubitMeasure, XGate, YGate, HGate
-from qoala.ast.qubit import QoalaLocalQubit
+from qoala.ast.qubit import QoalaLocalQubit, QoalaEprs
 from qoala.ast.value import QoalaBool, QoalaInteger
 from qoala.errors import ExpressionNotAllowedInBlockError, AssignationError
+from qoala.operations import Remote
 from qoala.operations.branching import (
     if_cond,
     if_eq,
@@ -28,6 +29,7 @@ from qoala.operations.branching import (
 from qoala.types.classical import Int, Float, ScopedVar
 from qoala.types.classical.booleans import Bool
 from qoala.types.quantum import LocalQubit, ScopedQubit
+from qoala.types.quantum.qubit import Entangle
 from qoala.utils import debug_info as dbg_info
 from tests.helpers_tests import DummyQoalaProgram
 
@@ -529,8 +531,8 @@ class TestBranchingSemantics:
         assert isinstance(add_op.operand_a, QoalaRuntimeValue)
         assert isinstance(add_op.operand_b, QoalaInteger)
 
-    def test_using_quantum_value_from_branching(self):
-        qubit = LocalQubit()  # Holds a qubit value
+    def test_using_local_quantum_value_from_branching(self):
+        qubit = LocalQubit()
         with if_cond(Int(4) < 7) as (branch_true, branch_false):
             cond_qubit = ScopedQubit(qubit)  # Holds a qubit value
             with branch_true:
@@ -565,3 +567,50 @@ class TestBranchingSemantics:
         assert isinstance(main_block.operations[6], QubitMeasure)
         measure_op = main_block.operations[6]
         assert isinstance(measure_op.qubit, QoalaRuntimeQubit)
+
+    def test_using_entangled_quantum_value_from_branching(self):
+        # We also manually set the internal structures for registering remotes and compilation options
+        QoalaProgram._declared_remotes = {}
+        compilation_context = CompilationContext()
+        compilation_context.options.use_singular_classical_comm_ops = True
+        QoalaProgram._compilation_context = compilation_context
+
+        remote = Remote("Bob")
+        qubit = Entangle("Bob")
+        with if_cond(Int(4) < 7) as (branch_true, branch_false):
+            cond_qubit = ScopedQubit(qubit)  # Holds a qubit value
+            with branch_true:
+                cond_qubit.X()
+                branch_true.yield_value(cond_qubit)
+            with branch_false:
+                cond_qubit.Y()
+                branch_false.yield_value(cond_qubit)
+        cond_qubit.H()
+        res = cond_qubit.measure()
+
+        main_block = QoalaProgram._instance.current_function()._main_block
+
+        assert isinstance(main_block.operations[0], QoalaEprs   )
+        assert isinstance(main_block.operations[1], QoalaInteger)
+        assert isinstance(main_block.operations[2], QoalaInteger)
+        assert isinstance(main_block.operations[3], LessThanOp)
+        assert isinstance(main_block.operations[4], ConditionalBranching)
+        # The conditional branching has 2 blocks:
+        assert isinstance(main_block.operations[4].true_dest, QoalaBlock)
+        assert isinstance(main_block.operations[4].false_dest, QoalaBlock)
+
+        conditional_branch_op = main_block.operations[4]
+        assert len(conditional_branch_op.yielded_values) == 2
+        assert isinstance(conditional_branch_op.yielded_values[0], XGate)
+        assert isinstance(conditional_branch_op.yielded_values[1], YGate)
+
+        assert isinstance(main_block.operations[5], HGate)
+        measure_op = main_block.operations[5]
+        assert isinstance(measure_op.qubit, QoalaRuntimeQubit)
+
+        assert isinstance(main_block.operations[6], QubitMeasure)
+        measure_op = main_block.operations[6]
+        assert isinstance(measure_op.qubit, QoalaRuntimeQubit)
+
+        del QoalaProgram._declared_remotes
+        del QoalaProgram._compilation_context

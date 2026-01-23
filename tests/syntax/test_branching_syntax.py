@@ -1,8 +1,9 @@
 import pytest
 
-from qoala import QoalaExpression, QoalaProgram
+from qoala import QoalaExpression, QoalaProgram, CompilationContext
 from qoala.ast.model import QoalaBlock
 from qoala.ast.operations.branching import ConditionalBranching
+from qoala.operations import Remote
 from qoala.operations.branching import (
     if_cond,
     if_eq,
@@ -15,6 +16,7 @@ from qoala.operations.branching import (
 from qoala.types.classical import Int, ScopedVar
 from qoala.types.classical.booleans import Bool
 from qoala.types.quantum import LocalQubit, ScopedQubit
+from qoala.types.quantum.qubit import Entangle
 from qoala.utils import debug_info as dbg_info
 from tests.helpers_tests import DummyQoalaProgram
 
@@ -185,7 +187,7 @@ class TestBranchingSyntax:
                 branch_false.yield_value(a)
         b = a + 10
 
-    def test_using_quantum_value_from_branching(self):
+    def test_using_local_quantum_value_from_branching(self):
         # Since this is a syntax test, we only need to make sure that the
         # types and method invocations do not raise exceptions.
         qubit = LocalQubit()  # Holds a qubit value
@@ -198,3 +200,27 @@ class TestBranchingSyntax:
                 cond_qubit.Y()
                 branch_false.yield_value(cond_qubit)
         res = cond_qubit.measure()
+
+    def test_using_entangled_quantum_value_from_branching(self):
+        # We also manually set the internal structures for registering remotes and compilation options
+        QoalaProgram._declared_remotes = {}
+        compilation_context = CompilationContext()
+        compilation_context.options.use_singular_classical_comm_ops = True
+        QoalaProgram._compilation_context = compilation_context
+
+        # Since this is a syntax test, we only need to make sure that the
+        # types and method invocations do not raise exceptions.
+        remote = Remote("Bob")
+        qubit = Entangle("Bob")  # Holds a qubit value
+        with if_cond(Int(4) < 7) as (branch_true, branch_false):
+            cond_qubit = ScopedQubit(qubit)  # Holds a qubit value
+            with branch_true:
+                cond_qubit.X()
+                branch_true.yield_value(cond_qubit)
+            with branch_false:
+                cond_qubit.Y()
+                branch_false.yield_value(cond_qubit)
+        res = cond_qubit.measure()
+
+        del QoalaProgram._declared_remotes
+        del QoalaProgram._compilation_context
