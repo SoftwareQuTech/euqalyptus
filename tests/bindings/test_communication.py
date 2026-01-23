@@ -326,7 +326,7 @@ class TestQoalaQnetPythonBindingsQuantum:
         assert str(module.asm) == expected_asm
 
     @pytest.mark.skip(
-        reason="Using multiple entangled qubits using array syntax is not supported yet"
+        reason="Not supported: Using multiple entangled qubits using array syntax is not supported yet"
     )
     def test_entanglement_program_c_to_qoala_qnet(self):
         with pytest.raises(NotYetCompiledError) as ex:

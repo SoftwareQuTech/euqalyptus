@@ -58,7 +58,7 @@ class TestQoalaQnetPythonBindingsQuantumFragile:
   }
 }
 """
-        current_path: Path = Path(__file__).resolve()
+        current_path: Path = Path(__file__).resolve()  # type: ignore[annotation-unchecked]
         assert str(module.asm) == expected_asm
         expected_dbg_asm_a = f"""module {{
   qnet.remote @Bob loc(#loc1)

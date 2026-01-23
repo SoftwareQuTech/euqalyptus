@@ -433,7 +433,7 @@ class TestBranchingInstructionsBindings:
 """
         assert str(module.asm) == expected_asm
 
-    @pytest.mark.skip(reason="Missing true branch is not supported yet")
+    @pytest.mark.skip(reason="Not supported: Missing true branch (but using false branch) is not supported yet")
     def test_branching_missing_true_branch(self):
         # TODO - To fully support missing the true branch, we need to negate the condition
         #  and place the old false branch in the true branch with the negated condition.

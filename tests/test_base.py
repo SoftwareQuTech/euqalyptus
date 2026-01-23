@@ -7,7 +7,7 @@ from qoala.errors import QuantumProgramNotImplementedError
 
 
 class _EmptyQoalaProgramBase(QoalaProgramBase):
-    def main(self, args: List[Any]) -> int:
+    def main(self, args: List[Any]) -> int:  # type: ignore[empty-body]
         pass
 
 
