@@ -57,16 +57,27 @@ class ConditionalBranching(QoalaOperation):
         return self._branch_true, self._branch_false
 
     def __exit__(self, exc_type, exc_val, exc_tb):
-        from qoala import QoalaProgram
-
         # Exiting the conditional branch context marks the finish of the
         # branching on CFG.
         # We lift any type restriction currently being enforced
+        from qoala import QoalaProgram
+
         QoalaProgram.current_function().lift_type_restrictions_in_current_block()
         for used_scoped_val in self._used_scoped_vals:
             used_scoped_val.locked = True
+        # Analyze the true and false branch. If this branching op has yielded values
+        # _and_ the branch is empty, then we need to insert a dummy yield in the empty branch.
+        if len(self._yielded_values) > 0:
+            yielded_types = [type(yielded_val) for yielded_val in self._yielded_values]
+            if len(self._branch_true) <= 0:
+                self._branch_true.insert_dummy_yield_value(yielded_types)
+            if len(self._branch_false) <= 0:
+                self._branch_false.insert_dummy_yield_value(yielded_types)
         # We don't need to pop the last block, since it is done by the
         # __exit__ method (context manager) of the QoalaBlock object.
+        pass
+
+    def _insert_dummy_yield_value(self, block: QoalaBlock):
         pass
 
     def report_used_scoped_val(self, scoped_val: QoalaRuntimeValue | QoalaRuntimeQubit):

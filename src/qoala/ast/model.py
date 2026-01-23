@@ -276,6 +276,36 @@ class QoalaBlock(QoalaCompilable, Generic[_AllowedExprType]):
         QoalaProgram.current_function().restrict_current_block(QoalaRuntimeQubit)
         QoalaProgram.current_function().pop_previous_block()
 
+    def __len__(self) -> int:
+        return len(self._operations)
+
+    def insert_dummy_yield_value(self, types: List[Type[QoalaExpression]]):
+        dummy_vals_to_yield: List[QoalaExpression] = []
+        for type_ in types:
+            if type_ is QoalaInteger:
+                dummy_val = QoalaInteger.from_immediate(
+                    0, get_debug_info(), append_to_current_block=False
+                )
+            elif type_ is QoalaFloat:
+                dummy_val = QoalaFloat.from_immediate(
+                    0.0, get_debug_info(), append_to_current_block=False
+                )
+            elif type_ is QoalaBool:
+                dummy_val = QoalaBool.from_immediate(
+                    False, get_debug_info(), append_to_current_block=False
+                )
+            elif type_ is QoalaQubit:
+                print("ACA")
+                dummy_val = QoalaInteger.from_immediate(0, get_debug_info())
+            else:
+                raise RuntimeError(
+                    f"QoalaBlock: Cannot yield dummy value of type: '{type_}'"
+                )
+            self.append_to_block(dummy_val)
+            dummy_vals_to_yield.append(dummy_val)
+        terminator = QoalaBranchTerminator(self, dummy_vals_to_yield)
+        self.append_to_block(terminator)
+
     @property
     def operations(self) -> List[QoalaExpression]:
         return self._operations

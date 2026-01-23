@@ -45,7 +45,11 @@ class QoalaNumericValue(QoalaValue[_T], ABC):
 
     @classmethod
     def from_immediate(
-        cls, value: _T, dbg_info: DebugInfo, is_index: bool = False
+        cls,
+        value: _T,
+        dbg_info: DebugInfo,
+        is_index: bool = False,
+        append_to_current_block: bool = True,
     ) -> Union["QoalaInteger", "QoalaFloat", "QoalaBool"]:
         if is_index:
             # We can't make an index out of a bool or a float
@@ -63,13 +67,26 @@ class QoalaNumericValue(QoalaValue[_T], ABC):
         # immediates into QoalaIntegers (instead of QoalaBools), we first ask for bool
         # type, then integer. This takes advantage that isinstance(1, bool) == False
         elif isinstance(value, bool):
-            return QoalaBool(value=value, debug_info=dbg_info)
+            return QoalaBool(
+                value=value,
+                debug_info=dbg_info,
+                append_to_current_block=append_to_current_block,
+            )
         elif isinstance(value, int):
             return QoalaInteger(
-                value=value, width=32, signedness=Signedness.SIGNED, debug_info=dbg_info
+                value=value,
+                width=32,
+                signedness=Signedness.SIGNED,
+                debug_info=dbg_info,
+                append_to_current_block=append_to_current_block,
             )
         elif isinstance(value, float):
-            return QoalaFloat(value=value, width=32, debug_info=dbg_info)
+            return QoalaFloat(
+                value=value,
+                width=32,
+                debug_info=dbg_info,
+                append_to_current_block=append_to_current_block,
+            )
         else:
             raise UnknownTypeError(
                 f"A Qoala value could not be created from immediate '{value}'. "
@@ -89,6 +106,7 @@ class QoalaInteger(QoalaNumericValue[int]):
         debug_info: DebugInfo | None = None,
         is_index_type: bool = False,
         other: Optional[Self] = None,
+        append_to_current_block: bool = True,
     ):
         super().__init__()
         if other is not None:
@@ -107,9 +125,10 @@ class QoalaInteger(QoalaNumericValue[int]):
             self.debug_info = debug_info
         else:
             self.debug_info = get_debug_info()
-        from qoala import QoalaProgram
+        if append_to_current_block:
+            from qoala import QoalaProgram
 
-        QoalaProgram.current_function().append_to_current_block(self)
+            QoalaProgram.current_function().append_to_current_block(self)
 
     def can_evaluate_to(self, cls) -> bool:
         return cls is QoalaInteger
@@ -145,6 +164,7 @@ class QoalaFloat(QoalaNumericValue[float]):
         width: int,
         debug_info: DebugInfo | None = None,
         other: Optional[Self] = None,
+        append_to_current_block: bool = True,
     ):
         super().__init__()
         if other is not None:
@@ -162,9 +182,10 @@ class QoalaFloat(QoalaNumericValue[float]):
             self.debug_info = debug_info
         else:
             self.debug_info = get_debug_info()
-        from qoala import QoalaProgram
+        if append_to_current_block:
+            from qoala import QoalaProgram
 
-        QoalaProgram.current_function().append_to_current_block(self)
+            QoalaProgram.current_function().append_to_current_block(self)
 
     def can_evaluate_to(self, cls) -> bool:
         return cls is QoalaFloat
@@ -190,6 +211,7 @@ class QoalaBool(QoalaValue[bool]):
         value: bool,
         debug_info: DebugInfo | None = None,
         other: Optional[Self] = None,
+        append_to_current_block: bool = True,
     ):
         super().__init__()
         if other is not None:
@@ -203,13 +225,20 @@ class QoalaBool(QoalaValue[bool]):
             self.debug_info = debug_info
         else:
             self.debug_info = get_debug_info()
-        from qoala import QoalaProgram
+        if append_to_current_block:
+            from qoala import QoalaProgram
 
-        QoalaProgram.current_function().append_to_current_block(self)
+            QoalaProgram.current_function().append_to_current_block(self)
 
     @classmethod
-    def from_immediate(cls, value: bool, dbg_info: DebugInfo) -> "QoalaBool":
-        return QoalaBool(value=value, debug_info=dbg_info)
+    def from_immediate(
+        cls, value: bool, dbg_info: DebugInfo, append_to_current_block: bool = True
+    ) -> "QoalaBool":
+        return QoalaBool(
+            value=value,
+            debug_info=dbg_info,
+            append_to_current_block=append_to_current_block,
+        )
 
     def compile(self, ctx: Context, location: Optional[Location] = None) -> None:
         bool_type = mlir_bool()
@@ -251,6 +280,7 @@ class QoalaArray(
         base_size: int,
         length: int,
         base_clone: Optional[Self],
+        append_to_current_block: bool = True,
     ):
         super().__init__()
         self.members = []
@@ -298,9 +328,10 @@ class QoalaArray(
         else:
             self.length = length
         self.debug_info = get_debug_info()
-        from qoala import QoalaProgram
+        if append_to_current_block:
+            from qoala import QoalaProgram
 
-        QoalaProgram.current_function().append_to_current_block(self)
+            QoalaProgram.current_function().append_to_current_block(self)
 
     def store(
         self, new_element: QoalaExpression | _Native_Base_Type
