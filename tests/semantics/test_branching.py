@@ -1,7 +1,12 @@
 import pytest
 
 from qoala import QoalaProgram, CompilationContext
-from qoala.ast.model import QoalaBlock, QoalaBranchTerminator, QoalaRuntimeValue, QoalaRuntimeQubit
+from qoala.ast.model import (
+    QoalaBlock,
+    QoalaBranchTerminator,
+    QoalaRuntimeValue,
+    QoalaRuntimeQubit,
+)
 from qoala.ast.operations.branching import ConditionalBranching
 from qoala.ast.operations.control_flow import ReturnResultsOp
 from qoala.ast.operations.numeric import Add
@@ -495,7 +500,9 @@ class TestBranchingSemantics:
                     # We can't assign a float to a scoped var used with Int
                     a.assign(Float(25.0))
             b = Int(30) + 10
-        assert "Assigning a value to a scoped variable of another type" in str(error.value)
+        assert "Assigning a value to a scoped variable of another type" in str(
+            error.value
+        )
 
     # WARNING - The next two tests might not be exhaustive enough to test all the scenarios where to use
     # a value coming from different conditional branches.
@@ -524,9 +531,9 @@ class TestBranchingSemantics:
         conditional_branch_op = main_block.operations[3]
         assert len(conditional_branch_op.yielded_values) == 2
         assert isinstance(conditional_branch_op.yielded_values[0], QoalaInteger)
-        assert conditional_branch_op.yielded_values[0]. value == 15
+        assert conditional_branch_op.yielded_values[0].value == 15
         assert isinstance(conditional_branch_op.yielded_values[1], QoalaInteger)
-        assert conditional_branch_op.yielded_values[1]. value == 25
+        assert conditional_branch_op.yielded_values[1].value == 25
 
         assert isinstance(main_block.operations[5], Add)
         add_op = main_block.operations[5]
@@ -599,7 +606,7 @@ class TestBranchingSemantics:
 
         main_block = QoalaProgram._instance.current_function()._main_block
 
-        assert isinstance(main_block.operations[0], QoalaEprs   )
+        assert isinstance(main_block.operations[0], QoalaEprs)
         assert isinstance(main_block.operations[1], QoalaInteger)
         assert isinstance(main_block.operations[2], QoalaInteger)
         assert isinstance(main_block.operations[3], LessThanOp)

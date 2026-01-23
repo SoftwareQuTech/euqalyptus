@@ -6,14 +6,18 @@ from uuid import uuid4
 from qnet.dialects import qnet, scf
 from qnet.ir import Context, Location, Block, InsertionPoint, FunctionType
 
-from qoala.ast.operations import with_arith_operators, with_bool_operators, with_order_operators
+from qoala.ast.operations import (
+    with_arith_operators,
+    with_bool_operators,
+    with_order_operators,
+)
 from qoala.ast.qubit import QubitBaseOperations, QoalaQubit
 from qoala.ast.value import QoalaInteger, QoalaFloat, QoalaBool
 from qoala.errors import ExpressionNotAllowedInBlockError, AssignationError
 from qoala.utils.debug_info import DebugInfo, get_debug_info
 from qoala.ast import QoalaCompilable, QoalaExpression
 
-_NumericValue = TypeVar("_NumericValue", QoalaInteger,  QoalaFloat, QoalaBool)
+_NumericValue = TypeVar("_NumericValue", QoalaInteger, QoalaFloat, QoalaBool)
 _AllowedExprType = TypeVar("_AllowedExprType", bound=QoalaExpression)
 
 
@@ -21,8 +25,26 @@ def hook_quantum_method(clazz):
     def qubit_method_wrapper(method_name: str):
         def method_impl(self, *args, **kwargs):
             return self._quantum_method_hook(method_name, *args, **kwargs)
+
         return method_impl
-    qubit_methods = ["measure","X","Y","Z","T","H","K","S","rot_X","rot_Y","rot_Z","cnot","cphase","cz","free"]
+
+    qubit_methods = [
+        "measure",
+        "X",
+        "Y",
+        "Z",
+        "T",
+        "H",
+        "K",
+        "S",
+        "rot_X",
+        "rot_Y",
+        "rot_Z",
+        "cnot",
+        "cphase",
+        "cz",
+        "free",
+    ]
     for qubit_method in qubit_methods:
         setattr(clazz, qubit_method, qubit_method_wrapper(qubit_method))
     return clazz
@@ -104,7 +126,9 @@ class QoalaRuntimeValue(QoalaExpression, QoalaScopedVal, Generic[_NumericValue])
         if len(self._values) <= 0:
             self._type = type(value)
         if type(value) != self._type:
-            raise AssignationError("Assigning a value to a scoped variable of another type")
+            raise AssignationError(
+                "Assigning a value to a scoped variable of another type"
+            )
         self._values.append(value)
 
     def get_current_value(self) -> QoalaExpression:
@@ -137,7 +161,9 @@ class QoalaRuntimeQubit(QubitBaseOperations, QoalaExpression, QoalaScopedVal):
 
         self._containing_block = QoalaProgram.current_function().current_block
 
-    def _quantum_method_hook(self, method_name: str, *args, **kwargs) -> QoalaExpression:
+    def _quantum_method_hook(
+        self, method_name: str, *args, **kwargs
+    ) -> QoalaExpression:
         # This method handles any quantum operation used on this "runtime qubit",
         # The idea here is to apply the quantum operation on the given qubit, but to
         # also keep track of any operation performed. This is needed to retrieve the
@@ -163,6 +189,7 @@ class QoalaRuntimeQubit(QubitBaseOperations, QoalaExpression, QoalaScopedVal):
 
     def can_evaluate_to(self, cls) -> bool:
         from qoala.ast.qubit import QoalaQubit
+
         return cls is QoalaQubit
 
     def compile(self, ctx: Context, location: Optional[Location] = None) -> None:
@@ -182,7 +209,9 @@ class QoalaBranchTerminator(QoalaExpression):
 
     _values_to_yield: List[QoalaExpression]
 
-    def __init__(self, containing_block: "QoalaBlock", values_to_yield: List[QoalaExpression]):
+    def __init__(
+        self, containing_block: "QoalaBlock", values_to_yield: List[QoalaExpression]
+    ):
         super().__init__()
         self._containing_block = containing_block
         self._values_to_yield = values_to_yield
@@ -211,10 +240,10 @@ class QoalaBlock(QoalaCompilable, Generic[_AllowedExprType]):
     debug_info: DebugInfo
 
     def __init__(
-            self,
-            block_id: int,
-            branch_op: "ConditionalBranching",  # type: ignore[name-defined]
-            qoala_function: "QoalaFunction"
+        self,
+        block_id: int,
+        branch_op: "ConditionalBranching",  # type: ignore[name-defined]
+        qoala_function: "QoalaFunction",
     ):
         self._block_id = block_id
         self._args = []
@@ -273,9 +302,15 @@ class QoalaBlock(QoalaCompilable, Generic[_AllowedExprType]):
     def append_to_block(self, expression: QoalaExpression):
         # Check if we're appending to a restricted block or not
         if len(self._allowed_types) > 0:
-            if all([not isinstance(expression, allowed_type) for allowed_type in self._allowed_types]):
+            if all(
+                [
+                    not isinstance(expression, allowed_type)
+                    for allowed_type in self._allowed_types
+                ]
+            ):
                 raise ExpressionNotAllowedInBlockError(
-                    "Trying to add an expression on a restricted block", self._allowed_types
+                    "Trying to add an expression on a restricted block",
+                    self._allowed_types,
                 )
         self.operations.append(expression)
         expression.qoala_block = self
@@ -306,7 +341,7 @@ class QoalaFunction(QoalaCompilable):
         self.debug_info = dbg_info  # type: ignore[assignment]
         # We start with a single empty block, since it is the main block of the function
         # we can pass "None" as the cond_branch argument.
-        self._main_block = QoalaBlock(0, None,  self)
+        self._main_block = QoalaBlock(0, None, self)
         self._last_block_id = 0
         self._block_nesting_path = []
         self.nest_block(self._main_block)

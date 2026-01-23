@@ -84,17 +84,27 @@ class TestIntegerClassicalSyntax(Generic[_Base_Type_Int]):
                 raise NotImplementedError()
 
     def test_int_creation(self, clazz: type):
-        value_a: _Base_Type_Int = TestIntegerClassicalSyntax._get_int_from_immediate(clazz, 0)
+        value_a: _Base_Type_Int = TestIntegerClassicalSyntax._get_int_from_immediate(
+            clazz, 0
+        )
         assert isinstance(value_a, QoalaInteger)
 
     def test_int_creation_from_other_integer(self, clazz: type):
-        value_a: _Base_Type_Int = TestIntegerClassicalSyntax._get_int_from_immediate(clazz, 10)
-        value_b: _Base_Type_Int = TestIntegerClassicalSyntax._get_int_from_same_type(clazz, value_a)
+        value_a: _Base_Type_Int = TestIntegerClassicalSyntax._get_int_from_immediate(
+            clazz, 10
+        )
+        value_b: _Base_Type_Int = TestIntegerClassicalSyntax._get_int_from_same_type(
+            clazz, value_a
+        )
         assert isinstance(value_b, QoalaInteger)
 
     def test_int_operator_overload_correctness(self, clazz: type):
-        value_a: _Base_Type_Int = TestIntegerClassicalSyntax._get_int_from_immediate(clazz, 2)
-        value_b: _Base_Type_Int = TestIntegerClassicalSyntax._get_int_from_immediate(clazz, 6)
+        value_a: _Base_Type_Int = TestIntegerClassicalSyntax._get_int_from_immediate(
+            clazz, 2
+        )
+        value_b: _Base_Type_Int = TestIntegerClassicalSyntax._get_int_from_immediate(
+            clazz, 6
+        )
         value_c = value_a + value_b
         value_d = value_b + value_a
         value_e = value_b - value_a
@@ -162,17 +172,27 @@ class TestFloatClassicalSyntax(Generic[_Base_Type_Float]):
                 raise NotImplementedError()
 
     def test_float_creation(self, clazz: type):
-        value_a: _Base_Type_Float = TestFloatClassicalSyntax._get_float_from_immediate(clazz, 0)
+        value_a: _Base_Type_Float = TestFloatClassicalSyntax._get_float_from_immediate(
+            clazz, 0
+        )
         assert isinstance(value_a, QoalaFloat)
 
     def test_float_creation_from_other_int32(self, clazz: type):
-        value_a: _Base_Type_Float = TestFloatClassicalSyntax._get_float_from_immediate(clazz, 10)
-        value_b: _Base_Type_Float = TestFloatClassicalSyntax._get_float_from_same_type(clazz, value_a)
+        value_a: _Base_Type_Float = TestFloatClassicalSyntax._get_float_from_immediate(
+            clazz, 10
+        )
+        value_b: _Base_Type_Float = TestFloatClassicalSyntax._get_float_from_same_type(
+            clazz, value_a
+        )
         assert isinstance(value_b, QoalaFloat)
 
     def test_float_operator_overload_correctness(self, clazz: type):
-        value_a: _Base_Type_Float = TestFloatClassicalSyntax._get_float_from_immediate(clazz, 2)
-        value_b: _Base_Type_Float = TestFloatClassicalSyntax._get_float_from_immediate(clazz, 6)
+        value_a: _Base_Type_Float = TestFloatClassicalSyntax._get_float_from_immediate(
+            clazz, 2
+        )
+        value_b: _Base_Type_Float = TestFloatClassicalSyntax._get_float_from_immediate(
+            clazz, 6
+        )
         value_c = value_a + value_b
         value_d = value_b + value_a
         value_e = value_b - value_a

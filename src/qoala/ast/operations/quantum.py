@@ -56,7 +56,9 @@ class QubitMeasure(_QubitBaseOperation, QoalaBit):
 class Rotate(_QubitBaseOperation, ABC):
     angle: QoalaFloat | QoalaExpression | float
 
-    def __init__(self, qubit: QoalaExpression, angle: QoalaFloat | QoalaExpression | float):
+    def __init__(
+        self, qubit: QoalaExpression, angle: QoalaFloat | QoalaExpression | float
+    ):
         super().__init__(qubit=qubit)
         # We assume the users of this class will pass _at least_ default values for all operands
         self.angle = angle
@@ -67,7 +69,9 @@ class Rotate(_QubitBaseOperation, ABC):
 
 class RotateX(Rotate):
 
-    def __init__(self, qubit: QoalaExpression, angle: QoalaFloat | QoalaExpression | float):
+    def __init__(
+        self, qubit: QoalaExpression, angle: QoalaFloat | QoalaExpression | float
+    ):
         super().__init__(qubit=qubit, angle=angle)
 
     @checkbaseir
@@ -89,7 +93,9 @@ class RotateX(Rotate):
 
 class RotateY(Rotate):
 
-    def __init__(self, qubit: QoalaExpression, angle: QoalaFloat | QoalaExpression | float):
+    def __init__(
+        self, qubit: QoalaExpression, angle: QoalaFloat | QoalaExpression | float
+    ):
         super().__init__(qubit=qubit, angle=angle)
 
     @checkbaseir
@@ -111,7 +117,9 @@ class RotateY(Rotate):
 
 class RotateZ(Rotate):
 
-    def __init__(self, qubit: QoalaExpression, angle: QoalaFloat | QoalaExpression | float):
+    def __init__(
+        self, qubit: QoalaExpression, angle: QoalaFloat | QoalaExpression | float
+    ):
         super().__init__(qubit=qubit, angle=angle)
 
     @checkbaseir

@@ -61,7 +61,9 @@ class SendInts:
         cls, remote_name: Remote | str, *args: IntArray | QoalaIntegerType | int
     ):
         assert isinstance(remote_name, (DeclaredRemote, str))
-        processed_args: List[QoalaInteger | QoalaBit | QoalaArray[QoalaInteger, int] | int] = []
+        processed_args: List[
+            QoalaInteger | QoalaBit | QoalaArray[QoalaInteger, int] | int
+        ] = []
         for arg in args:
             assert isinstance(arg, (QoalaInteger, QoalaBit, QoalaArray, int))
             processed_args.append(arg)
@@ -82,7 +84,9 @@ class SendFloats:
         *args: FloatArray | QoalaFloatingPointType | QoalaIntegerType | float,
     ):
         assert isinstance(remote_name, (DeclaredRemote, str))
-        processed_args: List[QoalaInteger | QoalaBit | QoalaArray[QoalaFloat, float] | float] = []
+        processed_args: List[
+            QoalaInteger | QoalaBit | QoalaArray[QoalaFloat, float] | float
+        ] = []
         for arg in args:
             assert isinstance(arg, (QoalaInteger, QoalaBit, QoalaArray, float))
             processed_args.append(arg)

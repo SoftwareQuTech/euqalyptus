@@ -208,9 +208,7 @@ class QoalaBool(QoalaValue[bool]):
         QoalaProgram.current_function().append_to_current_block(self)
 
     @classmethod
-    def from_immediate(
-        cls, value: bool, dbg_info: DebugInfo
-    ) -> "QoalaBool":
+    def from_immediate(cls, value: bool, dbg_info: DebugInfo) -> "QoalaBool":
         return QoalaBool(value=value, debug_info=dbg_info)
 
     def compile(self, ctx: Context, location: Optional[Location] = None) -> None:

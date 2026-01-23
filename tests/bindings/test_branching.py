@@ -189,6 +189,7 @@ def sample_ghz_end_node(prev_node: str):
     meas = cond_qubit.measure()
     return_results(meas)
 
+
 # TODO - Test a double nested if that returns a value from the inner-most level
 
 
@@ -433,7 +434,9 @@ class TestBranchingInstructionsBindings:
 """
         assert str(module.asm) == expected_asm
 
-    @pytest.mark.skip(reason="Not supported: Missing true branch (but using false branch) is not supported yet")
+    @pytest.mark.skip(
+        reason="Not supported: Missing true branch (but using false branch) is not supported yet"
+    )
     def test_branching_missing_true_branch(self):
         # TODO - To fully support missing the true branch, we need to negate the condition
         #  and place the old false branch in the true branch with the negated condition.
@@ -497,22 +500,26 @@ class TestBranchingInstructionsBindings:
 """
         assert str(module.asm) == expected_asm
 
-    @pytest.mark.skip(reason="Not supported: It is not clear how to detect that a value was assigned "
-                             "inside a branching instructions and used outside it")
+    @pytest.mark.skip(
+        reason="Not supported: It is not clear how to detect that a value was assigned "
+        "inside a branching instructions and used outside it"
+    )
     def test_value_from_branching_single_branch_unsupported(self):
         with pytest.raises(NotYetCompiledError) as ex:
             _, _ = value_from_branching_single_branch_unsupported.module
         assert (
-                str(ex.value)
-                == "The program has not been compiled yet. Did you invoke 'compile()' on it?"
+            str(ex.value)
+            == "The program has not been compiled yet. Did you invoke 'compile()' on it?"
         )
         # TODO - Update the error type risen!
         with pytest.raises(RuntimeError) as ex:
             _, _ = value_from_branching_single_branch_unsupported.compile()
         # TODO - assert the error message
 
-    @pytest.mark.skip(reason="Not supported: Compiling single branches that yield values need "
-                             "inserting a false branch that yields an unused value.")
+    @pytest.mark.skip(
+        reason="Not supported: Compiling single branches that yield values need "
+        "inserting a false branch that yields an unused value."
+    )
     def test_value_from_branching_single_branch(self):
         with pytest.raises(NotYetCompiledError) as ex:
             _, _ = value_from_branching_single_branch.module
@@ -547,7 +554,6 @@ class TestBranchingInstructionsBindings:
 }
 """
         assert str(module.asm) == expected_asm
-
 
     def test_classical_value_from_branching(self):
         with pytest.raises(NotYetCompiledError) as ex:

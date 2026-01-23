@@ -8,7 +8,12 @@ from qnet.extras.types import i32, f32, bool as mlir_bool
 from qnet.ir import Context, Location
 
 from qoala.ast import QoalaExpression
-from qoala.ast.model import QoalaBlock, QoalaRuntimeQubit, QoalaRuntimeValue, QoalaScopedVal
+from qoala.ast.model import (
+    QoalaBlock,
+    QoalaRuntimeQubit,
+    QoalaRuntimeValue,
+    QoalaScopedVal,
+)
 from qoala.ast.operations import QoalaOperation
 from qoala.ast.value import QoalaInteger, QoalaFloat, QoalaBool
 

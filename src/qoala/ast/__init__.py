@@ -129,4 +129,5 @@ class checkbaseir:
         # function, so we can "save" the instance of the object on which we are applying the call.
         return partial(self.__call__, instance)
 
+
 from .model import QoalaFunction, QoalaBlock
