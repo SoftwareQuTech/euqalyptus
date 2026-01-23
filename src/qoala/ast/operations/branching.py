@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import Optional, List, Any
+from typing import Optional, List, Any, Type
 
 from mypy.stubgen import Iterable
 from qnet.dialects import scf, qnet
@@ -68,11 +68,10 @@ class ConditionalBranching(QoalaOperation):
         # Analyze the true and false branch. If this branching op has yielded values
         # _and_ the branch is empty, then we need to insert a dummy yield in the empty branch.
         if len(self._yielded_values) > 0:
-            yielded_types = [type(yielded_val) for yielded_val in self._yielded_values]
             if len(self._branch_true) <= 0:
-                self._branch_true.insert_dummy_yield_value(yielded_types)
+                self._branch_true.insert_dummy_yield_value(self._used_scoped_vals)
             if len(self._branch_false) <= 0:
-                self._branch_false.insert_dummy_yield_value(yielded_types)
+                self._branch_false.insert_dummy_yield_value(self._used_scoped_vals)
         # We don't need to pop the last block, since it is done by the
         # __exit__ method (context manager) of the QoalaBlock object.
         pass

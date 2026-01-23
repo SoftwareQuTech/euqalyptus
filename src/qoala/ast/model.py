@@ -279,27 +279,35 @@ class QoalaBlock(QoalaCompilable, Generic[_AllowedExprType]):
     def __len__(self) -> int:
         return len(self._operations)
 
-    def insert_dummy_yield_value(self, types: List[Type[QoalaExpression]]):
+    def insert_dummy_yield_value(
+        self, scoped_vals: List[QoalaRuntimeValue | QoalaRuntimeQubit]
+    ):
         dummy_vals_to_yield: List[QoalaExpression] = []
-        for type_ in types:
-            if type_ is QoalaInteger:
-                dummy_val = QoalaInteger.from_immediate(
-                    0, get_debug_info(), append_to_current_block=False
-                )
-            elif type_ is QoalaFloat:
-                dummy_val = QoalaFloat.from_immediate(
-                    0.0, get_debug_info(), append_to_current_block=False
-                )
-            elif type_ is QoalaBool:
-                dummy_val = QoalaBool.from_immediate(
-                    False, get_debug_info(), append_to_current_block=False
-                )
-            elif type_ is QoalaQubit:
-                print("ACA")
-                dummy_val = QoalaInteger.from_immediate(0, get_debug_info())
+        for scoped_val in scoped_vals:
+            dummy_val: QoalaExpression
+            if isinstance(scoped_val, QoalaRuntimeValue):
+                if scoped_val.type is QoalaInteger:
+                    dummy_val = QoalaInteger.from_immediate(
+                        0, get_debug_info(), append_to_current_block=False
+                    )
+                elif scoped_val.type is QoalaFloat:
+                    dummy_val = QoalaFloat.from_immediate(
+                        0.0, get_debug_info(), append_to_current_block=False
+                    )
+                elif scoped_val.type is QoalaBool:
+                    dummy_val = QoalaBool.from_immediate(
+                        False, get_debug_info(), append_to_current_block=False
+                    )
+                else:
+                    raise RuntimeError(
+                        f"QoalaBlock: Cannot yield classical dummy value for type: '{scoped_val.type}'"
+                    )
+            elif isinstance(scoped_val, QoalaQubit):
+                assert scoped_val.captured_expression is not None
+                dummy_val = scoped_val.captured_expression
             else:
                 raise RuntimeError(
-                    f"QoalaBlock: Cannot yield dummy value of type: '{type_}'"
+                    f"QoalaBlock: Unknown yielded type from branch '{scoped_val}'"
                 )
             self.append_to_block(dummy_val)
             dummy_vals_to_yield.append(dummy_val)
