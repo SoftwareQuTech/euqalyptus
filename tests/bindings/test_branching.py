@@ -249,6 +249,18 @@ def sample_ghz_end_node(prev_node: str):
     return_results(meas)
 
 
+@QoalaProgram
+def update_scoped_vals_values():
+    init = Int(0)
+    with if_cond(Int(4) < 7) as (branch_true, branch_false):
+        counter = ScopedVar(init)  # Holds a qubit value
+        with branch_true:
+            counter = counter + 1
+            branch_true.yield_value(counter)
+    result = counter * 10
+    return_results(result)
+
+
 # TODO - Test a double nested if that returns a value from the inner-most level
 
 
@@ -829,6 +841,37 @@ class TestBranchingInstructionsBindings:
     }
     %4 = qnet.measure %3 : i1
     qnet.return %4 : i1
+  }
+}
+"""
+        assert str(module.asm) == expected_asm
+
+    def test_update_scoped_vals_values(self):
+        with pytest.raises(NotYetCompiledError) as ex:
+            _, _ = update_scoped_vals_values.module
+        assert (
+            str(ex.value)
+            == "The program has not been compiled yet. Did you invoke 'compile()' on it?"
+        )
+        _, module = update_scoped_vals_values.compile("Bob")
+        assert isinstance(module, QoalaModule)
+        # Note - MLIR does not offer a "boolean" type. values "true" and "false" are modeled as i1 values.
+        expected_asm = """module {
+  qnet.func @update_scoped_vals_values() {
+    %c0_i32 = arith.constant 0 : i32
+    %c4_i32 = arith.constant 4 : i32
+    %c7_i32 = arith.constant 7 : i32
+    %0 = arith.cmpi slt, %c4_i32, %c7_i32 : i32
+    %1 = scf.if %0 -> (i32) {
+      %c1_i32 = arith.constant 1 : i32
+      %3 = arith.addi %c0_i32, %c1_i32 : i32
+      scf.yield %3 : i32
+    } else {
+      scf.yield %c0_i32 : i32
+    }
+    %c10_i32 = arith.constant 10 : i32
+    %2 = arith.muli %1, %c10_i32 : i32
+    qnet.return
   }
 }
 """

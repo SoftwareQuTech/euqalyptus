@@ -121,7 +121,7 @@ class ScopedVar(NumericOperandsOverload, BooleanOperandsOverload):
             kwargs["original_value"] = args[0]
         return QoalaRuntimeValue(**kwargs)
 
-    def __init__(self, val: "Int | Float | int | float | None" = None):
+    def __init__(self, val: "Int | Float | Double | Bit | int | float | None" = None):
         # Nothing to do here
         pass
 

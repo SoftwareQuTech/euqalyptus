@@ -9,7 +9,7 @@ from qoala.ast.model import (
 )
 from qoala.ast.operations.branching import ConditionalBranching
 from qoala.ast.operations.control_flow import ReturnResultsOp
-from qoala.ast.operations.numeric import Add
+from qoala.ast.operations.numeric import Add, Multiply
 from qoala.ast.operations.order import (
     EqualsOp,
     NotEqualsOp,
@@ -749,6 +749,53 @@ class TestBranchingSemantics:
         assert isinstance(main_block.operations[6], QubitMeasure)
         measure_op = main_block.operations[6]
         assert isinstance(measure_op.qubit, QoalaRuntimeQubit)
+        assert isinstance(main_block.operations[7], ReturnResultsOp)
+
+        return_results_op = main_block.operations[7]
+        assert len(return_results_op.values) == 1
+        assert return_results_op.values[0] is main_block.operations[6]
+
+        del QoalaProgram._declared_remotes
+        del QoalaProgram._compilation_context
+
+    def test_update_scoped_vals_values(self):
+        init = Int(0)
+        with if_cond(Int(4) < 7) as (branch_true, branch_false):
+            counter = ScopedVar(init)  # Holds a qubit value
+            with branch_true:
+                counter = counter + 1
+                branch_true.yield_value(counter)
+        result = counter * 10
+        return_results(result)
+
+        main_block = QoalaProgram._instance.current_function()._main_block
+
+        assert isinstance(main_block.operations[0], QoalaInteger)
+        assert isinstance(main_block.operations[1], QoalaInteger)
+        assert isinstance(main_block.operations[2], QoalaInteger)
+        assert isinstance(main_block.operations[3], LessThanOp)
+        assert isinstance(main_block.operations[4], ConditionalBranching)
+        # The conditional branching has 2 blocks:
+        assert isinstance(main_block.operations[4].true_dest, QoalaBlock)
+        assert isinstance(main_block.operations[4].false_dest, QoalaBlock)
+
+        conditional_branch_op = main_block.operations[1]
+        assert len(conditional_branch_op.yielded_values) == 1
+        assert isinstance(conditional_branch_op.yielded_values[0], Add)
+
+        true_block = main_block.operations[4].true_dest
+        assert isinstance(true_block.operations[0], QoalaInteger)
+        assert isinstance(true_block.operations[1], Add)
+        assert isinstance(true_block.operations[1].operand_a, QoalaRuntimeValue)
+        assert true_block.operations[1].operand_b is true_block.operations[0]
+        assert isinstance(true_block.operations[2], QoalaBranchTerminator)
+
+        assert isinstance(main_block.operations[5], QoalaInteger)
+        assert isinstance(main_block.operations[6], Multiply)
+
+        multiply_op = main_block.operations[6]
+        assert isinstance(multiply_op.operand_a, QoalaRuntimeValue)
+
         assert isinstance(main_block.operations[7], ReturnResultsOp)
 
         return_results_op = main_block.operations[7]

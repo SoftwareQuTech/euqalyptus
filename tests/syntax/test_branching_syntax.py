@@ -282,3 +282,13 @@ class TestBranchingSyntax:
                 branch_true.yield_value(cond_qubit)
         meas = cond_qubit.measure()
         return_results(meas)
+
+    def test_update_scoped_vals_values(self):
+        init = Int(0)
+        with if_cond(Int(4) < 7) as (branch_true, branch_false):
+            counter = ScopedVar(init)  # Holds a qubit value
+            with branch_true:
+                counter = counter + 1
+                branch_true.yield_value(counter)
+        result = counter * 10
+        return_results(result)
