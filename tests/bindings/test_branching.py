@@ -876,11 +876,12 @@ class TestBranchingInstructionsBindings:
       %4 = arith.muli %3, %c2_i32 : i32
       scf.yield %4 : i32
     } else {
-      scf.yield %c0_i32 : i32
+      %c0_i32_0 = arith.constant 0 : i32
+      scf.yield %c0_i32_0 : i32
     }
     %c10_i32 = arith.constant 10 : i32
     %2 = arith.muli %1, %c10_i32 : i32
-    qnet.return
+    qnet.return %2 : i32
   }
 }
 """

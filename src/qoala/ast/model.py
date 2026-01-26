@@ -98,11 +98,11 @@ class QoalaScopedVal(ABC):
 @with_bool_operators
 @with_order_operators
 @dataclass(init=False)
-class QoalaRuntimeValue(QoalaExpression, QoalaScopedVal, Generic[_NumericValue]):
-    _type: Type[_NumericValue]
-    _values: List[_NumericValue]
+class QoalaRuntimeValue(QoalaExpression, QoalaScopedVal):
+    _type: Type[QoalaInteger | QoalaFloat | QoalaBool]
+    _values: List[QoalaExpression]
 
-    def __init__(self, original_value: Optional[_NumericValue] = None):
+    def __init__(self, original_value: Optional[QoalaInteger | QoalaFloat | QoalaBool] = None):
         super().__init__()
         QoalaScopedVal.__init__(self)
         self._values = []
@@ -119,17 +119,22 @@ class QoalaRuntimeValue(QoalaExpression, QoalaScopedVal, Generic[_NumericValue])
         self._containing_block = QoalaProgram.current_function().current_block
 
     @property
-    def type(self) -> Type[_NumericValue]:
+    def type(self) -> Type[QoalaInteger | QoalaFloat | QoalaBool]:
         return self._type
 
-    def assign(self, value: _NumericValue):
+    def assign(self, value: QoalaExpression):
         # When we assign a value to the runtime value, we check the type of any
         # other already-assigned value. If it matches, we attach the value to the
         # tracked values. This is needed to retrieve the "last value" when returning
         # the value outside the branch.
         if len(self._values) <= 0:
-            self._type = type(value)
-        if type(value) != self._type:
+            if value.can_evaluate_to(QoalaInteger):
+                self._type = QoalaInteger
+            if value.can_evaluate_to(QoalaFloat):
+                self._type = QoalaFloat
+            if value.can_evaluate_to(QoalaBool):
+                self._type = QoalaBool
+        if not value.can_evaluate_to(self._type):
             raise AssignationError(
                 "Assigning a value to a scoped variable of another type"
             )
