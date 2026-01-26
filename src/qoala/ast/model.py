@@ -102,7 +102,9 @@ class QoalaRuntimeValue(QoalaExpression, QoalaScopedVal):
     _type: Type[QoalaInteger | QoalaFloat | QoalaBool]
     _values: List[QoalaExpression]
 
-    def __init__(self, original_value: Optional[QoalaInteger | QoalaFloat | QoalaBool] = None):
+    def __init__(
+        self, original_value: Optional[QoalaInteger | QoalaFloat | QoalaBool] = None
+    ):
         super().__init__()
         QoalaScopedVal.__init__(self)
         self._values = []
