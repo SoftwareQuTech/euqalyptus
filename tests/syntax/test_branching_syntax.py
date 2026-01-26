@@ -188,6 +188,18 @@ class TestBranchingSyntax:
                 branch_false.yield_value(a)
         b = a + 10
 
+    def test_capture_classical_value_in_scoped_var(self):
+        # Since this is a syntax test, we only need to make sure that the
+        # types and method invocations do not raise exceptions.
+        old_val = Int(0)
+        with if_cond(Int(4) < 7) as (branch_true, branch_false):
+            a = ScopedVar(old_val)  # Holds a classical value
+            with branch_true:
+                branch_true.yield_value(a)
+            with branch_false:
+                branch_false.yield_value(a)
+        b = a + 10
+
     def test_using_local_quantum_value_from_branching(self):
         # Since this is a syntax test, we only need to make sure that the
         # types and method invocations do not raise exceptions.

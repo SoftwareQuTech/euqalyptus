@@ -475,7 +475,7 @@ class TestBranchingSemantics:
             error.value
         )
 
-    # WARNING - The next two tests might not be exhaustive enough to test all the scenarios where to use
+    # WARNING - The next tests might not be exhaustive enough to test all the scenarios where to use
     # a value coming from different conditional branches.
     def test_using_classical_value_from_branching(self):
         with if_cond(Int(4) < 7) as (branch_true, branch_false):
@@ -508,6 +508,40 @@ class TestBranchingSemantics:
 
         assert isinstance(main_block.operations[5], Add)
         add_op = main_block.operations[5]
+        assert isinstance(add_op.operand_a, QoalaRuntimeValue)
+        assert isinstance(add_op.operand_b, QoalaInteger)
+
+    def test_capture_classical_value_in_scoped_var(self):
+        old_val = Int(0)
+        with if_cond(Int(4) < 7) as (branch_true, branch_false):
+            a = ScopedVar(old_val)  # Holds a classical value
+            with branch_true:
+                branch_true.yield_value(a)
+            with branch_false:
+                branch_false.yield_value(a)
+        b = a + 10
+
+        main_block = QoalaProgram._instance.current_function()._main_block
+
+        # Assert the types of ops of the main block:
+        assert isinstance(main_block.operations[0], QoalaInteger)
+        assert isinstance(main_block.operations[1], QoalaInteger)
+        assert isinstance(main_block.operations[2], QoalaInteger)
+        assert isinstance(main_block.operations[3], LessThanOp)
+        assert isinstance(main_block.operations[4], ConditionalBranching)
+        # The conditional branching has 2 blocks:
+        assert isinstance(main_block.operations[4].true_dest, QoalaBlock)
+        assert isinstance(main_block.operations[4].false_dest, QoalaBlock)
+
+        conditional_branch_op = main_block.operations[4]
+        assert len(conditional_branch_op.yielded_values) == 2
+        assert isinstance(conditional_branch_op.yielded_values[0], QoalaInteger)
+        assert conditional_branch_op.yielded_values[0].value == 0
+        assert isinstance(conditional_branch_op.yielded_values[1], QoalaInteger)
+        assert conditional_branch_op.yielded_values[1].value == 0
+
+        assert isinstance(main_block.operations[6], Add)
+        add_op = main_block.operations[6]
         assert isinstance(add_op.operand_a, QoalaRuntimeValue)
         assert isinstance(add_op.operand_b, QoalaInteger)
 

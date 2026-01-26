@@ -205,6 +205,18 @@ def classical_value_from_branching():
 
 
 @QoalaProgram
+def capturing_classical_value_in_scoped_val():
+    old_val = Int(0)
+    with if_cond(Int(4) < 7) as (branch_true, branch_false):
+        a = ScopedVar(old_val)  # Holds a classical value
+        with branch_true:
+            branch_true.yield_value(a)
+        with branch_false:
+            branch_false.yield_value(a)
+    b = a + 10
+
+
+@QoalaProgram
 def qubit_value_from_branching():
     qubit = LocalQubit()  # Holds a qubit value
     with if_cond(Int(4) < 7) as (branch_true, branch_false):
@@ -723,6 +735,35 @@ class TestBranchingInstructionsBindings:
     } else {
       %c25_i32 = arith.constant 25 : i32
       scf.yield %c25_i32 : i32
+    }
+    %c10_i32 = arith.constant 10 : i32
+    %2 = arith.addi %1, %c10_i32 : i32
+    qnet.return
+  }
+}
+"""
+        assert str(module.asm) == expected_asm
+
+    def test_capturing_classical_value_in_scoped_val(self):
+        with pytest.raises(NotYetCompiledError) as ex:
+            _, _ = capturing_classical_value_in_scoped_val.module
+        assert (
+            str(ex.value)
+            == "The program has not been compiled yet. Did you invoke 'compile()' on it?"
+        )
+        _, module = capturing_classical_value_in_scoped_val.compile()
+        assert isinstance(module, QoalaModule)
+        # Note - MLIR does not offer a "boolean" type. values "true" and "false" are modeled as i1 values.
+        expected_asm = """module {
+  qnet.func @capturing_classical_value_in_scoped_val() {
+    %c0_i32 = arith.constant 0 : i32
+    %c4_i32 = arith.constant 4 : i32
+    %c7_i32 = arith.constant 7 : i32
+    %0 = arith.cmpi slt, %c4_i32, %c7_i32 : i32
+    %1 = scf.if %0 -> (i32) {
+      scf.yield %c0_i32 : i32
+    } else {
+      scf.yield %c0_i32 : i32
     }
     %c10_i32 = arith.constant 10 : i32
     %2 = arith.addi %1, %c10_i32 : i32
