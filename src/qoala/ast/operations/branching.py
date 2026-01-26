@@ -153,6 +153,10 @@ class ConditionalBranching(QoalaOperation):
             hasElse=len(self._branch_false.operations) >= 1,
             loc=source_location,
         )
+        # "Compile" the captures values from the scoped vals
+        for scoped_val in self._used_scoped_vals:
+            if isinstance(scoped_val, QoalaRuntimeValue):
+                scoped_val.compile(ctx, location)
         # Compile the then/else block, only if they have operations.
         self._capture_scoped_values()
         if len(self._branch_true.operations) >= 1:

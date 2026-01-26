@@ -149,7 +149,9 @@ class QoalaRuntimeValue(QoalaExpression, QoalaScopedVal):
     def compile(self, ctx: Context, location: Optional[Location] = None) -> None:
         # We don't need to compile this object: It only acts as a container
         # used to capture the value when entering a branching operation
-        pass
+        # However, we need to get the IR value of the captured expression, if any
+        if self._captured_expression is not None:
+            self.ir_value = self._captured_expression.ir_value
 
 
 # The inheritance order is *very* important. This is needed to correctly refer to
