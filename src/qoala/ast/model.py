@@ -107,8 +107,12 @@ class QoalaRuntimeValue(QoalaExpression, QoalaScopedVal, Generic[_NumericValue])
         QoalaScopedVal.__init__(self)
         self._values = []
         self._captured_expression = original_value
-        # This will be filled later
-        self._type = None  # type: ignore[assignment]
+        if original_value is not None:
+            self._type = type(original_value)
+            self._values.append(original_value)
+        else:
+            # This will be filled later
+            self._type = None  # type: ignore[assignment]
         self.debug_info = get_debug_info()
         from qoala import QoalaProgram
 
