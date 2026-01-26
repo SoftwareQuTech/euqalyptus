@@ -284,11 +284,40 @@ class TestBranchingSyntax:
         return_results(meas)
 
     def test_update_scoped_vals_values(self):
+        # Using the "counter = counter + 1" is a chicken-and-egg problem.
+        # Tradeoff: If we "update" the variable "counter"
+        #  counter = counter + 1
+        # Then we are implicitly *replacing* the old value in the variable "counter" (a ScopedVar object)
+        # with whatever is the result of "counter + 1" (an "Add" object).
+        # This leads to loosing all the chain of operations applied on the counter.
+        # Then, when we yield the value, we are yielding the last operation object and not the ScopedVal.
+        # Let's now consider the following statement:
+        #  counter = counter + 1
+        # * The left side if a variable name "counter"
+        # * The right side performs a "+" operation, with two operands: an immediate "1" and
+        #   a reference to the value in the scope named "counter".
+        # * The "=" performs an assignation. Since the left side of the assignation is a name that
+        #   _is already defined in the scope_, then the semantics of the assignation will *overwrite* the
+        #   current value in scope stored under the name "scope".
+        # Considering this, I explored the possibility to allow directly yielding the final operation
+        # of all the chain applied over a ScopedValue. At the end, this led to "simply" assigning the
+        # operation object that is being created (in this case, an "Add" operation) to the ScopedVar object.
+        # However, when we're creating the "Add" object, we're processing the _right side_ of the assignation,
+        # so we cannot assume that one of the operands is the value being overwritten.
+        # The "solution" to this problem is, again, to "hook" the assignation operation, which we
+        # already deemed unfeasible for this time being.
         init = Int(0)
         with if_cond(Int(4) < 7) as (branch_true, branch_false):
             counter = ScopedVar(init)  # Holds a qubit value
             with branch_true:
-                counter = counter + 1
+                aux = counter + 1
+                # Rewriting the helper value _is allowed_... as long as we assign the
+                # las updated value to the ScopedVar object.
+                aux = aux * 2
+                # We assign to the ScopedVar the *last* value
+                # The critical operation is the *assignation*, which *needs to capture
+                # the last value* that need to be yielded outside the branch.
+                counter.assign(aux)
                 branch_true.yield_value(counter)
         result = counter * 10
         return_results(result)

@@ -255,7 +255,14 @@ def update_scoped_vals_values():
     with if_cond(Int(4) < 7) as (branch_true, branch_false):
         counter = ScopedVar(init)  # Holds a qubit value
         with branch_true:
-            counter = counter + 1
+            aux = counter + 1
+            # Rewriting the helper value _is allowed_... as long as we assign the
+            # las updated value to the ScopedVar object.
+            aux = aux * 2
+            counter.assign(aux)
+            # We assign to the ScopedVar the *last* value
+            # The critical operation is the *assignation*, which *needs to capture
+            # the last value* that need to be yielded outside the branch.
             branch_true.yield_value(counter)
     result = counter * 10
     return_results(result)
@@ -853,7 +860,7 @@ class TestBranchingInstructionsBindings:
             str(ex.value)
             == "The program has not been compiled yet. Did you invoke 'compile()' on it?"
         )
-        _, module = update_scoped_vals_values.compile("Bob")
+        _, module = update_scoped_vals_values.compile()
         assert isinstance(module, QoalaModule)
         # Note - MLIR does not offer a "boolean" type. values "true" and "false" are modeled as i1 values.
         expected_asm = """module {
@@ -865,7 +872,9 @@ class TestBranchingInstructionsBindings:
     %1 = scf.if %0 -> (i32) {
       %c1_i32 = arith.constant 1 : i32
       %3 = arith.addi %c0_i32, %c1_i32 : i32
-      scf.yield %3 : i32
+      %c2_i32 = arith.constant 2 : i32
+      %4 = arith.muli %3, %c2_i32 : i32
+      scf.yield %4 : i32
     } else {
       scf.yield %c0_i32 : i32
     }

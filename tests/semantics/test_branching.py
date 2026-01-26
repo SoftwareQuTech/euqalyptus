@@ -763,7 +763,14 @@ class TestBranchingSemantics:
         with if_cond(Int(4) < 7) as (branch_true, branch_false):
             counter = ScopedVar(init)  # Holds a qubit value
             with branch_true:
-                counter = counter + 1
+                aux = counter + 1
+                # Rewriting the helper value _is allowed_... as long as we assign the
+                # las updated value to the ScopedVar object.
+                aux = aux * 2
+                # We assign to the ScopedVar the *last* value
+                # The critical operation is the *assignation*, which *needs to capture
+                # the last value* that need to be yielded outside the branch.
+                counter.assign(aux)
                 branch_true.yield_value(counter)
         result = counter * 10
         return_results(result)
@@ -779,16 +786,20 @@ class TestBranchingSemantics:
         assert isinstance(main_block.operations[4].true_dest, QoalaBlock)
         assert isinstance(main_block.operations[4].false_dest, QoalaBlock)
 
-        conditional_branch_op = main_block.operations[1]
+        conditional_branch_op = main_block.operations[4]
         assert len(conditional_branch_op.yielded_values) == 1
-        assert isinstance(conditional_branch_op.yielded_values[0], Add)
+        assert isinstance(conditional_branch_op.yielded_values[0], Multiply)
 
         true_block = main_block.operations[4].true_dest
         assert isinstance(true_block.operations[0], QoalaInteger)
         assert isinstance(true_block.operations[1], Add)
         assert isinstance(true_block.operations[1].operand_a, QoalaRuntimeValue)
         assert true_block.operations[1].operand_b is true_block.operations[0]
-        assert isinstance(true_block.operations[2], QoalaBranchTerminator)
+        assert isinstance(true_block.operations[2], QoalaInteger)
+        assert isinstance(true_block.operations[3], Multiply)
+        assert isinstance(true_block.operations[4], QoalaBranchTerminator)
+        assert len(true_block.operations[4]._values_to_yield) == 1
+        assert true_block.operations[4]._values_to_yield[0] is true_block.operations[3]
 
         assert isinstance(main_block.operations[5], QoalaInteger)
         assert isinstance(main_block.operations[6], Multiply)
@@ -801,6 +812,3 @@ class TestBranchingSemantics:
         return_results_op = main_block.operations[7]
         assert len(return_results_op.values) == 1
         assert return_results_op.values[0] is main_block.operations[6]
-
-        del QoalaProgram._declared_remotes
-        del QoalaProgram._compilation_context
