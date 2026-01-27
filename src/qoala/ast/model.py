@@ -110,7 +110,12 @@ class QoalaRuntimeValue(QoalaExpression, QoalaScopedVal):
         self._values = []
         self._captured_expression = original_value
         if original_value is not None:
-            self._type = type(original_value)
+            if original_value.can_evaluate_to(QoalaInteger):
+                self._type = QoalaInteger
+            if original_value.can_evaluate_to(QoalaFloat):
+                self._type = QoalaFloat
+            if original_value.can_evaluate_to(QoalaBool):
+                self._type = QoalaBool
             self._values.append(original_value)
         else:
             # This will be filled later

@@ -189,7 +189,7 @@ class NotOp(BaseUnaryBitwiseOp):
                 self.operand.ir_value, true_op, loc=source_location
             )
         elif self.operand.can_evaluate_to(QoalaInteger):
-            ff_val = arith.constant(value=True, result=i32(), loc=source_location)
+            ff_val = arith.constant(value=0xFFFFFFFF, result=i32(), loc=source_location)
             self.ir_value = ff_val
             self.ir_value = arith.xori(
                 self.operand.ir_value, ff_val, loc=source_location
