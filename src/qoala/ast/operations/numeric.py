@@ -9,8 +9,7 @@ from qnet.ir import Context, Location
 from qoala.ast import QoalaExpression, checkbaseir
 from qoala.ast.operations import (
     QoalaOperation,
-    with_arith_operators,
-    with_order_operators,
+    with_operators,
 )
 from qoala.ast.operations.casts import IntToFloat, BitToInt
 from qoala.ast.value import QoalaInteger, QoalaFloat, QoalaBit
@@ -73,8 +72,7 @@ class BaseBinaryArithOp(QoalaOperation, ABC):
 
 
 @dataclass(init=False)
-@with_order_operators
-@with_arith_operators
+@with_operators(arith=True, bitwise=False, order=True)
 class Add(BaseBinaryArithOp):
 
     def __init__(self, *operands: QoalaExpression):
@@ -118,8 +116,7 @@ class Add(BaseBinaryArithOp):
 
 
 @dataclass(init=False)
-@with_order_operators
-@with_arith_operators
+@with_operators(arith=True, bitwise=False, order=True)
 class Subtract(BaseBinaryArithOp):
 
     def __init__(self, *operands: QoalaExpression):
@@ -163,8 +160,7 @@ class Subtract(BaseBinaryArithOp):
 
 
 @dataclass(init=False)
-@with_order_operators
-@with_arith_operators
+@with_operators(arith=True, bitwise=False, order=True)
 class Multiply(BaseBinaryArithOp):
 
     def __init__(self, *operands: QoalaExpression):
@@ -208,8 +204,7 @@ class Multiply(BaseBinaryArithOp):
 
 
 @dataclass(init=False)
-@with_order_operators
-@with_arith_operators
+@with_operators(arith=True, bitwise=False, order=True)
 class Divide(BaseBinaryArithOp):
     """
     Represents a "divide" operation, which accepts 2 operands.
@@ -259,8 +254,7 @@ class Divide(BaseBinaryArithOp):
 
 
 @dataclass(init=False)
-@with_order_operators
-@with_arith_operators
+@with_operators(arith=True, bitwise=False, order=True)
 class Modulo(BaseBinaryArithOp):
     """
     Represents a "modulo" operation, which accepts 2 operands.
@@ -306,8 +300,7 @@ class Modulo(BaseBinaryArithOp):
 
 
 @dataclass(init=False)
-@with_order_operators
-@with_arith_operators
+@with_operators(arith=True, bitwise=False, order=True)
 class Pow(QoalaOperation):
     base: QoalaExpression
     exponent: QoalaExpression
@@ -367,8 +360,7 @@ class Pow(QoalaOperation):
 
 
 @dataclass(init=False)
-@with_order_operators
-@with_arith_operators
+@with_operators(arith=True, bitwise=False, order=True)
 class Pow2(QoalaOperation):
     exponent: QoalaExpression
 

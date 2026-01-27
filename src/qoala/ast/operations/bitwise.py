@@ -7,7 +7,7 @@ from qnet.extras.types import i32, bool as mlir_bool
 from qnet.ir import Context, Location
 
 from qoala.ast import QoalaExpression, checkbaseir
-from qoala.ast.operations import QoalaOperation, with_bitwise_operators
+from qoala.ast.operations import QoalaOperation, with_operators
 from qoala.ast.value import QoalaBool, QoalaInteger
 from qoala.errors import UnknownOperationError, WrongEvaluationTypeError
 
@@ -65,7 +65,7 @@ class BaseBinaryBitwiseOp(QoalaOperation, ABC):
         self.operand_b = operands[1]
 
 
-@with_bitwise_operators
+@with_operators(arith=False, bitwise=True, order=False)
 class AndOp(BaseBinaryBitwiseOp):
     def __init__(self, *operands: QoalaExpression):
         super().__init__(*operands)
@@ -97,7 +97,7 @@ class AndOp(BaseBinaryBitwiseOp):
             )
 
 
-@with_bitwise_operators
+@with_operators(arith=False, bitwise=True, order=False)
 class OrOp(BaseBinaryBitwiseOp):
     def __init__(self, *operands: QoalaExpression):
         super().__init__(*operands)
@@ -129,7 +129,7 @@ class OrOp(BaseBinaryBitwiseOp):
             )
 
 
-@with_bitwise_operators
+@with_operators(arith=False, bitwise=True, order=False)
 class XorOp(BaseBinaryBitwiseOp):
     def __init__(self, *operands: QoalaExpression):
         super().__init__(*operands)
@@ -161,7 +161,7 @@ class XorOp(BaseBinaryBitwiseOp):
             )
 
 
-@with_bitwise_operators
+@with_operators(arith=False, bitwise=True, order=False)
 class NotOp(BaseUnaryBitwiseOp):
     def __init__(self, *operands: QoalaExpression):
         super().__init__(*operands)

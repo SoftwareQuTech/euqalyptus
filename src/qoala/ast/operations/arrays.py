@@ -7,7 +7,7 @@ from qnet.extras.types import index
 from qnet.ir import Context, Location
 
 from qoala.ast import checkbaseir, QoalaExpression
-from qoala.ast.operations import QoalaOperation, with_arith_operators
+from qoala.ast.operations import QoalaOperation, with_operators
 from qoala.ast.value import QoalaInteger, QoalaArray
 from qoala.errors import OperationNotYetImplementedError
 from qoala.utils.debug_info import DebugInfo
@@ -42,7 +42,7 @@ class CastToIndex(QoalaOperation):
 
 
 @dataclass(init=False)
-@with_arith_operators
+@with_operators(arith=True, bitwise=False, order=False)
 class GetItem(QoalaOperation):
     base_array: QoalaArray
     index: QoalaExpression

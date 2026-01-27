@@ -6,11 +6,7 @@ from uuid import uuid4
 from qnet.dialects import qnet, scf
 from qnet.ir import Context, Location, Block, InsertionPoint, FunctionType
 
-from qoala.ast.operations import (
-    with_arith_operators,
-    with_bitwise_operators,
-    with_order_operators,
-)
+from qoala.ast.operations import with_operators
 from qoala.ast.qubit import QubitBaseOperations, QoalaQubit
 from qoala.ast.value import QoalaInteger, QoalaFloat, QoalaBool
 from qoala.errors import ExpressionNotAllowedInBlockError, AssignationError
@@ -94,10 +90,8 @@ class QoalaScopedVal(ABC):
         pass
 
 
-@with_arith_operators
-@with_bitwise_operators
-@with_order_operators
 @dataclass(init=False)
+@with_operators(arith=True, bitwise=True, order=True)
 class QoalaRuntimeValue(QoalaExpression, QoalaScopedVal):
     _type: Type[QoalaInteger | QoalaFloat | QoalaBool]
     _values: List[QoalaExpression]
