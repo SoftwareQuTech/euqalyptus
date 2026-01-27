@@ -87,7 +87,7 @@ class Add(BaseBinaryArithOp):
         # We can assume that both operands evaluate to the same type, since the constructor
         # in the super class will insert an upcast if needed
         return (
-            (cls == QoalaInteger or cls == QoalaFloat)
+            (cls is QoalaInteger or cls is QoalaFloat)
             and self.operand_a.can_evaluate_to(cls)
             and self.operand_b.can_evaluate_to(cls)
         )
@@ -132,7 +132,7 @@ class Subtract(BaseBinaryArithOp):
         # We can assume that both operands evaluate to the same type, since the constructor
         # in the super class will insert an upcast if needed
         return (
-            (cls == QoalaInteger or cls == QoalaFloat)
+            (cls is QoalaInteger or cls is QoalaFloat)
             and self.operand_a.can_evaluate_to(cls)
             and self.operand_b.can_evaluate_to(cls)
         )
@@ -177,7 +177,7 @@ class Multiply(BaseBinaryArithOp):
         # We can assume that both operands evaluate to the same type, since the constructor
         # in the super class will insert an upcast if needed
         return (
-            (cls == QoalaInteger or cls == QoalaFloat)
+            (cls is QoalaInteger or cls is QoalaFloat)
             and self.operand_a.can_evaluate_to(cls)
             and self.operand_b.can_evaluate_to(cls)
         )
@@ -228,7 +228,7 @@ class Divide(BaseBinaryArithOp):
         # We can assume that both operands evaluate to the same type, since the constructor
         # in the super class will insert an upcast if needed
         return (
-            (cls == QoalaInteger or cls == QoalaFloat)
+            (cls is QoalaInteger or cls is QoalaFloat)
             and self.operand_a.can_evaluate_to(cls)
             and self.operand_b.can_evaluate_to(cls)
         )
@@ -261,6 +261,53 @@ class Divide(BaseBinaryArithOp):
 @dataclass(init=False)
 @with_order_operators
 @with_arith_operators
+class Modulo(BaseBinaryArithOp):
+    """
+    Represents a "modulo" operation, which accepts 2 operands.
+    This module operation only accept operands that can evaluate to ``QoalaInteger``.
+    The result of this operation (what does this operation can evaluate to) is
+    always a ``QoalaInteger``.
+    """
+
+    def __init__(self, *operands: QoalaExpression):
+        super().__init__(*operands)
+        from qoala import QoalaProgram
+
+        QoalaProgram.current_function().append_to_current_block(self)
+
+    def can_evaluate_to(self, cls) -> bool:
+        # We can assume that both operands evaluate to the same type, since the constructor
+        # in the super class will insert an upcast if needed
+        return (
+            cls is QoalaInteger
+            and self.operand_a.can_evaluate_to(cls)
+            and self.operand_b.can_evaluate_to(cls)
+        )
+
+    @checkbaseir
+    def compile(self, ctx: Context, location: Optional[Location] = None) -> None:  # type: ignore[override]
+        # We can assume that both operands evaluate to the same type, since the constructor
+        # in the super class will insert an upcast if needed
+        source_location = Location.file(
+            filename=self.debug_info.filename,
+            line=self.debug_info.line_start,
+            col=self.debug_info.col_start,
+            context=ctx,
+        )
+        if self.operand_a.can_evaluate_to(QoalaInteger):
+            self.ir_value = arith.remsi(
+                self.operand_a.ir_value, self.operand_b.ir_value, loc=source_location
+            )
+        else:
+            raise WrongEvaluationTypeError(
+                f"When creating an operation of type '{self.__class__.__name__}', "
+                f"the operands cannot be evaluated to any valid value."
+            )
+
+
+@dataclass(init=False)
+@with_order_operators
+@with_arith_operators
 class Pow(QoalaOperation):
     base: QoalaExpression
     exponent: QoalaExpression
@@ -276,7 +323,7 @@ class Pow(QoalaOperation):
         QoalaProgram.current_function().append_to_current_block(self)
 
     def can_evaluate_to(self, cls) -> bool:
-        return (cls == QoalaInteger or cls == QoalaFloat) and self.base.can_evaluate_to(
+        return (cls is QoalaInteger or cls is QoalaFloat) and self.base.can_evaluate_to(
             cls
         )  # The base of the exponentiation dictates the type of the result
 
@@ -370,5 +417,7 @@ class ArithOperatorFactory:
             return Multiply(*operands)
         elif operation in ["__truediv__", "__rtruediv_", "__itruediv__"]:
             return Divide(*operands)
+        elif operation in ["__mod__", "__rmod__"]:
+            return Modulo(*operands)
         else:
             raise UnknownOperationError(f"Operation '{operation}' is not supported")
