@@ -83,7 +83,6 @@ def with_arith_operators(cls):
         "__rtruediv__",
         "__sub__",
         "__truediv__",
-        "__xor__",
         "bit_length",
         "conjugate",
         "denominator",
@@ -138,7 +137,7 @@ def with_order_operators(cls):
     return cls
 
 
-def with_bool_operators(cls):
+def with_bitwise_operators(cls):
     """A decorator for `QoalaExpression` classes which makes it behave like a boolean value."""
 
     def operator_wrapper(method_name):
@@ -146,7 +145,7 @@ def with_bool_operators(cls):
 
         def operator_implementation(self, *args, **kwargs):
             """Check if the value is set, otherwise raise an error"""
-            from qoala.ast.operations.boolean import BooleanOperatorFactory
+            from qoala.ast.operations.bitwise import BitwiseOperatorFactory
 
             if len(args) >= 1:
                 # Binary boolean operation, We use the first arg as the second operand.
@@ -159,10 +158,10 @@ def with_bool_operators(cls):
                 else:
                     other = args[0]
 
-                return BooleanOperatorFactory(self, other, operation=method_name)
+                return BitwiseOperatorFactory(self, other, operation=method_name)
             else:
                 # len(args) == 0 => The operation is unary => There is no "other" operand
-                return BooleanOperatorFactory(self, operation=method_name)
+                return BitwiseOperatorFactory(self, operation=method_name)
 
         return operator_implementation
 

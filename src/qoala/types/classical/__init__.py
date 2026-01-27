@@ -81,7 +81,7 @@ class NumericOperandsOverload:
         pass
 
 
-class BooleanOperandsOverload:
+class BitwiseOperandsOverload:
     # We overload the dunder methods operators, so IDEs do not get confused because of
     # the dynamic type of booleans, so instances of this class "can use" the overloaded
     # operator. This is because the constructor of the concrete types return an instance
@@ -112,7 +112,7 @@ class BooleanOperandsOverload:
         pass
 
 
-class ScopedVar(NumericOperandsOverload, BooleanOperandsOverload):
+class ScopedVar(NumericOperandsOverload, BitwiseOperandsOverload):
     def __new__(cls, *args, **kwargs):
         if "val" in kwargs:
             kwargs["original_value"] = kwargs["val"]

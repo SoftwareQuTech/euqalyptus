@@ -14,7 +14,7 @@ from qoala.ast.operations import (
     QoalaOperation,
     with_arith_operators,
     with_order_operators,
-    with_bool_operators,
+    with_bitwise_operators,
 )
 from qoala.errors import UnknownTypeError, OperandMismatchError
 from qoala.utils.debug_info import DebugInfo, get_debug_info
@@ -204,7 +204,7 @@ class QoalaFloat(QoalaNumericValue[float]):
         )
 
 
-@with_bool_operators
+@with_bitwise_operators
 class QoalaBool(QoalaValue[bool]):
     def __init__(
         self,

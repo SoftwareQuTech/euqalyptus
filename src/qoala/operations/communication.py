@@ -13,7 +13,13 @@ from qoala.ast.operations.communication import (
 )
 from qoala.ast.value import QoalaInteger, QoalaFloat, QoalaArray, QoalaBit
 from qoala.operations import Remote
-from qoala.types.classical import IntArray, FloatArray, ScopedVar
+from qoala.types.classical import (
+    IntArray,
+    FloatArray,
+    ScopedVar,
+    NumericOperandsOverload,
+    BitwiseOperandsOverload,
+)
 from qoala.types.classical.floats import QoalaFloatingPointType
 from qoala.types.classical.integer import QoalaIntegerType
 
@@ -28,7 +34,7 @@ class RecvInts(IntArray):
         super().__init__()
 
 
-class RecvInt(QoalaIntegerType):
+class RecvInt(QoalaIntegerType, NumericOperandsOverload, BitwiseOperandsOverload):
     def __new__(cls, remote_name: Remote | str):
         assert isinstance(remote_name, (DeclaredRemote, str))
         return RecvIntOp(remote_name=remote_name)
@@ -38,7 +44,7 @@ class RecvInt(QoalaIntegerType):
         pass
 
 
-class RecvFloats(FloatArray):
+class RecvFloats(FloatArray, NumericOperandsOverload, BitwiseOperandsOverload):
     def __new__(cls, remote_name: Remote | str, length: int):
         assert isinstance(remote_name, (DeclaredRemote, str))
         return RecvFloatsOp(remote_name=remote_name, length=length)

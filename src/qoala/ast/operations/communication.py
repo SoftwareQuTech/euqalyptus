@@ -11,6 +11,7 @@ from qoala.ast.operations import (
     QoalaOperation,
     with_order_operators,
     with_arith_operators,
+    with_bitwise_operators,
 )
 from qoala.ast.operations.arrays import GetItem
 from qoala.ast.operations.casts import BitToInt, IntToFloat
@@ -255,6 +256,7 @@ class RecvFloatsOp(BasePluralRecvOp[QoalaFloat, float]):
 
 @with_arith_operators
 @with_order_operators
+@with_bitwise_operators
 @dataclass(init=False)
 class RecvIntOp(BaseSingularRecvOp[QoalaInteger]):
     def __init__(self, remote_name: DeclaredRemote | str):
@@ -268,6 +270,7 @@ class RecvIntOp(BaseSingularRecvOp[QoalaInteger]):
 
 @with_arith_operators
 @with_order_operators
+@with_bitwise_operators
 @dataclass(init=False)
 class RecvFloatOp(BaseSingularRecvOp[QoalaFloat]):
     def __init__(self, remote_name: DeclaredRemote | str):

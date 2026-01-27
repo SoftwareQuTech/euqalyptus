@@ -8,7 +8,7 @@ from qnet.ir import Context, Location, Block, InsertionPoint, FunctionType
 
 from qoala.ast.operations import (
     with_arith_operators,
-    with_bool_operators,
+    with_bitwise_operators,
     with_order_operators,
 )
 from qoala.ast.qubit import QubitBaseOperations, QoalaQubit
@@ -95,7 +95,7 @@ class QoalaScopedVal(ABC):
 
 
 @with_arith_operators
-@with_bool_operators
+@with_bitwise_operators
 @with_order_operators
 @dataclass(init=False)
 class QoalaRuntimeValue(QoalaExpression, QoalaScopedVal):

@@ -7,23 +7,20 @@ from qnet.extras.types import bool as mlir_bool
 from qnet.ir import Context, Location
 
 from qoala.ast import QoalaExpression, checkbaseir
-from qoala.ast.operations import QoalaOperation, with_bool_operators
-from qoala.ast.value import QoalaBool
+from qoala.ast.operations import QoalaOperation, with_bitwise_operators
+from qoala.ast.value import QoalaBool, QoalaInteger
 from qoala.errors import UnknownOperationError, WrongEvaluationTypeError
 
 
 @dataclass(init=False)
-class BaseUnaryBoolOp(QoalaOperation, ABC):
+class BaseUnaryBitwiseOp(QoalaOperation, ABC):
     operand: QoalaExpression
 
     def __init__(self, *operands: QoalaExpression):
         super().__init__()
         # We "normalize" the operands, upcasting an integer to a float if needed
         assert len(operands) == 1
-        if not (
-            operands[0].can_evaluate_to(QoalaBool)
-            or operands[0].can_evaluate_to(QoalaBool)
-        ):
+        if not operands[0].can_evaluate_to(QoalaBool):
             raise WrongEvaluationTypeError(
                 f"When constructing operation '{self.__class__.__name__}': "
                 f"One of the operands '{operands[0]}' cannot evaluate to "
@@ -34,7 +31,7 @@ class BaseUnaryBoolOp(QoalaOperation, ABC):
 
 
 @dataclass(init=False)
-class BaseBinaryBoolOp(QoalaOperation, ABC):
+class BaseBinaryBitwiseOp(QoalaOperation, ABC):
     operand_a: QoalaExpression
     operand_b: QoalaExpression
 
@@ -44,7 +41,7 @@ class BaseBinaryBoolOp(QoalaOperation, ABC):
         assert len(operands) == 2
         if not (
             operands[0].can_evaluate_to(QoalaBool)
-            or operands[0].can_evaluate_to(QoalaBool)
+            or operands[0].can_evaluate_to(QoalaInteger)
         ):
             raise WrongEvaluationTypeError(
                 f"When constructing operation '{self.__class__.__name__}': "
@@ -53,7 +50,7 @@ class BaseBinaryBoolOp(QoalaOperation, ABC):
             )
         elif not (
             operands[1].can_evaluate_to(QoalaBool)
-            or operands[1].can_evaluate_to(QoalaBool)
+            or operands[1].can_evaluate_to(QoalaInteger)
         ):
             raise WrongEvaluationTypeError(
                 f"When constructing operation '{self.__class__.__name__}': "
@@ -65,8 +62,8 @@ class BaseBinaryBoolOp(QoalaOperation, ABC):
         self.operand_b = operands[1]
 
 
-@with_bool_operators
-class AndOp(BaseBinaryBoolOp):
+@with_bitwise_operators
+class AndOp(BaseBinaryBitwiseOp):
     def __init__(self, *operands: QoalaExpression):
         super().__init__(*operands)
         from qoala import QoalaProgram
@@ -74,7 +71,7 @@ class AndOp(BaseBinaryBoolOp):
         QoalaProgram.current_function().append_to_current_block(self)
 
     def can_evaluate_to(self, cls) -> bool:
-        return cls is QoalaBool
+        return cls is QoalaBool or cls is QoalaInteger
 
     @checkbaseir
     def compile(self, ctx: Context, location: Optional[Location] = None) -> None:  # type: ignore[override]
@@ -84,7 +81,9 @@ class AndOp(BaseBinaryBoolOp):
             col=self.debug_info.col_start,
             context=ctx,
         )
-        if self.operand_a.can_evaluate_to(QoalaBool):
+        if self.operand_a.can_evaluate_to(QoalaBool) or self.operand_a.can_evaluate_to(
+            QoalaInteger
+        ):
             self.ir_value = arith.andi(
                 self.operand_a.ir_value, self.operand_b.ir_value, loc=source_location
             )
@@ -95,8 +94,8 @@ class AndOp(BaseBinaryBoolOp):
             )
 
 
-@with_bool_operators
-class OrOp(BaseBinaryBoolOp):
+@with_bitwise_operators
+class OrOp(BaseBinaryBitwiseOp):
     def __init__(self, *operands: QoalaExpression):
         super().__init__(*operands)
         from qoala import QoalaProgram
@@ -104,7 +103,7 @@ class OrOp(BaseBinaryBoolOp):
         QoalaProgram.current_function().append_to_current_block(self)
 
     def can_evaluate_to(self, cls) -> bool:
-        return cls is QoalaBool
+        return cls is QoalaBool or cls is QoalaInteger
 
     @checkbaseir
     def compile(self, ctx: Context, location: Optional[Location] = None) -> None:  # type: ignore[override]
@@ -114,7 +113,9 @@ class OrOp(BaseBinaryBoolOp):
             col=self.debug_info.col_start,
             context=ctx,
         )
-        if self.operand_a.can_evaluate_to(QoalaBool):
+        if self.operand_a.can_evaluate_to(QoalaBool) or self.operand_a.can_evaluate_to(
+            QoalaInteger
+        ):
             self.ir_value = arith.ori(
                 self.operand_a.ir_value, self.operand_b.ir_value, loc=source_location
             )
@@ -125,8 +126,8 @@ class OrOp(BaseBinaryBoolOp):
             )
 
 
-@with_bool_operators
-class XorOp(BaseBinaryBoolOp):
+@with_bitwise_operators
+class XorOp(BaseBinaryBitwiseOp):
     def __init__(self, *operands: QoalaExpression):
         super().__init__(*operands)
         from qoala import QoalaProgram
@@ -134,7 +135,7 @@ class XorOp(BaseBinaryBoolOp):
         QoalaProgram.current_function().append_to_current_block(self)
 
     def can_evaluate_to(self, cls) -> bool:
-        return cls is QoalaBool
+        return cls is QoalaBool or cls is QoalaInteger
 
     @checkbaseir
     def compile(self, ctx: Context, location: Optional[Location] = None) -> None:  # type: ignore[override]
@@ -144,7 +145,9 @@ class XorOp(BaseBinaryBoolOp):
             col=self.debug_info.col_start,
             context=ctx,
         )
-        if self.operand_a.can_evaluate_to(QoalaBool):
+        if self.operand_a.can_evaluate_to(QoalaBool) or self.operand_a.can_evaluate_to(
+            QoalaInteger
+        ):
             self.ir_value = arith.xori(
                 self.operand_a.ir_value, self.operand_b.ir_value, loc=source_location
             )
@@ -155,8 +158,8 @@ class XorOp(BaseBinaryBoolOp):
             )
 
 
-@with_bool_operators
-class NotOp(BaseUnaryBoolOp):
+@with_bitwise_operators
+class NotOp(BaseUnaryBitwiseOp):
     def __init__(self, *operands: QoalaExpression):
         super().__init__(*operands)
         from qoala import QoalaProgram
@@ -189,7 +192,7 @@ class NotOp(BaseUnaryBoolOp):
             )
 
 
-class BooleanOperatorFactory:
+class BitwiseOperatorFactory:
     def __new__(cls, *operands, operation: str) -> QoalaExpression:  # type: ignore[misc]
         if operation in ["__and__", "__rand__"]:
             return AndOp(*operands)

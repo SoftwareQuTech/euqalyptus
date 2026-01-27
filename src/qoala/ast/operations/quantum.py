@@ -10,7 +10,7 @@ from qoala.ast import checkbaseir, QoalaExpression
 from qoala.ast.operations import (
     QoalaOperation,
     with_arith_operators,
-    with_bool_operators,
+    with_bitwise_operators,
     with_order_operators,
 )
 from qoala.ast.qubit import QoalaQubit
@@ -38,7 +38,7 @@ class _QubitBaseOperation(QoalaOperation, ABC):
 
 @with_arith_operators
 @with_order_operators
-@with_bool_operators
+@with_bitwise_operators
 class QubitMeasure(_QubitBaseOperation, QoalaBit):
 
     def __init__(self, *operands: QoalaExpression):
