@@ -1,6 +1,7 @@
 from typing import List
 
-from qoala.ast.model import QoalaScopedVal, QoalaRuntimeValue
+from qoala.ast.model import QoalaRuntimeValue
+from qoala.ast.operations import QoalaOperation
 from qoala.ast.operations.communication import (
     RecvIntsOp,
     RecvFloatsOp,
@@ -67,16 +68,27 @@ class SendInts:
         processed_args: List[
             QoalaInteger
             | QoalaRuntimeValue
+            | QoalaOperation
             | QoalaBit
             | QoalaArray[QoalaInteger, int]
             | int
         ] = []
         for arg in args:
             assert isinstance(
-                arg, (QoalaInteger, QoalaBit, QoalaArray, QoalaRuntimeValue, int)
+                arg,
+                (
+                    QoalaInteger,
+                    QoalaBit,
+                    QoalaArray,
+                    QoalaRuntimeValue,
+                    QoalaOperation,
+                    int,
+                ),
             )
-            if isinstance(arg, QoalaRuntimeValue):
-                assert arg.can_evaluate_to(QoalaInteger)
+            if isinstance(arg, (QoalaRuntimeValue, QoalaOperation)):
+                assert arg.can_evaluate_to(QoalaInteger) or arg.can_evaluate_to(
+                    QoalaBit
+                )
             processed_args.append(arg)
         return SendIntsOp(*processed_args, remote_name=remote_name)
 
@@ -104,16 +116,29 @@ class SendFloats:
         processed_args: List[
             QoalaInteger
             | QoalaRuntimeValue
+            | QoalaOperation
             | QoalaBit
             | QoalaArray[QoalaFloat, float]
             | float
         ] = []
         for arg in args:
             assert isinstance(
-                arg, (QoalaInteger, QoalaBit, QoalaArray, QoalaRuntimeValue, float)
+                arg,
+                (
+                    QoalaInteger,
+                    QoalaBit,
+                    QoalaArray,
+                    QoalaRuntimeValue,
+                    QoalaOperation,
+                    float,
+                ),
             )
-            if isinstance(arg, QoalaRuntimeValue):
-                assert arg.can_evaluate_to(QoalaFloat)
+            if isinstance(arg, (QoalaRuntimeValue, QoalaOperation)):
+                assert (
+                    arg.can_evaluate_to(QoalaFloat)
+                    or arg.can_evaluate_to(QoalaInteger)
+                    or arg.can_evaluate_to(QoalaBit)
+                )
             processed_args.append(arg)
         return SendFloatsOp(*processed_args, remote_name=remote_name)
 

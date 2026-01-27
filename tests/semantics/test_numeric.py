@@ -372,7 +372,7 @@ class TestNumbersSemantics:
         assert isinstance(main_block.operations[3], BitToInt)
         assert isinstance(main_block.operations[4], NotEqualsOp)
         assert (
-            main_block.operations[4].operand_a is main_block.operations[2]
+            main_block.operations[4].operand_a is main_block.operations[3]
             or main_block.operations[4].operand_b is main_block.operations[3]
         )
 
