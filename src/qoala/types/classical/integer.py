@@ -7,12 +7,12 @@ from qoala.errors import NotUnsignedIntegerArgumentError, NotIntegerArgumentErro
 from qoala.types.classical import (
     QoalaClassicalType,
     _Internal_Value_Type,
-    _NumericOperandsOverload,
+    NumericOperandsOverload,
 )
 
 
 class QoalaIntegerType(
-    QoalaClassicalType[_Internal_Value_Type], _NumericOperandsOverload
+    QoalaClassicalType[_Internal_Value_Type], NumericOperandsOverload
 ):
     pass
 
@@ -110,7 +110,7 @@ class UInt32(_UnsignedIntegerType[int]):
     def __init__(
         self,
         immediate: int = 0,
-        other: Optional[Self] = 0,
+        other: Optional[Self] = None,
         # TODO - The next arguments are used when creating an UInt32 from other types
     ):
         """

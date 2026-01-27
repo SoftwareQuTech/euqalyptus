@@ -4,7 +4,6 @@ from typing import Optional
 import qnet.dialects.qnet as qnet
 from qnet.ir import Context, Location
 
-from qoala import QoalaProgram
 from qoala.ast import checkbaseir, QoalaExpression
 from qoala.ast.operations import QoalaOperation
 from qoala.ast.value import QoalaNumericValue, QoalaBool
@@ -34,6 +33,7 @@ class ReturnResultsOp(QoalaOperation):
                 raise UnknownTypeError(
                     f"Return operation: value '{v}' of type '{type(v)}' is not supported"
                 )
+        from qoala import QoalaProgram
 
         # Return should terminate the current block, so append it to the current block now
         # TODO - Actually should terminate the program, can we do something?
@@ -43,7 +43,7 @@ class ReturnResultsOp(QoalaOperation):
         return False
 
     @checkbaseir
-    def compile(self, ctx: Context, location: Optional[Location] = None) -> None:
+    def compile(self, ctx: Context, location: Optional[Location] = None) -> None:  # type: ignore[override]
         source_location = Location.file(
             filename=self.debug_info.filename,
             line=self.debug_info.line_start,

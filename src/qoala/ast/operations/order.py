@@ -6,7 +6,7 @@ from qnet.dialects import arith
 from qnet.dialects.arith import CmpIPredicate, CmpFPredicate
 from qnet.ir import Context, Location
 
-from qoala import QoalaExpression, QoalaProgram
+from qoala.ast import QoalaExpression
 from qoala.ast.operations import QoalaOperation
 from qoala.ast.operations.casts import IntToFloat, BitToInt
 from qoala.ast.value import QoalaInteger, QoalaFloat, QoalaBool, QoalaBit
@@ -65,6 +65,9 @@ class BaseBinaryOrderOp(QoalaOperation, ABC):
         else:
             self.operand_a = casted_operands[0]
             self.operand_b = casted_operands[1]
+        from qoala import QoalaProgram
+
+        QoalaProgram.current_function().append_to_current_block(self)
 
     def _compile_with_predicate(
         self, ctx: Context, int_predicate: CmpIPredicate, float_predicate: CmpFPredicate
@@ -97,15 +100,14 @@ class BaseBinaryOrderOp(QoalaOperation, ABC):
                 f"the operands cannot be evaluated to any valid value."
             )
 
+    def can_evaluate_to(self, cls) -> bool:
+        return cls is QoalaBool
+
 
 # TODO - Do we need to inherit some operators on this type of value?
 class EqualsOp(BaseBinaryOrderOp):
     def __init__(self, *operands: QoalaExpression):
         super().__init__(*operands)
-        QoalaProgram.current_function().append_to_current_block(self)
-
-    def can_evaluate_to(self, cls) -> bool:
-        return cls == QoalaBool
 
     def compile(self, ctx: Context, location: Optional[Location] = None) -> None:
         # When comparing floats, there are 2 versions of the comparison: OGE and UGE
@@ -123,10 +125,6 @@ class EqualsOp(BaseBinaryOrderOp):
 class NotEqualsOp(BaseBinaryOrderOp):
     def __init__(self, *operands: QoalaExpression):
         super().__init__(*operands)
-        QoalaProgram.current_function().append_to_current_block(self)
-
-    def can_evaluate_to(self, cls) -> bool:
-        return cls == QoalaBool
 
     def compile(self, ctx: Context, location: Optional[Location] = None) -> None:
         # When comparing floats, there are 2 versions of the comparison: OGE and UGE
@@ -144,10 +142,6 @@ class NotEqualsOp(BaseBinaryOrderOp):
 class GreaterThanOp(BaseBinaryOrderOp):
     def __init__(self, *operands: QoalaExpression):
         super().__init__(*operands)
-        QoalaProgram.current_function().append_to_current_block(self)
-
-    def can_evaluate_to(self, cls) -> bool:
-        return cls == QoalaBool
 
     def compile(self, ctx: Context, location: Optional[Location] = None) -> None:
         # When comparing floats, there are 2 versions of the comparison: OGE and UGE
@@ -165,10 +159,6 @@ class GreaterThanOp(BaseBinaryOrderOp):
 class GreaterThanOrEqualsOp(BaseBinaryOrderOp):
     def __init__(self, *operands: QoalaExpression):
         super().__init__(*operands)
-        QoalaProgram.current_function().append_to_current_block(self)
-
-    def can_evaluate_to(self, cls) -> bool:
-        return cls == QoalaBool
 
     def compile(self, ctx: Context, location: Optional[Location] = None) -> None:
         # When comparing floats, there are 2 versions of the comparison: OGE and UGE
@@ -186,10 +176,6 @@ class GreaterThanOrEqualsOp(BaseBinaryOrderOp):
 class LessThanOp(BaseBinaryOrderOp):
     def __init__(self, *operands: QoalaExpression):
         super().__init__(*operands)
-        QoalaProgram.current_function().append_to_current_block(self)
-
-    def can_evaluate_to(self, cls) -> bool:
-        return cls == QoalaBool
 
     def compile(self, ctx: Context, location: Optional[Location] = None) -> None:
         # When comparing floats, there are 2 versions of the comparison: OGE and UGE
@@ -207,10 +193,6 @@ class LessThanOp(BaseBinaryOrderOp):
 class LessThanOrEqualsOp(BaseBinaryOrderOp):
     def __init__(self, *operands: QoalaExpression):
         super().__init__(*operands)
-        QoalaProgram.current_function().append_to_current_block(self)
-
-    def can_evaluate_to(self, cls) -> bool:
-        return cls == QoalaBool
 
     def compile(self, ctx: Context, location: Optional[Location] = None) -> None:
         # When comparing floats, there are 2 versions of the comparison: OGE and UGE
@@ -225,7 +207,7 @@ class LessThanOrEqualsOp(BaseBinaryOrderOp):
 
 
 class OrderOperatorFactory:
-    def __new__(cls, *operands, operation: str) -> QoalaExpression:
+    def __new__(cls, *operands, operation: str) -> QoalaExpression:  # type: ignore[misc]
         if operation in ["__eq__"]:
             return EqualsOp(*operands)
         elif operation in ["__ne__"]:

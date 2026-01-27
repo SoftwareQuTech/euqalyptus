@@ -52,8 +52,8 @@ class TestArraySemantics:
         array_type: Type,
         member_type: QoalaInteger | QoalaFloat,
     ):
-        array_values: List[member_type, vals_type] = []
-        in_order_values: Queue[vals_type] = Queue()
+        array_values: List[member_type | vals_type] = []  # type: ignore[valid-type]
+        in_order_values: Queue[vals_type] = Queue()  # type: ignore[valid-type]
         for value in values:
             array_values.append(base_type(value))
             in_order_values.put(value)

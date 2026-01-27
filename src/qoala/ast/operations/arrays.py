@@ -6,10 +6,9 @@ import qnet.dialects.tensor as tensor
 from qnet.extras.types import index
 from qnet.ir import Context, Location
 
-from qoala import QoalaProgram
-from qoala.ast import checkbaseir
+from qoala.ast import checkbaseir, QoalaExpression
 from qoala.ast.operations import QoalaOperation, with_arith_operators
-from qoala.ast.value import QoalaExpression, QoalaInteger, QoalaArray
+from qoala.ast.value import QoalaInteger, QoalaArray
 from qoala.errors import OperationNotYetImplementedError
 from qoala.utils.debug_info import DebugInfo
 
@@ -22,13 +21,15 @@ class CastToIndex(QoalaOperation):
         super().__init__()
         assert len(operands) == 1
         self.index_val: QoalaExpression = operands[0]
+        from qoala import QoalaProgram
+
         QoalaProgram.current_function().append_to_current_block(self)
 
     def can_evaluate_to(self, cls) -> bool:
         return self.index_val.can_evaluate_to(QoalaInteger)
 
     @checkbaseir
-    def compile(self, ctx: Context, location: Optional[Location] = None) -> None:
+    def compile(self, ctx: Context, location: Optional[Location] = None) -> None:  # type: ignore[override]
         source_location = Location.file(
             filename=self.debug_info.filename,
             line=self.debug_info.line_start,
@@ -58,13 +59,15 @@ class GetItem(QoalaOperation):
         assert isinstance(operands[0], QoalaArray)
         self.base_array: QoalaArray = operands[0]
         self.index: QoalaExpression = operands[1]
+        from qoala import QoalaProgram
+
         QoalaProgram.current_function().append_to_current_block(self)
 
     def can_evaluate_to(self, cls) -> bool:
         return self.base_array.members_can_evaluate_to(cls)
 
     @checkbaseir
-    def compile(self, ctx: Context, location: Optional[Location] = None) -> None:
+    def compile(self, ctx: Context, location: Optional[Location] = None) -> None:  # type: ignore[override]
         source_location = Location.file(
             filename=self.debug_info.filename,
             line=self.debug_info.line_start,
@@ -89,6 +92,8 @@ class SetItem(QoalaOperation):
         assert isinstance(operands[0], QoalaArray)
         self.base_array: QoalaArray = operands[0]
         self.index: QoalaExpression = operands[1]
+        from qoala import QoalaProgram
+
         QoalaProgram.current_function().append_to_current_block(self)
 
     def can_evaluate_to(self, cls) -> bool:
@@ -101,7 +106,7 @@ class SetItem(QoalaOperation):
             return False
 
     @checkbaseir
-    def compile(self, ctx: Context, location: Optional[Location] = None) -> None:
+    def compile(self, ctx: Context, location: Optional[Location] = None) -> None:  # type: ignore[override]
         _ = Location.file(
             filename=self.debug_info.filename,
             line=self.debug_info.line_start,

@@ -5,7 +5,6 @@ from qnet.dialects import arith
 from qnet.extras.types import f32, i32
 from qnet.ir import Context, Location
 
-from qoala import QoalaProgram
 from qoala.ast import QoalaExpression, checkbaseir
 from qoala.ast.operations import QoalaOperation
 from qoala.ast.value import QoalaFloat, QoalaInteger
@@ -19,13 +18,15 @@ class IntToFloat(QoalaOperation):
         super().__init__()
         assert len(operands) == 1
         self.operand = operands[0]
+        from qoala import QoalaProgram
+
         QoalaProgram.current_function().append_to_current_block(self)
 
     def can_evaluate_to(self, cls) -> bool:
-        return cls == QoalaFloat
+        return cls is QoalaFloat
 
     @checkbaseir
-    def compile(self, ctx: Context, location: Optional[Location] = None) -> None:
+    def compile(self, ctx: Context, location: Optional[Location] = None) -> None:  # type: ignore[override]
         source_location = Location.file(
             filename=self.debug_info.filename,
             line=self.debug_info.line_start,
@@ -43,13 +44,15 @@ class FloatToInt(QoalaOperation):
         super().__init__()
         assert len(operands) == 1
         self.operand = operands[0]
+        from qoala import QoalaProgram
+
         QoalaProgram.current_function().append_to_current_block(self)
 
     def can_evaluate_to(self, cls) -> bool:
-        return cls == QoalaInteger
+        return cls is QoalaInteger
 
     @checkbaseir
-    def compile(self, ctx: Context, location: Optional[Location] = None) -> None:
+    def compile(self, ctx: Context, location: Optional[Location] = None) -> None:  # type: ignore[override]
         source_location = Location.file(
             filename=self.debug_info.filename,
             line=self.debug_info.line_start,
@@ -67,13 +70,15 @@ class BitToInt(QoalaOperation):
         super().__init__()
         assert len(operands) == 1
         self.operand = operands[0]
+        from qoala import QoalaProgram
+
         QoalaProgram.current_function().append_to_current_block(self)
 
     def can_evaluate_to(self, cls) -> bool:
-        return cls == QoalaInteger
+        return cls is QoalaInteger
 
     @checkbaseir
-    def compile(self, ctx: Context, location: Optional[Location] = None) -> None:
+    def compile(self, ctx: Context, location: Optional[Location] = None) -> None:  # type: ignore[override]
         source_location = Location.file(
             filename=self.debug_info.filename,
             line=self.debug_info.line_start,

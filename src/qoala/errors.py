@@ -1,3 +1,8 @@
+from typing import Type
+
+from typing_extensions import List
+
+
 class QuantumProgramNotImplementedError(RuntimeError):
 
     def __init__(self, name: str, extra_msg: str):
@@ -92,6 +97,17 @@ class ValueUnknownAtCompileTimeError(QoalaCompilerError):
 
 class NotYetImplementedError(QoalaCompilerError):
 
+    def __init__(self, msg: str):
+        super().__init__(msg)
+
+
+class ExpressionNotAllowedInBlockError(QoalaCompilerError):
+    def __init__(self, msg: str, restrictions: List[Type]):
+        message = f"{msg}. Current allowed types are: {[restriction.__name__ for restriction in restrictions]}"
+        super().__init__(message)
+
+
+class AssignationError(QoalaCompilerError):
     def __init__(self, msg: str):
         super().__init__(msg)
 

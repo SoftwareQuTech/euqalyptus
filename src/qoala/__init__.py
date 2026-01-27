@@ -9,8 +9,7 @@ from typing import List, Any, Dict, Tuple, Optional
 from typing_extensions import Self
 
 import qoala.utils.debug_info as dbg_info
-from qoala.ast import QoalaExpression
-from qoala.ast.model import QoalaFunction
+from qoala.ast import QoalaExpression, QoalaFunction
 from qoala.errors import NotYetCompiledError, QuantumProgramNotImplementedError
 from qoala.module import QoalaModule
 
@@ -72,7 +71,7 @@ class QoalaProgram:
         return cls._compilation_context.options.use_singular_classical_comm_ops
 
     @property
-    def module(self):
+    def module(self) -> QoalaModule:
         if not self._is_compiled:
             raise NotYetCompiledError(
                 "The program has not been compiled yet. Did you invoke 'compile()' on it?"
@@ -83,15 +82,9 @@ class QoalaProgram:
     @classmethod
     def current_function(cls) -> QoalaFunction:
         if hasattr(cls, "_instance"):
-            return cls._instance._module.current_function
+            return cls._instance._module.current_function  # type: ignore[no-any-return]
         # This should never happen
         raise RuntimeError(f"Program with no instance!")
-
-    @classmethod
-    def get_last_block_id(cls) -> int:
-        if hasattr(cls, "_instance"):
-            return len(cls._instance._module.functions[-1].blocks)
-        return -1
 
     @classmethod
     def get_declared_remote(cls, remote_name: str) -> Any:
@@ -148,7 +141,7 @@ class QoalaProgram:
             # TODO - Change this ugly way to set the name of the function for the debug info engine
             dbg_info.function_name = self._function_name
             _compiler_lock.acquire()
-            QoalaProgram._instance = self
+            QoalaProgram._instance = self  # type: ignore[misc]
             QoalaProgram._declared_remotes = {}
             QoalaProgram._compilation_context = CompilationContext()
             # We save the compilation options
@@ -170,7 +163,7 @@ class QoalaProgram:
             if not self.compile_lazy_flag():
                 self.module.generate_qoala_hir()
             # We delete the reference to the QoalaProgram under compilation
-            del QoalaProgram._instance
+            del QoalaProgram._instance  # type: ignore[misc]
             return ret_val, self._module
         finally:
             _compiler_lock.release()
@@ -222,7 +215,7 @@ class QoalaProgramBase(QoalaProgram, ABC):
         instance = QoalaProgram(entry_fun=cls.main)
         # We override that, partially initializing the entry function with the
         # instance (self) argument
-        instance._entry_fun = partial(cls.main, instance)
+        instance._entry_fun = partial(cls.main, instance)  # type: ignore[arg-type]
         # We return the instance of the newly created object
         return instance
 

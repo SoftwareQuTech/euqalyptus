@@ -1,5 +1,6 @@
-from typing import TypeVar, Generic
+from typing import TypeVar, Generic, Any
 
+from qoala.ast.model import QoalaRuntimeValue
 from qoala.types import QoalaType
 
 _Internal_Value_Type = TypeVar("_Internal_Value_Type")
@@ -19,7 +20,7 @@ class QoalaClassicalType(Generic[_Internal_Value_Type], QoalaType):
     pass
 
 
-class _NumericOperandsOverload:
+class NumericOperandsOverload:
     # We overload the dunder methods operators, so IDEs do not get confused because of
     # the dynamic type of integers, so instances of this class "can use" the overloaded
     # operator. This is because the constructor of the concrete types return an instance
@@ -80,7 +81,7 @@ class _NumericOperandsOverload:
         pass
 
 
-class _BooleanOperandsOverload:
+class BooleanOperandsOverload:
     # We overload the dunder methods operators, so IDEs do not get confused because of
     # the dynamic type of booleans, so instances of this class "can use" the overloaded
     # operator. This is because the constructor of the concrete types return an instance
@@ -108,6 +109,24 @@ class _BooleanOperandsOverload:
         pass
 
     def __invert__(self):
+        pass
+
+
+class ScopedVar(NumericOperandsOverload, BooleanOperandsOverload):
+    def __new__(cls, *args, **kwargs):
+        if "val" in kwargs:
+            kwargs["original_value"] = kwargs["val"]
+            del kwargs["val"]
+        if len(args) >= 1:
+            kwargs["original_value"] = args[0]
+        return QoalaRuntimeValue(**kwargs)
+
+    def __init__(self, val: "Int | Float | Double | Bit | int | float | None" = None):
+        # Nothing to do here
+        pass
+
+    def assign(self, value: Any):
+        # Nothing to do here
         pass
 
 

@@ -284,7 +284,9 @@ class TestQoalaQnetPythonBindingsClassical:
 """
         assert str(module.generic_asm) == expected_generic_asm
 
-    @pytest.mark.skip(reason="Mutation of the size of the array is not yet implemented")
+    @pytest.mark.skip(
+        reason="Not supported: Mutation of the size of the array is not yet implemented"
+    )
     def test_arrays_with_mutation_program_to_qoala_qnet(self):
         with pytest.raises(NotYetCompiledError) as ex:
             _, _ = array_with_mutation_program.module

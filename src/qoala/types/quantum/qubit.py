@@ -1,9 +1,10 @@
 from abc import ABC
-from typing import Tuple
+from typing import Tuple, Any
 
 from typing_extensions import Self
 
 from qoala import QoalaProgram
+from qoala.ast.model import QoalaRuntimeQubit
 from qoala.ast.qubit import QoalaLocalQubit, QoalaEprs
 from qoala.errors import UnknownRemoteError
 from qoala.types.classical.floats import QoalaFloatingPointType
@@ -26,7 +27,7 @@ class Qubit(QoalaQuantumType, ABC):
     methods on a `Qubit` instance.
     """
 
-    def measure(self) -> QoalaIntegerType:
+    def measure(self) -> QoalaIntegerType:  # type: ignore[empty-body]
         """
         Measure the qubit in the standard basis and get the measurement outcome.
 
@@ -299,3 +300,22 @@ def Entangle(name: str, n: int = 1) -> EntangledQubit | Tuple[EntangledQubit, ..
     else:
         # We return a tuple of EntangledQubits, declaring the remote ONLY for the first
         return tuple(EntangledQubit(name) for i in range(0, n))
+
+
+# We inherit from Qubit, so this class behaves as a qubit. In this way,
+# the IDE does not complain about "unknown methods" (like X(), measure(), etc.)
+class ScopedQubit(Qubit):
+    def __new__(cls, *args, **kwargs):
+        if len(args) >= 1:
+            kwargs["qubit"] = args[0]
+            return QoalaRuntimeQubit(**kwargs)
+        else:
+            raise RuntimeError("Missing qubit variable when creating ScopedQubit")
+
+    def __init__(self, qubit: Qubit):
+        # Nothing to do here
+        pass
+
+    def assign(self, value: Any):
+        # Nothing to do here
+        pass

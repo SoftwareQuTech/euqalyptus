@@ -13,7 +13,7 @@ from qoala.types.classical.integer import Int
 
 class EmptyProgram(QoalaProgramBase):
 
-    def main(self, args: List[Any]) -> int:
+    def main(self, args: List[Any]) -> int:  # type: ignore[empty-body]
         pass
 
 

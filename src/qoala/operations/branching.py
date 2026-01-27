@@ -13,6 +13,7 @@ from qoala.errors import OperandMismatchError, NotBooleanArgumentError
 from qoala.types.classical.booleans import Bool
 from qoala.types.classical.floats import QoalaFloatingPointType
 from qoala.types.classical.integer import QoalaIntegerType
+from qoala.utils.debug_info import get_debug_info
 
 
 class IfCondition:
@@ -22,7 +23,7 @@ class IfCondition:
             if condition_value.can_evaluate_to(QoalaBool):
                 kwargs["condition"] = condition_value
             else:
-                raise NotBooleanArgumentError
+                raise NotBooleanArgumentError("if_cond")
         return ConditionalBranching(**kwargs)
 
     @classmethod
@@ -31,8 +32,7 @@ class IfCondition:
             return arg
         from qoala.ast.value import QoalaNumericValue
 
-        # TODO - Get the actual debug info somehow!
-        return QoalaNumericValue.from_immediate(arg, None)
+        return QoalaNumericValue.from_immediate(arg, get_debug_info())
 
     def __init__(self, condition: Bool | bool):
         # Nothing to do here
@@ -63,7 +63,7 @@ class IfEq(IfCondition):
         self, *operands: QoalaIntegerType | QoalaFloatingPointType | int | float
     ):
         # Nothing to do here - Call to super is to avoid a warning, but it's never called
-        super().__init__(*operands)
+        super().__init__(*operands)  # type: ignore[arg-type]
 
 
 class IfNeq(IfCondition):
@@ -82,7 +82,7 @@ class IfNeq(IfCondition):
         self, *operands: QoalaIntegerType | QoalaFloatingPointType | int | float
     ):
         # Nothing to do here - Call to super is to avoid a warning, but it's never called
-        super().__init__(*operands)
+        super().__init__(*operands)  # type: ignore[arg-type]
 
 
 class IfLt(IfCondition):
@@ -101,7 +101,7 @@ class IfLt(IfCondition):
         self, *operands: QoalaIntegerType | QoalaFloatingPointType | int | float
     ):
         # Nothing to do here - Call to super is to avoid a warning, but it's never called
-        super().__init__(*operands)
+        super().__init__(*operands)  # type: ignore[arg-type]
 
 
 class IfLe(IfCondition):
@@ -120,7 +120,7 @@ class IfLe(IfCondition):
         self, *operands: QoalaIntegerType | QoalaFloatingPointType | int | float
     ):
         # Nothing to do here - Call to super is to avoid a warning, but it's never called
-        super().__init__(*operands)
+        super().__init__(*operands)  # type: ignore[arg-type]
 
 
 class IfGt(IfCondition):
@@ -139,7 +139,7 @@ class IfGt(IfCondition):
         self, *operands: QoalaIntegerType | QoalaFloatingPointType | int | float
     ):
         # Nothing to do here - Call to super is to avoid a warning, but it's never called
-        super().__init__(*operands)
+        super().__init__(*operands)  # type: ignore[arg-type]
 
 
 class IfGe(IfCondition):
@@ -158,7 +158,7 @@ class IfGe(IfCondition):
         self, *operands: QoalaIntegerType | QoalaFloatingPointType | int | float
     ):
         # Nothing to do here - Call to super is to avoid a warning, but it's never called
-        super().__init__(*operands)
+        super().__init__(*operands)  # type: ignore[arg-type]
 
 
 if_cond = IfCondition
