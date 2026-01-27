@@ -7,10 +7,13 @@ import qnet.dialects.qnet as qnet
 from qnet.ir import Context, Location
 
 from qoala.ast import checkbaseir, QoalaExpression
-from qoala.ast.operations import QoalaOperation
-from qoala.ast.qubit import QoalaQubit, QubitBaseOperations
+from qoala.ast.operations import (
+    QoalaOperation,
+    with_arith_operators,
+    with_bool_operators,
+)
+from qoala.ast.qubit import QoalaQubit
 from qoala.ast.value import (
-    QoalaInteger,
     QoalaFloat,
     QoalaNumericValue,
     QoalaBit,
@@ -32,6 +35,8 @@ class _QubitBaseOperation(QoalaOperation, ABC):
         return cls is QoalaBit
 
 
+@with_arith_operators
+@with_bool_operators
 class QubitMeasure(_QubitBaseOperation, QoalaBit):
 
     def __init__(self, *operands: QoalaExpression):

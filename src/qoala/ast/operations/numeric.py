@@ -1,6 +1,6 @@
 from abc import ABC
 from dataclasses import dataclass
-from typing import Optional
+from typing import Optional, List
 
 import qnet.dialects.arith as arith
 import qnet.dialects.math as math
@@ -12,8 +12,8 @@ from qoala.ast.operations import (
     with_arith_operators,
     with_order_operators,
 )
-from qoala.ast.operations.casts import IntToFloat
-from qoala.ast.value import QoalaInteger, QoalaFloat
+from qoala.ast.operations.casts import IntToFloat, BitToInt
+from qoala.ast.value import QoalaInteger, QoalaFloat, QoalaBit
 from qoala.errors import WrongEvaluationTypeError, UnknownOperationError
 from qoala.utils.debug_info import get_debug_info
 
@@ -27,41 +27,49 @@ class BaseBinaryArithOp(QoalaOperation, ABC):
         super().__init__()
         # We "normalize" the operands, upcasting an integer to a float if needed
         assert len(operands) == 2
+        # Insert a BitToInt case on the operands that evaluate to Bit values
+        fixed_operands: List[QoalaExpression] = [None] * len(operands)  # type: ignore[list-item]
+        for idx, operand in enumerate(operands):
+            if operands[idx].can_evaluate_to(QoalaBit):
+                fixed_operands[idx] = BitToInt(operands[idx])
+            else:
+                fixed_operands[idx] = operands[idx]
+
         if not (
-            operands[0].can_evaluate_to(QoalaFloat)
-            or operands[0].can_evaluate_to(QoalaInteger)
+            fixed_operands[0].can_evaluate_to(QoalaFloat)
+            or fixed_operands[0].can_evaluate_to(QoalaInteger)
         ):
             raise WrongEvaluationTypeError(
                 f"When constructing operation '{self.__class__.__name__}': "
-                f"One of the operands '{operands[0]}' cannot evaluate to "
+                f"One of the operands '{fixed_operands[0]}' cannot evaluate to "
                 f"either Integer or Float"
             )
         elif not (
-            operands[1].can_evaluate_to(QoalaFloat)
-            or operands[1].can_evaluate_to(QoalaInteger)
+            fixed_operands[1].can_evaluate_to(QoalaFloat)
+            or fixed_operands[1].can_evaluate_to(QoalaInteger)
         ):
             raise WrongEvaluationTypeError(
                 f"When constructing operation '{self.__class__.__name__}': "
-                f"One of the operands '{operands[1]}' cannot evaluate to "
+                f"One of the operands '{fixed_operands[1]}' cannot evaluate to "
                 f"either Integer or Float"
             )
-        elif operands[0].can_evaluate_to(QoalaFloat) and operands[1].can_evaluate_to(
-            QoalaInteger
-        ):
+        elif fixed_operands[0].can_evaluate_to(QoalaFloat) and fixed_operands[
+            1
+        ].can_evaluate_to(QoalaInteger):
             # We need to add a cast of operand[1]
-            casted_operand_1 = IntToFloat(operands[1])
-            self.operand_a = operands[0]
+            casted_operand_1 = IntToFloat(fixed_operands[1])
+            self.operand_a = fixed_operands[0]
             self.operand_b = casted_operand_1
-        elif operands[1].can_evaluate_to(QoalaFloat) and operands[0].can_evaluate_to(
-            QoalaInteger
-        ):
+        elif fixed_operands[1].can_evaluate_to(QoalaFloat) and fixed_operands[
+            0
+        ].can_evaluate_to(QoalaInteger):
             # We need to add a cast of operand a
-            casted_operand_0 = IntToFloat(operands[0])
+            casted_operand_0 = IntToFloat(fixed_operands[0])
             self.operand_a = casted_operand_0
-            self.operand_b = operands[1]
+            self.operand_b = fixed_operands[1]
         else:
-            self.operand_a = operands[0]
-            self.operand_b = operands[1]
+            self.operand_a = fixed_operands[0]
+            self.operand_b = fixed_operands[1]
 
 
 @dataclass(init=False)
