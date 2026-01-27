@@ -203,7 +203,7 @@ class TestBranchingSyntax:
     def test_using_local_quantum_value_from_branching(self):
         # Since this is a syntax test, we only need to make sure that the
         # types and method invocations do not raise exceptions.
-        qubit = LocalQubit()  # Holds a qubit value
+        qubit = LocalQubit()
         with if_cond(Int(4) < 7) as (branch_true, branch_false):
             cond_qubit = ScopedQubit(qubit)  # Holds a qubit value
             with branch_true:
@@ -225,7 +225,7 @@ class TestBranchingSyntax:
         # Since this is a syntax test, we only need to make sure that the
         # types and method invocations do not raise exceptions.
         remote = Remote("Bob")
-        qubit = Entangle("Bob")  # Holds a qubit value
+        qubit = Entangle("Bob")
         with if_cond(Int(4) < 7) as (branch_true, branch_false):
             cond_qubit = ScopedQubit(qubit)  # Holds a qubit value
             with branch_true:
@@ -243,7 +243,7 @@ class TestBranchingSyntax:
     def test_yield_classical_value_from_single_branch(self):
         # Since this is a syntax test, we only need to make sure that the
         # types and method invocations do not raise exceptions.
-        qubit = LocalQubit()  # Holds a qubit value
+        qubit = LocalQubit()
         with if_cond(Int(4) < 7) as (branch_true, branch_false):
             cond_qubit = ScopedQubit(qubit)  # Holds a qubit value
             with branch_true:
@@ -255,7 +255,7 @@ class TestBranchingSyntax:
     def test_yield_local_quantum_value_from_single_branch(self):
         # Since this is a syntax test, we only need to make sure that the
         # types and method invocations do not raise exceptions.
-        qubit = LocalQubit()  # Holds a qubit value
+        qubit = LocalQubit()
         with if_cond(Int(4) < 7) as (branch_true, branch_false):
             cond_qubit = ScopedQubit(qubit)  # Holds a qubit value
             with branch_true:
@@ -274,7 +274,7 @@ class TestBranchingSyntax:
         # Since this is a syntax test, we only need to make sure that the
         # types and method invocations do not raise exceptions.
         remote = Remote("Bob")
-        qubit = Entangle("Bob")  # Holds a qubit value
+        qubit = Entangle("Bob")
         with if_cond(Int(4) < 7) as (branch_true, branch_false):
             cond_qubit = ScopedQubit(qubit)  # Holds a qubit value
             with branch_true:
@@ -308,7 +308,7 @@ class TestBranchingSyntax:
         # already deemed unfeasible for this time being.
         init = Int(0)
         with if_cond(Int(4) < 7) as (branch_true, branch_false):
-            counter = ScopedVar(init)  # Holds a qubit value
+            counter = ScopedVar(init)  # Holds a classical value
             with branch_true:
                 aux = counter + 1
                 # Rewriting the helper value _is allowed_... as long as we assign the
