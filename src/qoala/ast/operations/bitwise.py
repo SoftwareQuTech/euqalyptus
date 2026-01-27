@@ -3,7 +3,7 @@ from dataclasses import dataclass
 from typing import Optional
 
 from qnet.dialects import arith
-from qnet.extras.types import bool as mlir_bool
+from qnet.extras.types import i32, bool as mlir_bool
 from qnet.ir import Context, Location
 
 from qoala.ast import QoalaExpression, checkbaseir
@@ -20,7 +20,10 @@ class BaseUnaryBitwiseOp(QoalaOperation, ABC):
         super().__init__()
         # We "normalize" the operands, upcasting an integer to a float if needed
         assert len(operands) == 1
-        if not operands[0].can_evaluate_to(QoalaBool):
+        if not (
+            operands[0].can_evaluate_to(QoalaBool)
+            or operands[0].can_evaluate_to(QoalaInteger)
+        ):
             raise WrongEvaluationTypeError(
                 f"When constructing operation '{self.__class__.__name__}': "
                 f"One of the operands '{operands[0]}' cannot evaluate to "
@@ -167,23 +170,29 @@ class NotOp(BaseUnaryBitwiseOp):
         QoalaProgram.current_function().append_to_current_block(self)
 
     def can_evaluate_to(self, cls) -> bool:
-        return cls is QoalaBool
+        return cls is QoalaBool or cls is QoalaInteger
 
     @checkbaseir
     def compile(self, ctx: Context, location: Optional[Location] = None) -> None:  # type: ignore[override]
         # There is no "bitwise negate" operation in arith, but we can xor with 0xFF
+        source_location = Location.file(
+            filename=self.debug_info.filename,
+            line=self.debug_info.line_start,
+            col=self.debug_info.col_start,
+            context=ctx,
+        )
         if self.operand.can_evaluate_to(QoalaBool):
             bool_type = mlir_bool()
-            source_location = Location.file(
-                filename=self.debug_info.filename,
-                line=self.debug_info.line_start,
-                col=self.debug_info.col_start,
-                context=ctx,
-            )
             true_op = arith.constant(value=True, result=bool_type, loc=source_location)
             self.ir_value = true_op
             self.ir_value = arith.xori(
                 self.operand.ir_value, true_op, loc=source_location
+            )
+        elif self.operand.can_evaluate_to(QoalaInteger):
+            ff_val = arith.constant(value=True, result=i32(), loc=source_location)
+            self.ir_value = ff_val
+            self.ir_value = arith.xori(
+                self.operand.ir_value, ff_val, loc=source_location
             )
         else:
             raise WrongEvaluationTypeError(

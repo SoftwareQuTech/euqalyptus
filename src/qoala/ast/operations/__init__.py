@@ -66,7 +66,6 @@ def with_arith_operators(cls):
         "__lshift__",
         "__mod__",
         "__mul__",
-        "__neg__",
         "__pos__",
         "__pow__",
         "__radd__",
