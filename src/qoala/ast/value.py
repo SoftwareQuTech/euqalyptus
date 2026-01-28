@@ -10,12 +10,7 @@ from qnet.ir import Context, Location
 from typing_extensions import Self
 
 from qoala.ast import QoalaExpression, checkbaseir
-from qoala.ast.operations import (
-    QoalaOperation,
-    with_arith_operators,
-    with_order_operators,
-    with_bool_operators,
-)
+from qoala.ast.operations import QoalaOperation, with_operators
 from qoala.errors import UnknownTypeError, OperandMismatchError
 from qoala.utils.debug_info import DebugInfo, get_debug_info
 
@@ -94,10 +89,8 @@ class QoalaNumericValue(QoalaValue[_T], ABC):
             )
 
 
-@with_order_operators
-@with_arith_operators
+@with_operators(arith=True, bitwise=True, order=True)
 class QoalaInteger(QoalaNumericValue[int]):
-
     def __init__(
         self,
         value: int,
@@ -154,8 +147,7 @@ class QoalaInteger(QoalaNumericValue[int]):
         )
 
 
-@with_order_operators
-@with_arith_operators
+@with_operators(arith=True, bitwise=False, order=True)
 class QoalaFloat(QoalaNumericValue[float]):
 
     def __init__(
@@ -204,7 +196,7 @@ class QoalaFloat(QoalaNumericValue[float]):
         )
 
 
-@with_bool_operators
+@with_operators(arith=False, bitwise=True, order=False)
 class QoalaBool(QoalaValue[bool]):
     def __init__(
         self,
@@ -406,7 +398,7 @@ class QoalaArray(
         )
 
 
-@with_arith_operators
+@with_operators(arith=True, bitwise=False, order=False)
 class QoalaReferenceInsideArray(QoalaExpression):
     """
     A simple reference to value inside a QoalaArray that will be resolved when generating the IR.

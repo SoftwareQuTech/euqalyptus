@@ -4,10 +4,10 @@ from typing_extensions import Self
 
 from qoala.ast.value import QoalaBool
 from qoala.errors import NotBooleanArgumentError
-from qoala.types.classical import QoalaClassicalType, BooleanOperandsOverload
+from qoala.types.classical import QoalaClassicalType, BitwiseOperandsOverload
 
 
-class QoalaBooleanType(QoalaClassicalType[bool], BooleanOperandsOverload):
+class QoalaBooleanType(QoalaClassicalType[bool], BitwiseOperandsOverload):
     pass
 
 

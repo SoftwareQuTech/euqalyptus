@@ -7,11 +7,7 @@ from qnet.extras.types import i32, f32
 from qnet.ir import Context, Location, IntegerAttr
 
 from qoala.ast import checkbaseir, QoalaExpression
-from qoala.ast.operations import (
-    QoalaOperation,
-    with_order_operators,
-    with_arith_operators,
-)
+from qoala.ast.operations import QoalaOperation, with_operators
 from qoala.ast.operations.arrays import GetItem
 from qoala.ast.operations.casts import BitToInt, IntToFloat
 from qoala.ast.operations.quantum import QubitMeasure
@@ -253,8 +249,7 @@ class RecvFloatsOp(BasePluralRecvOp[QoalaFloat, float]):
         super().__init__(remote_name=remote_name, length=length, base_type=float)
 
 
-@with_arith_operators
-@with_order_operators
+@with_operators(arith=True, bitwise=True, order=True)
 @dataclass(init=False)
 class RecvIntOp(BaseSingularRecvOp[QoalaInteger]):
     def __init__(self, remote_name: DeclaredRemote | str):
@@ -266,8 +261,7 @@ class RecvIntOp(BaseSingularRecvOp[QoalaInteger]):
         self.value = None  # type: ignore[assignment]
 
 
-@with_arith_operators
-@with_order_operators
+@with_operators(arith=True, bitwise=True, order=True)
 @dataclass(init=False)
 class RecvFloatOp(BaseSingularRecvOp[QoalaFloat]):
     def __init__(self, remote_name: DeclaredRemote | str):

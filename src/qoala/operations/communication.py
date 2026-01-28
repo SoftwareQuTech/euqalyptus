@@ -1,5 +1,7 @@
 from typing import List
 
+from qoala.ast.model import QoalaRuntimeValue
+from qoala.ast.operations import QoalaOperation
 from qoala.ast.operations.communication import (
     RecvIntsOp,
     RecvFloatsOp,
@@ -11,7 +13,13 @@ from qoala.ast.operations.communication import (
 )
 from qoala.ast.value import QoalaInteger, QoalaFloat, QoalaArray, QoalaBit
 from qoala.operations import Remote
-from qoala.types.classical import IntArray, FloatArray
+from qoala.types.classical import (
+    IntArray,
+    FloatArray,
+    ScopedVar,
+    NumericOperandsOverload,
+    BitwiseOperandsOverload,
+)
 from qoala.types.classical.floats import QoalaFloatingPointType
 from qoala.types.classical.integer import QoalaIntegerType
 
@@ -26,7 +34,7 @@ class RecvInts(IntArray):
         super().__init__()
 
 
-class RecvInt(QoalaIntegerType):
+class RecvInt(QoalaIntegerType, NumericOperandsOverload, BitwiseOperandsOverload):
     def __new__(cls, remote_name: Remote | str):
         assert isinstance(remote_name, (DeclaredRemote, str))
         return RecvIntOp(remote_name=remote_name)
@@ -36,7 +44,7 @@ class RecvInt(QoalaIntegerType):
         pass
 
 
-class RecvFloats(FloatArray):
+class RecvFloats(FloatArray, NumericOperandsOverload, BitwiseOperandsOverload):
     def __new__(cls, remote_name: Remote | str, length: int):
         assert isinstance(remote_name, (DeclaredRemote, str))
         return RecvFloatsOp(remote_name=remote_name, length=length)
@@ -58,19 +66,42 @@ class RecvFloat(QoalaFloatingPointType):
 # TODO - Inherit from what?
 class SendInts:
     def __new__(
-        cls, remote_name: Remote | str, *args: IntArray | QoalaIntegerType | int
+        cls,
+        remote_name: Remote | str,
+        *args: IntArray | QoalaIntegerType | QoalaRuntimeValue | int,
     ):
         assert isinstance(remote_name, (DeclaredRemote, str))
         processed_args: List[
-            QoalaInteger | QoalaBit | QoalaArray[QoalaInteger, int] | int
+            QoalaInteger
+            | QoalaRuntimeValue
+            | QoalaOperation
+            | QoalaBit
+            | QoalaArray[QoalaInteger, int]
+            | int
         ] = []
         for arg in args:
-            assert isinstance(arg, (QoalaInteger, QoalaBit, QoalaArray, int))
+            assert isinstance(
+                arg,
+                (
+                    QoalaInteger,
+                    QoalaBit,
+                    QoalaArray,
+                    QoalaRuntimeValue,
+                    QoalaOperation,
+                    int,
+                ),
+            )
+            if isinstance(arg, (QoalaRuntimeValue, QoalaOperation)):
+                assert arg.can_evaluate_to(QoalaInteger) or arg.can_evaluate_to(
+                    QoalaBit
+                )
             processed_args.append(arg)
         return SendIntsOp(*processed_args, remote_name=remote_name)
 
     def __init__(
-        self, remote_name: Remote | str, *args: IntArray | QoalaIntegerType | int
+        self,
+        remote_name: Remote | str,
+        *args: IntArray | QoalaIntegerType | ScopedVar | int,
     ):
         # Nothing to do here
         pass
@@ -81,21 +112,50 @@ class SendFloats:
     def __new__(
         cls,
         remote_name: Remote | str,
-        *args: FloatArray | QoalaFloatingPointType | QoalaIntegerType | float,
+        *args: FloatArray
+        | QoalaFloatingPointType
+        | QoalaIntegerType
+        | QoalaRuntimeValue
+        | float,
     ):
         assert isinstance(remote_name, (DeclaredRemote, str))
         processed_args: List[
-            QoalaInteger | QoalaBit | QoalaArray[QoalaFloat, float] | float
+            QoalaInteger
+            | QoalaRuntimeValue
+            | QoalaOperation
+            | QoalaBit
+            | QoalaArray[QoalaFloat, float]
+            | float
         ] = []
         for arg in args:
-            assert isinstance(arg, (QoalaInteger, QoalaBit, QoalaArray, float))
+            assert isinstance(
+                arg,
+                (
+                    QoalaInteger,
+                    QoalaBit,
+                    QoalaArray,
+                    QoalaRuntimeValue,
+                    QoalaOperation,
+                    float,
+                ),
+            )
+            if isinstance(arg, (QoalaRuntimeValue, QoalaOperation)):
+                assert (
+                    arg.can_evaluate_to(QoalaFloat)
+                    or arg.can_evaluate_to(QoalaInteger)
+                    or arg.can_evaluate_to(QoalaBit)
+                )
             processed_args.append(arg)
         return SendFloatsOp(*processed_args, remote_name=remote_name)
 
     def __init__(
         self,
         remote_name: Remote | str,
-        *args: FloatArray | QoalaFloatingPointType | QoalaIntegerType | float,
+        *args: FloatArray
+        | QoalaFloatingPointType
+        | QoalaIntegerType
+        | ScopedVar
+        | float,
     ):
         # Nothing to do here
         pass
