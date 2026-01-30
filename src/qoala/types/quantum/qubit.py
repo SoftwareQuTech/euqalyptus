@@ -312,7 +312,7 @@ class ScopedQubit(Qubit):
         else:
             raise RuntimeError("Missing qubit variable when creating ScopedQubit")
 
-    def __init__(self, qubit: Qubit):
+    def __init__(self, qubit: Qubit | EntangledQubit | Tuple[EntangledQubit, ...]):
         # Nothing to do here
         pass
 

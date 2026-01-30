@@ -267,6 +267,28 @@ def update_scoped_vals_values():
     result = counter * 10
     return_results(result)
 
+@QoalaProgram
+def recapture_qubit_val():
+    c = Remote("Bob")
+
+    qin = Entangle("Bob")
+
+    # Receive teleport corrections for qin
+    a_in = recv_int(c)
+    b_in = recv_int(c)
+    with if_cond(a_in == 1) as (branch_true, branch_false):
+        scoped_qin = ScopedQubit(qin)
+        with branch_true:
+            scoped_qin.Z()
+            branch_true.yield_value(scoped_qin)
+    with if_cond(b_in == 1) as (branch_true, branch_false):
+        scoped_qin_2 = ScopedQubit(scoped_qin)
+        with branch_true:
+            scoped_qin_2.X()
+            branch_true.yield_value(scoped_qin_2)
+    result = scoped_qin_2.measure()
+
+
 
 # TODO - Test a double nested if that returns a value from the inner-most level
 
@@ -742,7 +764,6 @@ class TestBranchingInstructionsBindings:
         )
         _, module = classical_value_from_branching.compile()
         assert isinstance(module, QoalaModule)
-        # Note - MLIR does not offer a "boolean" type. values "true" and "false" are modeled as i1 values.
         expected_asm = """module {
   qnet.func @classical_value_from_branching() {
     %c4_i32 = arith.constant 4 : i32
@@ -772,7 +793,6 @@ class TestBranchingInstructionsBindings:
         )
         _, module = capturing_classical_value_in_scoped_val.compile()
         assert isinstance(module, QoalaModule)
-        # Note - MLIR does not offer a "boolean" type. values "true" and "false" are modeled as i1 values.
         expected_asm = """module {
   qnet.func @capturing_classical_value_in_scoped_val() {
     %c0_i32 = arith.constant 0 : i32
@@ -801,7 +821,6 @@ class TestBranchingInstructionsBindings:
         )
         _, module = qubit_value_from_branching.compile()
         assert isinstance(module, QoalaModule)
-        # Note - MLIR does not offer a "boolean" type. values "true" and "false" are modeled as i1 values.
         expected_asm = """module {
   qnet.func @qubit_value_from_branching() {
     %0 = qnet.new_qubit : !qnet.qubit
@@ -831,7 +850,6 @@ class TestBranchingInstructionsBindings:
         )
         _, module = sample_ghz_end_node.compile("Bob")
         assert isinstance(module, QoalaModule)
-        # Note - MLIR does not offer a "boolean" type. values "true" and "false" are modeled as i1 values.
         expected_asm = """module {
   qnet.remote @Bob
   qnet.func @sample_ghz_end_node() {
@@ -862,9 +880,41 @@ class TestBranchingInstructionsBindings:
         )
         _, module = update_scoped_vals_values.compile()
         assert isinstance(module, QoalaModule)
-        # Note - MLIR does not offer a "boolean" type. values "true" and "false" are modeled as i1 values.
         expected_asm = """module {
   qnet.func @update_scoped_vals_values() {
+    %c0_i32 = arith.constant 0 : i32
+    %c4_i32 = arith.constant 4 : i32
+    %c7_i32 = arith.constant 7 : i32
+    %0 = arith.cmpi slt, %c4_i32, %c7_i32 : i32
+    %1 = scf.if %0 -> (i32) {
+      %c1_i32 = arith.constant 1 : i32
+      %3 = arith.addi %c0_i32, %c1_i32 : i32
+      %c2_i32 = arith.constant 2 : i32
+      %4 = arith.muli %3, %c2_i32 : i32
+      scf.yield %4 : i32
+    } else {
+      %c0_i32_0 = arith.constant 0 : i32
+      scf.yield %c0_i32_0 : i32
+    }
+    %c10_i32 = arith.constant 10 : i32
+    %2 = arith.muli %1, %c10_i32 : i32
+    qnet.return %2 : i32
+  }
+}
+"""
+        assert str(module.asm) == expected_asm
+
+    def test_recapture_qubit_val(self):
+        with pytest.raises(NotYetCompiledError) as ex:
+            _, _ = recapture_qubit_val.module
+        assert (
+                str(ex.value)
+                == "The program has not been compiled yet. Did you invoke 'compile()' on it?"
+        )
+        _, module = recapture_qubit_val.compile()
+        assert isinstance(module, QoalaModule)
+        expected_asm = """module {
+  qnet.func @recapture_qubit_val() {
     %c0_i32 = arith.constant 0 : i32
     %c4_i32 = arith.constant 4 : i32
     %c7_i32 = arith.constant 7 : i32
