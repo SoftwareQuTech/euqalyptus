@@ -1,7 +1,7 @@
 import math
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
-from typing import Optional
+from typing import Optional, Tuple
 
 import qnet.dialects.qnet as qnet
 from qnet.ir import Context, Location
@@ -9,6 +9,7 @@ from typing_extensions import Self
 
 from qoala.ast import QoalaExpression, checkbaseir
 from qoala.ast.operations import QoalaOperation
+from qoala.ast.operations.casts import FloatToInt
 from qoala.ast.operations.numeric import Pow2, Divide, Multiply
 from qoala.ast.value import QoalaInteger, QoalaFloat, QoalaNumericValue
 from qoala.utils.debug_info import DebugInfo, get_debug_info
@@ -97,53 +98,61 @@ class QubitBaseOperations(QoalaQubit, ABC):
         d: QoalaInteger | QoalaExpression | int | None = None,
         angle: QoalaFloat | QoalaExpression | float | None = None,
         dbg_info: DebugInfo | None = None,
-    ) -> QoalaExpression:
+    ) -> Tuple[QoalaExpression, Optional[QoalaExpression]]:
         if dbg_info is None:
             raise RuntimeError("Unknown debug info")
-        angle_val: QoalaExpression
+        angle_val_a: QoalaExpression
+        angle_val_b: Optional[QoalaExpression]
         # First, we check if the angle was given
         if angle is not None:
             if isinstance(angle, float):
                 # Angle was given as an immediate
-                angle_val = QoalaNumericValue.from_immediate(angle, dbg_info)
+                angle_val_a = QoalaNumericValue.from_immediate(angle, dbg_info)
+                angle_val_b = None
             elif isinstance(angle, (QoalaFloat, QoalaExpression, float)):
                 # Angle can be evaluated at runtime
-                angle_val = angle
-        # if n and d are immediates, then we can directly compute the value of angle
+                angle_val_a = angle
+                angle_val_b = None
+        # if n and d are immediates, then we can create integer-based rotations
         elif n is not None and d is not None:
             # In this case, we know that n and d are given
             if isinstance(n, int) and isinstance(d, int):
-                # angle can be computed at compile time
-                angle_result = float(n * math.pi / (math.pow(2, d)))
-                angle_val = QoalaNumericValue.from_immediate(angle_result, dbg_info)
+                angle_val_a = QoalaNumericValue.from_immediate(n, dbg_info)
+                angle_val_b = QoalaNumericValue.from_immediate(d, dbg_info)
             else:
-                n_val: QoalaExpression
-                d_val: QoalaExpression
-                # n and d are given, but, at least, one of them is not an
-                # immediate -> angle is known at runtime
-                # moreover, if we encounter an immediate, we need to make it
-                # a float for simplicity of the later ops
+                # n and d are given, but, at least, one of them is not an immediate
                 if isinstance(n, int):
-                    n_val = QoalaNumericValue.from_immediate(float(n), dbg_info)
+                    angle_val_a = QoalaNumericValue.from_immediate(n, dbg_info)
                 else:
-                    n_val = n
+                    if n.can_evaluate_to(QoalaFloat):
+                        angle_val_a = FloatToInt(n)
+                    else:
+                        # Here we assume that "n" is a runtime value, and it can evaluate to QoalaInt
+                        assert n.can_evaluate_to(QoalaInteger)
+                        angle_val_a = n
                 if isinstance(d, int):
-                    d_val = QoalaNumericValue.from_immediate(float(d), dbg_info)
+                    angle_val_b = QoalaNumericValue.from_immediate(d, dbg_info)
                 else:
-                    d_val = d
-                # angle_val = (n * \pi) / 2 ** d, this means:
-                # $pi = arith.const 3.14 : f32
-                pi = QoalaNumericValue.from_immediate(math.pi, dbg_info)
-                # $up = arith.mulf $n_f32, $pi : f32
-                up = Multiply(n_val, pi)
-                # $down = math.exp2 $d : f32 ;; convenient base-2 exponentiation operation
-                down = Pow2(d_val)
-                # $angle_val = arith.divf $up, $down : f32
-                angle_val = Divide(up, down)
+                    if d.can_evaluate_to(QoalaFloat):
+                        angle_val_b = FloatToInt(d)
+                    else:
+                        # Here we assume that "n" is a runtime value, and it can evaluate to QoalaInt
+                        assert d.can_evaluate_to(QoalaInteger)
+                        angle_val_b = d
+                # # angle_val = (n * \pi) / 2 ** d, this means:
+                # # $pi = arith.const 3.14 : f32
+                # pi = QoalaNumericValue.from_immediate(math.pi, dbg_info)
+                # # $up = arith.mulf $n_f32, $pi : f32
+                # up = Multiply(n_val, pi)
+                # # $down = math.exp2 $d : f32 ;; convenient base-2 exponentiation operation
+                # down = Pow2(d_val)
+                # # $angle_val = arith.divf $up, $down : f32
+                # angle_val_a = Divide(up, down)
         else:
             # Worst-worst case... we have nothing
-            angle_val = QoalaNumericValue.from_immediate(0.0, dbg_info)
-        return angle_val
+            angle_val_a = QoalaNumericValue.from_immediate(0.0, dbg_info)
+            angle_val_b = None
+        return angle_val_a, angle_val_b
 
     def measure(self) -> QoalaOperation:
         # When we measure, _at runtime_ we get a value of type Bit (or QoalaBit).
@@ -190,12 +199,22 @@ class QubitBaseOperations(QoalaQubit, ABC):
         d: QoalaInteger | QoalaExpression | int = 0,
         angle: QoalaFloat | QoalaExpression | float | None = None,
     ) -> QoalaOperation:
-        angle_val = QubitBaseOperations._process_angles(n, d, angle, self.debug_info)
+        angle_val_a, angle_val_b = QubitBaseOperations._process_angles(
+            n, d, angle, self.debug_info
+        )
         from qoala.ast.operations.quantum import RotateX
 
-        return QoalaOperation.create_expression_for_op(
-            RotateX, qubit=self, angle=angle_val
-        )
+        if angle_val_a.can_evaluate_to(QoalaFloat):
+            return QoalaOperation.create_expression_for_op(
+                RotateX, qubit=self, angle=angle_val_a
+            )
+        else:
+            # Here we assume that n and d are given, and they can evaluate to QoalaInteger
+            assert angle_val_a.can_evaluate_to(QoalaInteger)
+            assert angle_val_b is not None and angle_val_b.can_evaluate_to(QoalaInteger)
+            return QoalaOperation.create_expression_for_op(
+                RotateX, qubit=self, n=angle_val_a, d=angle_val_b
+            )
 
     def rot_Y(
         self,
@@ -203,12 +222,22 @@ class QubitBaseOperations(QoalaQubit, ABC):
         d: QoalaInteger | QoalaExpression | int = 0,
         angle: QoalaFloat | QoalaExpression | float | None = None,
     ) -> QoalaOperation:
-        angle_val = QubitBaseOperations._process_angles(n, d, angle, self.debug_info)
+        angle_val_a, angle_val_b = QubitBaseOperations._process_angles(
+            n, d, angle, self.debug_info
+        )
         from qoala.ast.operations.quantum import RotateY
 
-        return QoalaOperation.create_expression_for_op(
-            RotateY, qubit=self, angle=angle_val
-        )
+        if angle_val_a.can_evaluate_to(QoalaFloat):
+            return QoalaOperation.create_expression_for_op(
+                RotateY, qubit=self, angle=angle_val_a
+            )
+        else:
+            # Here we assume that n and d are given, and they can evaluate to QoalaInteger
+            assert angle_val_a.can_evaluate_to(QoalaInteger)
+            assert angle_val_b is not None and angle_val_b.can_evaluate_to(QoalaInteger)
+            return QoalaOperation.create_expression_for_op(
+                RotateY, qubit=self, n=angle_val_a, d=angle_val_b
+            )
 
     def rot_Z(
         self,
@@ -216,12 +245,22 @@ class QubitBaseOperations(QoalaQubit, ABC):
         d: QoalaInteger | QoalaExpression | int = 0,
         angle: QoalaFloat | QoalaExpression | float | None = None,
     ) -> QoalaOperation:
-        angle_val = QubitBaseOperations._process_angles(n, d, angle, self.debug_info)
+        angle_val_a, angle_val_b = QubitBaseOperations._process_angles(
+            n, d, angle, self.debug_info
+        )
         from qoala.ast.operations.quantum import RotateZ
 
-        return QoalaOperation.create_expression_for_op(
-            RotateZ, qubit=self, angle=angle_val
-        )
+        if angle_val_a.can_evaluate_to(QoalaFloat):
+            return QoalaOperation.create_expression_for_op(
+                RotateZ, qubit=self, angle=angle_val_a
+            )
+        else:
+            # Here we assume that n and d are given, and they can evaluate to QoalaInteger
+            assert angle_val_a.can_evaluate_to(QoalaInteger)
+            assert angle_val_b is not None and angle_val_b.can_evaluate_to(QoalaInteger)
+            return QoalaOperation.create_expression_for_op(
+                RotateZ, qubit=self, n=angle_val_a, d=angle_val_b
+            )
 
     def cnot(self, target: Self) -> QoalaOperation:
         from qoala.ast.operations.quantum import CNotGate
