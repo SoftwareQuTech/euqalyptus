@@ -914,24 +914,29 @@ class TestBranchingInstructionsBindings:
         _, module = recapture_qubit_val.compile()
         assert isinstance(module, QoalaModule)
         expected_asm = """module {
+  qnet.remote @Bob
   qnet.func @recapture_qubit_val() {
-    %c0_i32 = arith.constant 0 : i32
-    %c4_i32 = arith.constant 4 : i32
-    %c7_i32 = arith.constant 7 : i32
-    %0 = arith.cmpi slt, %c4_i32, %c7_i32 : i32
-    %1 = scf.if %0 -> (i32) {
-      %c1_i32 = arith.constant 1 : i32
-      %3 = arith.addi %c0_i32, %c1_i32 : i32
-      %c2_i32 = arith.constant 2 : i32
-      %4 = arith.muli %3, %c2_i32 : i32
-      scf.yield %4 : i32
+    %0 = qnet.eprs  {remote = @Bob} : !qnet.qubit
+    %1 = qnet.recv_int  {remote = @Bob} : i32
+    %2 = qnet.recv_int  {remote = @Bob} : i32
+    %c1_i32 = arith.constant 1 : i32
+    %3 = arith.cmpi eq, %1, %c1_i32 : i32
+    %4 = scf.if %3 -> (!qnet.qubit) {
+      %8 = qnet.z %0 : !qnet.qubit
+      scf.yield %8 : !qnet.qubit
     } else {
-      %c0_i32_0 = arith.constant 0 : i32
-      scf.yield %c0_i32_0 : i32
+      scf.yield %0 : !qnet.qubit
     }
-    %c10_i32 = arith.constant 10 : i32
-    %2 = arith.muli %1, %c10_i32 : i32
-    qnet.return %2 : i32
+    %c1_i32_0 = arith.constant 1 : i32
+    %5 = arith.cmpi eq, %2, %c1_i32_0 : i32
+    %6 = scf.if %5 -> (!qnet.qubit) {
+      %8 = qnet.x %4 : !qnet.qubit
+      scf.yield %8 : !qnet.qubit
+    } else {
+      scf.yield %4 : !qnet.qubit
+    }
+    %7 = qnet.measure %6 : i1
+    qnet.return
   }
 }
 """

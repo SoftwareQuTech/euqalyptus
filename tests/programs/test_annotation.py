@@ -271,7 +271,7 @@ class TestQoalaDecorator:
                     0
                 ]._main_block.operations
             )
-            == 14
+            == 15
         )
         program_body = program_local_qubit_with_complex_gates.module.functions[
             0
@@ -284,33 +284,37 @@ class TestQoalaDecorator:
         assert isinstance(program_body[4], QoalaLocalQubit)
         # This is the angle value computed at compile time for n = 10 and d = 30, immediate
         # arguments of the rot_X operation
-        assert isinstance(program_body[5], QoalaFloat)
-        assert program_body[5].value == 2.9258361585343192e-08
-        assert isinstance(program_body[6], RotateX)
-        assert program_body[6].qubit is program_body[3]
-        assert program_body[6].angle is program_body[5]
+        assert isinstance(program_body[5], QoalaInteger)
+        assert program_body[5].value == 10
+        assert isinstance(program_body[6], QoalaInteger)
+        assert program_body[6].value == 30
+        assert isinstance(program_body[7], RotateX)
+        assert program_body[7].qubit is program_body[3]
+        assert program_body[7].angle is None
+        assert program_body[7].n is program_body[5]
+        assert program_body[7].d is program_body[6]
         # The next rotation will use the immediate value of the angle, ignoring the values of "n" and "d"
         # The given angle value:
-        assert isinstance(program_body[7], QoalaFloat)
-        assert program_body[7].value == 10.5
+        assert isinstance(program_body[8], QoalaFloat)
+        assert program_body[8].value == 10.5
         # Rotate operation
-        assert isinstance(program_body[8], RotateY)
-        assert program_body[8].qubit is program_body[3]
-        assert program_body[8].angle is program_body[7]
+        assert isinstance(program_body[9], RotateY)
+        assert program_body[9].qubit is program_body[3]
+        assert program_body[9].angle is program_body[8]
         # The "rot_Z" operation uses an angle value from a constant declared above
         # Rotation operation
-        assert isinstance(program_body[9], RotateZ)
-        assert program_body[9].qubit is program_body[3]
-        assert program_body[9].angle is program_body[2]
-
-        assert isinstance(program_body[10], CNotGate)
+        assert isinstance(program_body[10], RotateZ)
         assert program_body[10].qubit is program_body[3]
-        assert program_body[10].target is program_body[4]
-        assert isinstance(program_body[11], QubitMeasure)
+        assert program_body[10].angle is program_body[2]
+
+        assert isinstance(program_body[11], CNotGate)
         assert program_body[11].qubit is program_body[3]
-
+        assert program_body[11].target is program_body[4]
         assert isinstance(program_body[12], QubitMeasure)
-        assert program_body[12].qubit is program_body[4]
+        assert program_body[12].qubit is program_body[3]
 
-        assert isinstance(program_body[13], ReturnResultsOp)
-        assert program_body[13].values == [program_body[11], program_body[12]]
+        assert isinstance(program_body[13], QubitMeasure)
+        assert program_body[13].qubit is program_body[4]
+
+        assert isinstance(program_body[14], ReturnResultsOp)
+        assert program_body[14].values == [program_body[12], program_body[13]]

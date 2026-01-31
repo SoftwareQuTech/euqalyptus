@@ -303,22 +303,12 @@ class TestQoalaQnetPythonBindingsQuantum:
   qnet.func @quantum_entanglement_program() {
     %0 = qnet.eprs  {remote = @Bob} : !qnet.qubit
     %1 = qnet.recv_int  {remote = @Bob} : i32
-    %cst = arith.constant 0.000000e+00 : f32
-    %cst_0 = arith.constant 3.14159274 : f32
-    %2 = arith.uitofp %1 : i32 to f32
-    %3 = arith.mulf %2, %cst_0 : f32
-    %4 = math.exp2 %cst : f32
-    %5 = arith.divf %3, %4 : f32
-    %6 = qnet.rot_x %0, %5 : !qnet.qubit
-    %7 = qnet.recv_int  {remote = @Bob} : i32
-    %cst_1 = arith.constant 0.000000e+00 : f32
-    %cst_2 = arith.constant 3.14159274 : f32
-    %8 = arith.uitofp %7 : i32 to f32
-    %9 = arith.mulf %8, %cst_2 : f32
-    %10 = math.exp2 %cst_1 : f32
-    %11 = arith.divf %9, %10 : f32
-    %12 = qnet.rot_y %6, %11 : !qnet.qubit
-    %13 = qnet.measure %12 : i1
+    %c0_i32 = arith.constant 0 : i32
+    %2 = qnet.rot_x_int %0, %1, %c0_i32 : !qnet.qubit
+    %3 = qnet.recv_int  {remote = @Bob} : i32
+    %c0_i32_0 = arith.constant 0 : i32
+    %4 = qnet.rot_y_int %2, %3, %c0_i32_0 : !qnet.qubit
+    %5 = qnet.measure %4 : i1
     qnet.return
   }
 }
