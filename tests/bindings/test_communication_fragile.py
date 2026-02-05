@@ -2,11 +2,11 @@ import pytest
 from sys import version_info
 from pathlib import Path
 
-from qoala import QoalaProgram, QoalaModule
-from qoala.errors import NotYetCompiledError
-from qoala.operations import Remote
-from qoala.operations.communication import recv_floats
-from qoala.types.quantum import Entangle
+from euqalyptus import QoalaProgram, QoalaModule
+from euqalyptus.errors import NotYetCompiledError
+from euqalyptus.operations import Remote
+from euqalyptus.operations.communication import recv_floats
+from euqalyptus.types.quantum import Entangle
 
 
 @QoalaProgram

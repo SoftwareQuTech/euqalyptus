@@ -1,10 +1,10 @@
 import pytest
 
-import qoala.utils.debug_info as dbg_info
-from qoala import QoalaProgram
-from qoala.ast.operations.bitwise import AndOp, OrOp, XorOp, NotOp
-from qoala.ast.value import QoalaBool
-from qoala.types.classical.booleans import Bool
+import euqalyptus.utils.debug_info as dbg_info
+from euqalyptus import QoalaProgram
+from euqalyptus.ast.operations.bitwise import AndOp, OrOp, XorOp, NotOp
+from euqalyptus.ast.value import QoalaBool
+from euqalyptus.types.classical.booleans import Bool
 from tests.helpers_tests import DummyQoalaProgram
 
 

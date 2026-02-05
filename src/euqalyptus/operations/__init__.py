@@ -1,0 +1,19 @@
+from euqalyptus import QoalaProgram
+from euqalyptus.ast.operations.communication import DeclaredRemote
+
+
+class Remote:
+    """
+    Declares a remote name to be used for entangling qubits.
+    """
+
+    def __new__(cls, name: str, *args, **kwargs):
+        remote = QoalaProgram.get_declared_remote(name)
+        if remote is not None:
+            return remote
+        else:
+            return DeclaredRemote(remote_name=name)
+
+    def __init__(self, name: str):
+        # Nothing to do here
+        pass

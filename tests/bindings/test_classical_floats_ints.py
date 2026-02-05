@@ -1,8 +1,8 @@
 import pytest
 
-from qoala import QoalaProgram, QoalaModule
-from qoala.errors import NotYetCompiledError
-from qoala.types.classical import IntArray, FloatArray, Float, Int
+from euqalyptus import QoalaProgram, QoalaModule
+from euqalyptus.errors import NotYetCompiledError
+from euqalyptus.types.classical import IntArray, FloatArray, Float, Int
 
 
 @QoalaProgram

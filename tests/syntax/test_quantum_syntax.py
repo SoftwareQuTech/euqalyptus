@@ -1,12 +1,12 @@
 import pytest
 
-import qoala.utils.debug_info as dbg_info
-from qoala import QoalaProgram
-from qoala.ast.operations.quantum import QubitMeasure
-from qoala.ast.qubit import QoalaQubit
-from qoala.types.classical.floats import Float
-from qoala.types.classical.integer import Int
-from qoala.types.quantum.qubit import LocalQubit
+import euqalyptus.utils.debug_info as dbg_info
+from euqalyptus import QoalaProgram
+from euqalyptus.ast.operations.quantum import QubitMeasure
+from euqalyptus.ast.qubit import QoalaQubit
+from euqalyptus.types.classical.floats import Float
+from euqalyptus.types.classical.integer import Int
+from euqalyptus.types.quantum.qubit import LocalQubit
 from tests.helpers_tests import DummyQoalaProgram
 
 

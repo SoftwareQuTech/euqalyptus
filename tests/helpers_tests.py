@@ -1,4 +1,4 @@
-from qoala import QoalaProgram
+from euqalyptus import QoalaProgram
 
 
 class DummyQoalaProgram(QoalaProgram):

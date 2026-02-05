@@ -3,12 +3,12 @@ from typing import Type, Tuple, Union, List
 
 import pytest
 
-import qoala.utils.debug_info as dbg_info
-from qoala import QoalaProgram
-from qoala.ast.value import QoalaArray, QoalaInteger, QoalaFloat
-from qoala.types.classical.arrays import IntArray, FloatArray
-from qoala.types.classical.floats import Float
-from qoala.types.classical.integer import Int32
+import euqalyptus.utils.debug_info as dbg_info
+from euqalyptus import QoalaProgram
+from euqalyptus.ast.value import QoalaArray, QoalaInteger, QoalaFloat
+from euqalyptus.types.classical.arrays import IntArray, FloatArray
+from euqalyptus.types.classical.floats import Float
+from euqalyptus.types.classical.integer import Int32
 from tests.helpers_tests import DummyQoalaProgram
 
 
