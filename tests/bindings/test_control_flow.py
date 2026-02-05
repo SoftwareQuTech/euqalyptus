@@ -1,10 +1,10 @@
 import pytest
 
-from qoala import QoalaProgram, QoalaModule
-from qoala.errors import NotYetCompiledError
-from qoala.operations.control_flow import return_results
-from qoala.types.classical import Int, Float
-from qoala.types.quantum import LocalQubit
+from euqalyptus import QoalaProgram, QoalaModule
+from euqalyptus.errors import NotYetCompiledError
+from euqalyptus.operations.control_flow import return_results
+from euqalyptus.types.classical import Int, Float
+from euqalyptus.types.quantum import LocalQubit
 
 
 @QoalaProgram

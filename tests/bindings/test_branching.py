@@ -1,8 +1,8 @@
 import pytest
 
-from qoala import QoalaProgram, NotYetCompiledError, QoalaModule
-from qoala.operations import Remote
-from qoala.operations.branching import (
+from euqalyptus import QoalaProgram, NotYetCompiledError, QoalaModule
+from euqalyptus.operations import Remote
+from euqalyptus.operations.branching import (
     if_cond,
     if_eq,
     if_neq,
@@ -11,11 +11,11 @@ from qoala.operations.branching import (
     if_gt,
     if_ge,
 )
-from qoala.operations.communication import recv_int
-from qoala.operations.control_flow import return_results
-from qoala.types.classical import Int, ScopedVar, Float
-from qoala.types.quantum import LocalQubit, ScopedQubit, Entangle
-from qoala.utils import debug_info as dbg_info
+from euqalyptus.operations.communication import recv_int
+from euqalyptus.operations.control_flow import return_results
+from euqalyptus.types.classical import Int, ScopedVar, Float
+from euqalyptus.types.quantum import LocalQubit, ScopedQubit, Entangle
+from euqalyptus.utils import debug_info as dbg_info
 
 
 @QoalaProgram

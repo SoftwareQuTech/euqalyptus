@@ -1,10 +1,10 @@
 import pytest
 
-from qoala import QoalaProgram, QoalaModule
-from qoala.errors import NotYetCompiledError
-from qoala.operations import Remote
-from qoala.operations.branching import if_cond
-from qoala.operations.communication import (
+from euqalyptus import QoalaProgram, QoalaModule
+from euqalyptus.errors import NotYetCompiledError
+from euqalyptus.operations import Remote
+from euqalyptus.operations.branching import if_cond
+from euqalyptus.operations.communication import (
     recv_int,
     recv_ints,
     recv_floats,
@@ -12,8 +12,8 @@ from qoala.operations.communication import (
     send_ints,
     recv_float,
 )
-from qoala.types.classical import IntArray, FloatArray, Int
-from qoala.types.quantum import Entangle, LocalQubit
+from euqalyptus.types.classical import IntArray, FloatArray, Int
+from euqalyptus.types.quantum import Entangle, LocalQubit
 
 
 @QoalaProgram

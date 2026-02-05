@@ -2,8 +2,8 @@ from typing import List, Any
 
 import pytest
 
-from qoala import QoalaProgram, QoalaProgramBase
-from qoala.errors import QuantumProgramNotImplementedError
+from euqalyptus import QoalaProgram, QoalaProgramBase
+from euqalyptus.errors import QuantumProgramNotImplementedError
 
 
 class _EmptyQoalaProgramBase(QoalaProgramBase):

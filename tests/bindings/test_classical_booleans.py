@@ -1,8 +1,8 @@
 import pytest
 
-from qoala import QoalaProgram, QoalaModule
-from qoala.errors import NotYetCompiledError
-from qoala.types.classical.booleans import Bool
+from euqalyptus import QoalaProgram, QoalaModule
+from euqalyptus.errors import NotYetCompiledError
+from euqalyptus.types.classical.booleans import Bool
 
 
 @QoalaProgram

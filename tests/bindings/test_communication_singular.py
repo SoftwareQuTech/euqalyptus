@@ -1,9 +1,9 @@
 import pytest
 
-from qoala import QoalaProgram, QoalaModule
-from qoala.errors import NotYetCompiledError
-from qoala.operations import Remote
-from qoala.operations.communication import (
+from euqalyptus import QoalaProgram, QoalaModule
+from euqalyptus.errors import NotYetCompiledError
+from euqalyptus.operations import Remote
+from euqalyptus.operations.communication import (
     recv_int,
     recv_float,
     recv_ints,
@@ -13,8 +13,8 @@ from qoala.operations.communication import (
     send_ints,
     send_floats,
 )
-from qoala.types.classical import IntArray, FloatArray
-from qoala.types.quantum import Entangle, LocalQubit
+from euqalyptus.types.classical import IntArray, FloatArray
+from euqalyptus.types.quantum import Entangle, LocalQubit
 
 
 @QoalaProgram

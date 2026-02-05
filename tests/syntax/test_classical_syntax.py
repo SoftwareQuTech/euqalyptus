@@ -2,17 +2,17 @@ from typing import Generic, TypeVar
 
 import pytest
 
-import qoala.utils.debug_info as dbg_info
-from qoala import QoalaProgram
-from qoala.ast.value import (
+import euqalyptus.utils.debug_info as dbg_info
+from euqalyptus import QoalaProgram
+from euqalyptus.ast.value import (
     QoalaExpression,
     QoalaInteger,
     QoalaFloat,
     QoalaArray,
 )
-from qoala.types.classical.arrays import IntArray, FloatArray
-from qoala.types.classical.floats import Float, Double, QoalaFloatingPointType
-from qoala.types.classical.integer import Int32, UInt32, Int, QoalaIntegerType
+from euqalyptus.types.classical.arrays import IntArray, FloatArray
+from euqalyptus.types.classical.floats import Float, Double, QoalaFloatingPointType
+from euqalyptus.types.classical.integer import Int32, UInt32, Int, QoalaIntegerType
 from tests.helpers_tests import DummyQoalaProgram
 
 _Base_Type_Int = TypeVar("_Base_Type_Int", bound=QoalaIntegerType)

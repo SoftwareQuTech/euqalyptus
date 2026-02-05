@@ -1,8 +1,8 @@
-from qoala import QoalaProgram
-from qoala.ast.operations.arrays import GetItem, SetItem
-from qoala.ast.operations.control_flow import ReturnResultsOp
-from qoala.ast.operations.numeric import Add, Subtract, Multiply, Divide
-from qoala.ast.operations.quantum import (
+from euqalyptus import QoalaProgram
+from euqalyptus.ast.operations.arrays import GetItem, SetItem
+from euqalyptus.ast.operations.control_flow import ReturnResultsOp
+from euqalyptus.ast.operations.numeric import Add, Subtract, Multiply, Divide
+from euqalyptus.ast.operations.quantum import (
     XGate,
     YGate,
     ZGate,
@@ -15,13 +15,13 @@ from qoala.ast.operations.quantum import (
     RotateZ,
     CNotGate,
 )
-from qoala.ast.qubit import QoalaLocalQubit
-from qoala.ast.value import QoalaInteger, QoalaFloat, QoalaArray
-from qoala.operations.control_flow import return_results
-from qoala.types.classical.arrays import IntArray, FloatArray
-from qoala.types.classical.floats import Float
-from qoala.types.classical.integer import Int
-from qoala.types.quantum.qubit import LocalQubit
+from euqalyptus.ast.qubit import QoalaLocalQubit
+from euqalyptus.ast.value import QoalaInteger, QoalaFloat, QoalaArray
+from euqalyptus.operations.control_flow import return_results
+from euqalyptus.types.classical.arrays import IntArray, FloatArray
+from euqalyptus.types.classical.floats import Float
+from euqalyptus.types.classical.integer import Int
+from euqalyptus.types.quantum.qubit import LocalQubit
 
 
 @QoalaProgram

@@ -1,0 +1,170 @@
+from euqalyptus import QoalaExpression
+from euqalyptus.ast.operations.branching import ConditionalBranching
+from euqalyptus.ast.operations.order import (
+    EqualsOp,
+    NotEqualsOp,
+    LessThanOp,
+    LessThanOrEqualsOp,
+    GreaterThanOp,
+    GreaterThanOrEqualsOp,
+)
+from euqalyptus.ast.value import QoalaBool
+from euqalyptus.errors import OperandMismatchError, NotBooleanArgumentError
+from euqalyptus.types.classical.booleans import Bool
+from euqalyptus.types.classical.floats import QoalaFloatingPointType
+from euqalyptus.types.classical.integer import QoalaIntegerType
+from euqalyptus.utils.debug_info import get_debug_info
+
+
+class IfCondition:
+    def __new__(cls, *args: QoalaExpression, **kwargs):
+        if len(args) >= 1:
+            condition_value = cls._materialize_immediate(args[0])
+            if condition_value.can_evaluate_to(QoalaBool):
+                kwargs["condition"] = condition_value
+            else:
+                raise NotBooleanArgumentError("if_cond")
+        return ConditionalBranching(**kwargs)
+
+    @classmethod
+    def _materialize_immediate(cls, arg: QoalaExpression | int | float):
+        if isinstance(arg, QoalaExpression):
+            return arg
+        from euqalyptus.ast.value import QoalaNumericValue
+
+        return QoalaNumericValue.from_immediate(arg, get_debug_info())
+
+    def __init__(self, condition: Bool | bool):
+        # Nothing to do here
+        pass
+
+    def __enter__(self):
+        # Nothing to do here
+        pass
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        # Nothing to do here
+        pass
+
+
+class IfEq(IfCondition):
+    def __new__(cls, *args: QoalaExpression, **kwargs):
+        if len(args) >= 2:
+            lhs = cls._materialize_immediate(args[0])
+            rhs = cls._materialize_immediate(args[1])
+            kwargs["condition"] = EqualsOp(lhs, rhs)
+        else:
+            raise OperandMismatchError(
+                f"Branching of type '{cls.__name__}' requires 2 arguments."
+            )
+        return ConditionalBranching(**kwargs)
+
+    def __init__(
+        self, *operands: QoalaIntegerType | QoalaFloatingPointType | int | float
+    ):
+        # Nothing to do here - Call to super is to avoid a warning, but it's never called
+        super().__init__(*operands)  # type: ignore[arg-type]
+
+
+class IfNeq(IfCondition):
+    def __new__(cls, *args: QoalaExpression, **kwargs):
+        if len(args) >= 2:
+            lhs = cls._materialize_immediate(args[0])
+            rhs = cls._materialize_immediate(args[1])
+            kwargs["condition"] = NotEqualsOp(lhs, rhs)
+        else:
+            raise OperandMismatchError(
+                f"Branching of type '{cls.__name__}' requires 2 arguments."
+            )
+        return ConditionalBranching(**kwargs)
+
+    def __init__(
+        self, *operands: QoalaIntegerType | QoalaFloatingPointType | int | float
+    ):
+        # Nothing to do here - Call to super is to avoid a warning, but it's never called
+        super().__init__(*operands)  # type: ignore[arg-type]
+
+
+class IfLt(IfCondition):
+    def __new__(cls, *args: QoalaExpression, **kwargs):
+        if len(args) >= 2:
+            lhs = cls._materialize_immediate(args[0])
+            rhs = cls._materialize_immediate(args[1])
+            kwargs["condition"] = LessThanOp(lhs, rhs)
+        else:
+            raise OperandMismatchError(
+                f"Branching of type '{cls.__name__}' requires 2 arguments."
+            )
+        return ConditionalBranching(**kwargs)
+
+    def __init__(
+        self, *operands: QoalaIntegerType | QoalaFloatingPointType | int | float
+    ):
+        # Nothing to do here - Call to super is to avoid a warning, but it's never called
+        super().__init__(*operands)  # type: ignore[arg-type]
+
+
+class IfLe(IfCondition):
+    def __new__(cls, *args: QoalaExpression, **kwargs):
+        if len(args) >= 2:
+            lhs = cls._materialize_immediate(args[0])
+            rhs = cls._materialize_immediate(args[1])
+            kwargs["condition"] = LessThanOrEqualsOp(lhs, rhs)
+        else:
+            raise OperandMismatchError(
+                f"Branching of type '{cls.__name__}' requires 2 arguments."
+            )
+        return ConditionalBranching(**kwargs)
+
+    def __init__(
+        self, *operands: QoalaIntegerType | QoalaFloatingPointType | int | float
+    ):
+        # Nothing to do here - Call to super is to avoid a warning, but it's never called
+        super().__init__(*operands)  # type: ignore[arg-type]
+
+
+class IfGt(IfCondition):
+    def __new__(cls, *args: QoalaExpression, **kwargs):
+        if len(args) >= 2:
+            lhs = cls._materialize_immediate(args[0])
+            rhs = cls._materialize_immediate(args[1])
+            kwargs["condition"] = GreaterThanOp(lhs, rhs)
+        else:
+            raise OperandMismatchError(
+                f"Branching of type '{cls.__name__}' requires 2 arguments."
+            )
+        return ConditionalBranching(**kwargs)
+
+    def __init__(
+        self, *operands: QoalaIntegerType | QoalaFloatingPointType | int | float
+    ):
+        # Nothing to do here - Call to super is to avoid a warning, but it's never called
+        super().__init__(*operands)  # type: ignore[arg-type]
+
+
+class IfGe(IfCondition):
+    def __new__(cls, *args: QoalaExpression, **kwargs):
+        if len(args) >= 2:
+            lhs = cls._materialize_immediate(args[0])
+            rhs = cls._materialize_immediate(args[1])
+            kwargs["condition"] = GreaterThanOrEqualsOp(lhs, rhs)
+        else:
+            raise OperandMismatchError(
+                f"Branching of type '{cls.__name__}' requires 2 arguments."
+            )
+        return ConditionalBranching(**kwargs)
+
+    def __init__(
+        self, *operands: QoalaIntegerType | QoalaFloatingPointType | int | float
+    ):
+        # Nothing to do here - Call to super is to avoid a warning, but it's never called
+        super().__init__(*operands)  # type: ignore[arg-type]
+
+
+if_cond = IfCondition
+if_eq = IfEq
+if_neq = IfNeq
+if_lt = IfLt
+if_le = IfLe
+if_ge = IfGe
+if_gt = IfGt

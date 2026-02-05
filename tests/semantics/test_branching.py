@@ -1,16 +1,16 @@
 import pytest
 
-from qoala import QoalaProgram, CompilationContext
-from qoala.ast.model import (
+from euqalyptus import QoalaProgram, CompilationContext
+from euqalyptus.ast.model import (
     QoalaBlock,
     QoalaBranchTerminator,
     QoalaRuntimeValue,
     QoalaRuntimeQubit,
 )
-from qoala.ast.operations.branching import ConditionalBranching
-from qoala.ast.operations.control_flow import ReturnResultsOp
-from qoala.ast.operations.numeric import Add, Multiply
-from qoala.ast.operations.order import (
+from euqalyptus.ast.operations.branching import ConditionalBranching
+from euqalyptus.ast.operations.control_flow import ReturnResultsOp
+from euqalyptus.ast.operations.numeric import Add, Multiply
+from euqalyptus.ast.operations.order import (
     EqualsOp,
     NotEqualsOp,
     LessThanOp,
@@ -18,12 +18,12 @@ from qoala.ast.operations.order import (
     GreaterThanOp,
     GreaterThanOrEqualsOp,
 )
-from qoala.ast.operations.quantum import QubitMeasure, XGate, YGate, HGate
-from qoala.ast.qubit import QoalaLocalQubit, QoalaEprs
-from qoala.ast.value import QoalaBool, QoalaInteger
-from qoala.errors import ExpressionNotAllowedInBlockError, AssignationError
-from qoala.operations import Remote
-from qoala.operations.branching import (
+from euqalyptus.ast.operations.quantum import QubitMeasure, XGate, YGate, HGate
+from euqalyptus.ast.qubit import QoalaLocalQubit, QoalaEprs
+from euqalyptus.ast.value import QoalaBool, QoalaInteger
+from euqalyptus.errors import ExpressionNotAllowedInBlockError, AssignationError
+from euqalyptus.operations import Remote
+from euqalyptus.operations.branching import (
     if_cond,
     if_eq,
     if_neq,
@@ -32,12 +32,12 @@ from qoala.operations.branching import (
     if_gt,
     if_ge,
 )
-from qoala.operations.control_flow import return_results
-from qoala.types.classical import Int, Float, ScopedVar
-from qoala.types.classical.booleans import Bool
-from qoala.types.quantum import LocalQubit, ScopedQubit
-from qoala.types.quantum.qubit import Entangle
-from qoala.utils import debug_info as dbg_info
+from euqalyptus.operations.control_flow import return_results
+from euqalyptus.types.classical import Int, Float, ScopedVar
+from euqalyptus.types.classical.booleans import Bool
+from euqalyptus.types.quantum import LocalQubit, ScopedQubit
+from euqalyptus.types.quantum.qubit import Entangle
+from euqalyptus.utils import debug_info as dbg_info
 from tests.helpers_tests import DummyQoalaProgram
 
 

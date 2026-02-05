@@ -1,12 +1,12 @@
 import pytest
 
-import qoala.utils.debug_info as dbg_info
-from qoala import QoalaProgram, CompilationContext
-from qoala.ast.operations.branching import ConditionalBranching
-from qoala.ast.operations.casts import IntToFloat, BitToInt
-from qoala.ast.operations.communication import RecvIntOp, RecvFloatOp
-from qoala.ast.operations.numeric import Add, Subtract, Multiply, Divide
-from qoala.ast.operations.order import (
+import euqalyptus.utils.debug_info as dbg_info
+from euqalyptus import QoalaProgram, CompilationContext
+from euqalyptus.ast.operations.branching import ConditionalBranching
+from euqalyptus.ast.operations.casts import IntToFloat, BitToInt
+from euqalyptus.ast.operations.communication import RecvIntOp, RecvFloatOp
+from euqalyptus.ast.operations.numeric import Add, Subtract, Multiply, Divide
+from euqalyptus.ast.operations.order import (
     EqualsOp,
     LessThanOp,
     GreaterThanOp,
@@ -14,19 +14,19 @@ from qoala.ast.operations.order import (
     GreaterThanOrEqualsOp,
     NotEqualsOp,
 )
-from qoala.ast.value import QoalaInteger, QoalaFloat, Signedness
-from qoala.errors import (
+from euqalyptus.ast.value import QoalaInteger, QoalaFloat, Signedness
+from euqalyptus.errors import (
     InvalidArrayArgumentError,
     NotUnsignedIntegerArgumentError,
     NotIntegerArgumentError,
 )
-from qoala.operations import Remote
-from qoala.operations.branching import if_cond
-from qoala.operations.communication import recv_int, recv_float
-from qoala.types.classical.arrays import IntArray, FloatArray
-from qoala.types.classical.floats import Float
-from qoala.types.classical.integer import Int32, UInt32, Int
-from qoala.types.quantum import Entangle, LocalQubit
+from euqalyptus.operations import Remote
+from euqalyptus.operations.branching import if_cond
+from euqalyptus.operations.communication import recv_int, recv_float
+from euqalyptus.types.classical.arrays import IntArray, FloatArray
+from euqalyptus.types.classical.floats import Float
+from euqalyptus.types.classical.integer import Int32, UInt32, Int
+from euqalyptus.types.quantum import Entangle, LocalQubit
 from tests.helpers_tests import DummyQoalaProgram
 
 

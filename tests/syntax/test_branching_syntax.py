@@ -1,10 +1,10 @@
 import pytest
 
-from qoala import QoalaExpression, QoalaProgram, CompilationContext
-from qoala.ast.model import QoalaBlock
-from qoala.ast.operations.branching import ConditionalBranching
-from qoala.operations import Remote
-from qoala.operations.branching import (
+from euqalyptus import QoalaExpression, QoalaProgram, CompilationContext
+from euqalyptus.ast.model import QoalaBlock
+from euqalyptus.ast.operations.branching import ConditionalBranching
+from euqalyptus.operations import Remote
+from euqalyptus.operations.branching import (
     if_cond,
     if_eq,
     if_neq,
@@ -13,12 +13,12 @@ from qoala.operations.branching import (
     if_gt,
     if_ge,
 )
-from qoala.operations.control_flow import return_results
-from qoala.types.classical import Int, ScopedVar
-from qoala.types.classical.booleans import Bool
-from qoala.types.quantum import LocalQubit, ScopedQubit
-from qoala.types.quantum.qubit import Entangle
-from qoala.utils import debug_info as dbg_info
+from euqalyptus.operations.control_flow import return_results
+from euqalyptus.types.classical import Int, ScopedVar
+from euqalyptus.types.classical.booleans import Bool
+from euqalyptus.types.quantum import LocalQubit, ScopedQubit
+from euqalyptus.types.quantum.qubit import Entangle
+from euqalyptus.utils import debug_info as dbg_info
 from tests.helpers_tests import DummyQoalaProgram
 
 

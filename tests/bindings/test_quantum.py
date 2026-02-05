@@ -1,9 +1,9 @@
 import pytest
 
-from qoala import QoalaProgram, QoalaModule
-from qoala.errors import NotYetCompiledError
-from qoala.types.classical import Float, Int
-from qoala.types.quantum import LocalQubit
+from euqalyptus import QoalaProgram, QoalaModule
+from euqalyptus.errors import NotYetCompiledError
+from euqalyptus.types.classical import Float, Int
+from euqalyptus.types.quantum import LocalQubit
 
 
 @QoalaProgram
