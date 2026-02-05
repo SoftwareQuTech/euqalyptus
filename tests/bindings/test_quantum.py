@@ -70,10 +70,11 @@ class TestQoalaQnetPythonBindingsQuantum:
     %cst = arith.constant 2.120000e+01 : f32
     %0 = qnet.new_qubit : !qnet.qubit
     %1 = qnet.new_qubit : !qnet.qubit
-    %cst_0 = arith.constant 7.85398149 : f32
-    %2 = qnet.rot_x %0, %cst_0 : !qnet.qubit
-    %cst_1 = arith.constant 1.050000e+01 : f32
-    %3 = qnet.rot_y %2, %cst_1 : !qnet.qubit
+    %c10_i32 = arith.constant 10 : i32
+    %c2_i32 = arith.constant 2 : i32
+    %2 = qnet.rot_x_int %0, %c10_i32, %c2_i32 : !qnet.qubit
+    %cst_0 = arith.constant 1.050000e+01 : f32
+    %3 = qnet.rot_y %2, %cst_0 : !qnet.qubit
     %4 = qnet.rot_z %3, %cst : !qnet.qubit
     %qout0, %qout1 = qnet.cnot %4, %1 : !qnet.qubit, !qnet.qubit
     %5 = qnet.measure %qout0 : i1
@@ -96,10 +97,12 @@ class TestQoalaQnetPythonBindingsQuantum:
         expected_asm = """module {
   qnet.func @quantum_base_gates_program_b() {
     %0 = qnet.new_qubit : !qnet.qubit
-    %cst = arith.constant 0.785398185 : f32
-    %1 = qnet.rot_x %0, %cst : !qnet.qubit
-    %cst_0 = arith.constant 3.14159274 : f32
-    %2 = qnet.rot_y %1, %cst_0 : !qnet.qubit
+    %c2_i32 = arith.constant 2 : i32
+    %c3_i32 = arith.constant 3 : i32
+    %1 = qnet.rot_x_int %0, %c2_i32, %c3_i32 : !qnet.qubit
+    %c1_i32 = arith.constant 1 : i32
+    %c0_i32 = arith.constant 0 : i32
+    %2 = qnet.rot_y_int %1, %c1_i32, %c0_i32 : !qnet.qubit
     %3 = qnet.measure %2 : i1
     qnet.return
   }

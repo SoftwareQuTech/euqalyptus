@@ -13,6 +13,7 @@ from qoala.ast.value import (
     QoalaFloat,
     QoalaNumericValue,
     QoalaBit,
+    QoalaInteger,
 )
 from qoala.utils.debug_info import get_debug_info
 
@@ -54,14 +55,22 @@ class QubitMeasure(_QubitBaseOperation, QoalaBit):
 
 @dataclass(init=False)
 class Rotate(_QubitBaseOperation, ABC):
-    angle: QoalaFloat | QoalaExpression | float
+    n: QoalaInteger | QoalaExpression | int | None
+    d: QoalaInteger | QoalaExpression | int | None
+    angle: QoalaFloat | QoalaExpression | float | None
 
     def __init__(
-        self, qubit: QoalaExpression, angle: QoalaFloat | QoalaExpression | float
+        self,
+        qubit: QoalaExpression,
+        n: QoalaInteger | QoalaExpression | int | None = None,
+        d: QoalaInteger | QoalaExpression | int | None = None,
+        angle: QoalaFloat | QoalaExpression | float | None = None,
     ):
         super().__init__(qubit=qubit)
         # We assume the users of this class will pass _at least_ default values for all operands
         self.angle = angle
+        self.n = n
+        self.d = d
         from qoala import QoalaProgram
 
         QoalaProgram.current_function().append_to_current_block(self)
@@ -70,9 +79,13 @@ class Rotate(_QubitBaseOperation, ABC):
 class RotateX(Rotate):
 
     def __init__(
-        self, qubit: QoalaExpression, angle: QoalaFloat | QoalaExpression | float
+        self,
+        qubit: QoalaExpression,
+        n: QoalaInteger | QoalaExpression | int | None = None,
+        d: QoalaInteger | QoalaExpression | int | None = None,
+        angle: QoalaFloat | QoalaExpression | float | None = None,
     ):
-        super().__init__(qubit=qubit, angle=angle)
+        super().__init__(qubit=qubit, n=n, d=d, angle=angle)
 
     @checkbaseir
     def compile(self, ctx: Context, location: Optional[Location] = None) -> None:  # type: ignore[override]
@@ -82,11 +95,22 @@ class RotateX(Rotate):
             col=self.debug_info.col_start,
             context=ctx,
         )
-        # We first add this operation to the program
-        assert isinstance(self.angle, (QoalaFloat, QoalaExpression))
-        self.ir_value = qnet.rot_x(
-            qin=self.qubit.ir_value, angle=self.angle.ir_value, loc=source_location
-        )
+        if self.angle is not None:
+            assert isinstance(self.angle, (QoalaFloat, QoalaExpression))
+            # We first add this operation to the program
+            self.ir_value = qnet.rot_x(
+                qin=self.qubit.ir_value, angle=self.angle.ir_value, loc=source_location
+            )
+        else:
+            # Here we assume that n and d are integers
+            assert isinstance(self.n, (QoalaInteger, QoalaExpression))
+            assert isinstance(self.d, (QoalaInteger, QoalaExpression))
+            self.ir_value = qnet.rot_x_int(
+                qin=self.qubit.ir_value,
+                n_val=self.n.ir_value,
+                exp_val=self.d.ir_value,
+                loc=source_location,
+            )
         # We then register that the qubit has a "new" value
         self.qubit.ir_value = self.ir_value
 
@@ -94,9 +118,13 @@ class RotateX(Rotate):
 class RotateY(Rotate):
 
     def __init__(
-        self, qubit: QoalaExpression, angle: QoalaFloat | QoalaExpression | float
+        self,
+        qubit: QoalaExpression,
+        n: QoalaInteger | QoalaExpression | int | None = None,
+        d: QoalaInteger | QoalaExpression | int | None = None,
+        angle: QoalaFloat | QoalaExpression | float | None = None,
     ):
-        super().__init__(qubit=qubit, angle=angle)
+        super().__init__(qubit=qubit, n=n, d=d, angle=angle)
 
     @checkbaseir
     def compile(self, ctx: Context, location: Optional[Location] = None) -> None:  # type: ignore[override]
@@ -106,11 +134,22 @@ class RotateY(Rotate):
             col=self.debug_info.col_start,
             context=ctx,
         )
-        # We first add this operation to the program
-        assert isinstance(self.angle, (QoalaFloat, QoalaExpression))
-        self.ir_value = qnet.rot_y(
-            qin=self.qubit.ir_value, angle=self.angle.ir_value, loc=source_location
-        )
+        if self.angle is not None:
+            assert isinstance(self.angle, (QoalaFloat, QoalaExpression))
+            # We first add this operation to the program
+            self.ir_value = qnet.rot_y(
+                qin=self.qubit.ir_value, angle=self.angle.ir_value, loc=source_location
+            )
+        else:
+            # Here we assume that n and d are integers
+            assert isinstance(self.n, (QoalaInteger, QoalaExpression))
+            assert isinstance(self.d, (QoalaInteger, QoalaExpression))
+            self.ir_value = qnet.rot_y_int(
+                qin=self.qubit.ir_value,
+                n_val=self.n.ir_value,
+                exp_val=self.d.ir_value,
+                loc=source_location,
+            )
         # We then register that the qubit has a "new" value
         self.qubit.ir_value = self.ir_value
 
@@ -118,9 +157,13 @@ class RotateY(Rotate):
 class RotateZ(Rotate):
 
     def __init__(
-        self, qubit: QoalaExpression, angle: QoalaFloat | QoalaExpression | float
+        self,
+        qubit: QoalaExpression,
+        n: QoalaInteger | QoalaExpression | int | None = None,
+        d: QoalaInteger | QoalaExpression | int | None = None,
+        angle: QoalaFloat | QoalaExpression | float | None = None,
     ):
-        super().__init__(qubit=qubit, angle=angle)
+        super().__init__(qubit=qubit, n=n, d=d, angle=angle)
 
     @checkbaseir
     def compile(self, ctx: Context, location: Optional[Location] = None) -> None:  # type: ignore[override]
@@ -130,11 +173,22 @@ class RotateZ(Rotate):
             col=self.debug_info.col_start,
             context=ctx,
         )
-        # We first add this operation to the program
-        assert isinstance(self.angle, (QoalaFloat, QoalaExpression))
-        self.ir_value = qnet.rot_z(
-            qin=self.qubit.ir_value, angle=self.angle.ir_value, loc=source_location
-        )
+        if self.angle is not None:
+            assert isinstance(self.angle, (QoalaFloat, QoalaExpression))
+            # We first add this operation to the program
+            self.ir_value = qnet.rot_z(
+                qin=self.qubit.ir_value, angle=self.angle.ir_value, loc=source_location
+            )
+        else:
+            # Here we assume that n and d are integers
+            assert isinstance(self.n, (QoalaInteger, QoalaExpression))
+            assert isinstance(self.d, (QoalaInteger, QoalaExpression))
+            self.ir_value = qnet.rot_x_int(
+                qin=self.qubit.ir_value,
+                n_val=self.n.ir_value,
+                exp_val=self.d.ir_value,
+                loc=source_location,
+            )
         # We then register that the qubit has a "new" value
         self.qubit.ir_value = self.ir_value
 
