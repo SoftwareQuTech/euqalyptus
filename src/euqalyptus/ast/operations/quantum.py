@@ -183,7 +183,7 @@ class RotateZ(Rotate):
             # Here we assume that n and d are integers
             assert isinstance(self.n, (QoalaInteger, QoalaExpression))
             assert isinstance(self.d, (QoalaInteger, QoalaExpression))
-            self.ir_value = qnet.rot_x_int(
+            self.ir_value = qnet.rot_z_int(
                 qin=self.qubit.ir_value,
                 n_val=self.n.ir_value,
                 exp_val=self.d.ir_value,
