@@ -1,6 +1,6 @@
 [project]
 name = "euqalyptus"
-version = "0.0.1"
+version = "0.0.2"
 dependencies = [
     "qoala-mlir >= 0.0.3",
     "typing-extensions"
