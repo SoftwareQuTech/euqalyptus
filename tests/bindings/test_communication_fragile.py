@@ -1,4 +1,5 @@
 import pytest
+from inspect import getsourcelines
 from sys import version_info
 from pathlib import Path
 
@@ -9,6 +10,8 @@ from euqalyptus.operations.communication import recv_floats
 from euqalyptus.types.quantum import Entangle
 
 
+# It is possible to move this whole function around, and tests will not break
+# However, if you add lines in between the body, the assertions in the tests below will break.
 @QoalaProgram
 def quantum_entanglement_program_b():
     Remote("Bob")
@@ -59,6 +62,7 @@ class TestQoalaQnetPythonBindingsQuantumFragile:
 }
 """
         current_path: Path = Path(__file__).resolve()  # type: ignore[annotation-unchecked]
+        _, line_no = getsourcelines(quantum_entanglement_program_b._entry_fun)
         assert str(module.asm) == expected_asm
         expected_dbg_asm_a = f"""module {{
   qnet.remote @Bob loc(#loc1)
@@ -78,16 +82,16 @@ class TestQoalaQnetPythonBindingsQuantumFragile:
     qnet.return loc(#loc)
   }} loc(#loc)
 }} loc(#loc)
-#loc = loc("{str(current_path)}":12:0)
-#loc1 = loc("{str(current_path)}":14:4)
-#loc2 = loc("{str(current_path)}":15:17)
-#loc3 = loc("{str(current_path)}":16:9)
-#loc4 = loc("{str(current_path)}":17:19)
-#loc5 = loc("{str(current_path)}":17:4)
-#loc6 = loc("{str(current_path)}":18:9)
-#loc7 = loc("{str(current_path)}":19:19)
-#loc8 = loc("{str(current_path)}":19:4)
-#loc9 = loc("{str(current_path)}":20:8)
+#loc = loc("{str(current_path)}":{line_no}:0)
+#loc1 = loc("{str(current_path)}":{line_no + 2}:4)
+#loc2 = loc("{str(current_path)}":{line_no + 3}:17)
+#loc3 = loc("{str(current_path)}":{line_no + 4}:9)
+#loc4 = loc("{str(current_path)}":{line_no + 5}:19)
+#loc5 = loc("{str(current_path)}":{line_no + 5}:4)
+#loc6 = loc("{str(current_path)}":{line_no + 6}:9)
+#loc7 = loc("{str(current_path)}":{line_no + 7}:19)
+#loc8 = loc("{str(current_path)}":{line_no + 7}:4)
+#loc9 = loc("{str(current_path)}":{line_no + 8}:8)
 """
         expected_dbg_asm_b = f"""module {{
   qnet.remote @Bob loc(#loc1)
@@ -107,14 +111,14 @@ class TestQoalaQnetPythonBindingsQuantumFragile:
     qnet.return loc(#loc)
   }} loc(#loc)
 }} loc(#loc)
-#loc = loc("{str(current_path)}":61:0)
-#loc1 = loc("{str(current_path)}":63:0)
-#loc2 = loc("{str(current_path)}":64:0)
-#loc3 = loc("{str(current_path)}":65:0)
-#loc4 = loc("{str(current_path)}":66:0)
-#loc5 = loc("{str(current_path)}":67:0)
-#loc6 = loc("{str(current_path)}":68:0)
-#loc7 = loc("{str(current_path)}":69:0)
+#loc = loc("{str(current_path)}":{line_no}:0)
+#loc1 = loc("{str(current_path)}":{line_no + 2}:0)
+#loc2 = loc("{str(current_path)}":{line_no + 3}:0)
+#loc3 = loc("{str(current_path)}":{line_no + 4}:0)
+#loc4 = loc("{str(current_path)}":{line_no + 5}:0)
+#loc5 = loc("{str(current_path)}":{line_no + 6}:0)
+#loc6 = loc("{str(current_path)}":{line_no + 7}:0)
+#loc7 = loc("{str(current_path)}":{line_no + 8}:0)
 """
         if version_info.minor >= 11:
             assert str(module.asm_dbg) == expected_dbg_asm_a
