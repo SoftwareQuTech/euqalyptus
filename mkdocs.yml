@@ -1,0 +1,40 @@
+site_name: euqalyptus
+repo_url:
+theme:
+  name: material
+  features:
+    - navigation.indexes
+extra:
+  version:
+    provider: mike
+markdown_extensions:
+  - codehilite
+  - admonition
+  - pymdownx.superfences
+  - toc:
+      permalink: true
+nav:
+  - Home: index.md
+  - Overview: overview.md
+  - Getting started: getting-started.md
+  - Examples:
+      - examples/index.md
+      - Teleportation:
+          - examples/teleportation/index.md
+          - Sender: examples/teleportation/sender.md
+          - Receiver: examples/teleportation/receiver.md
+  - SDK reference:
+      - sdk/index.md
+      - Programs: sdk/programs.md
+      - Compilation: sdk/compile.md
+      - Classical types: sdk/types-classical.md
+      - Quantum types: sdk/types-quantum.md
+      - Qubit operations: sdk/qubit-ops.md
+      - Remotes: sdk/remotes.md
+      - Communication: sdk/communication.md
+      - Control flow: sdk/control-flow.md
+  - Architecture:
+      - architecture/index.md
+      - From Python to Qoala HIR: architecture/python-to-hir.md
+  - Continuing the pipeline: continuing-pipeline.md
+  - Contributing: contributing.md
