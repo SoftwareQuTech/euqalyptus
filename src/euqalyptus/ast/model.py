@@ -239,7 +239,6 @@ class QoalaBranchTerminator(QoalaExpression):
 @dataclass(init=False)
 class QoalaBlock(QoalaCompilable, Generic[_AllowedExprType]):
     # TODO - Rethink the types of the arguments, since they can be the arguments of a function.
-    _block_id: int
     _args: List[QoalaExpression]
     _operations: List[QoalaExpression]
     _qnet_function: Optional[qnet.FuncOp]
@@ -253,11 +252,9 @@ class QoalaBlock(QoalaCompilable, Generic[_AllowedExprType]):
 
     def __init__(
         self,
-        block_id: int,
         branch_op: "ConditionalBranching",  # type: ignore[name-defined]
         qoala_function: "QoalaFunction",
     ):
-        self._block_id = block_id
         self._args = []
         self._operations = []
         self._container_function = qoala_function
@@ -268,8 +265,6 @@ class QoalaBlock(QoalaCompilable, Generic[_AllowedExprType]):
         self._branching_operation = branch_op
         self.debug_info = qoala_function.debug_info
 
-    def __hash__(self):
-        return hash(self._block_id)
 
     def __enter__(self):
         from euqalyptus import QoalaProgram
@@ -383,7 +378,6 @@ class QoalaFunction(QoalaCompilable):
     _main_block: Optional[QoalaBlock]
     _block_nesting_path: List[QoalaBlock]
     _function_name: str
-    _last_block_id: int
     debug_info: DebugInfo
 
     def __init__(self, name: str, dbg_info: DebugInfo | None = None):
@@ -391,14 +385,10 @@ class QoalaFunction(QoalaCompilable):
         self.debug_info = dbg_info  # type: ignore[assignment]
         # We start with a single empty block, since it is the main block of the function
         # we can pass "None" as the cond_branch argument.
-        self._main_block = QoalaBlock(0, None, self)
-        self._last_block_id = 0
+        self._main_block = QoalaBlock(None, self)
         self._block_nesting_path = []
+        assert self._main_block is not None
         self.nest_block(self._main_block)
-
-    def get_new_block_id(self):
-        self._last_block_id += self._last_block_id
-        return self._last_block_id
 
     @property
     def current_block(self) -> QoalaBlock:
