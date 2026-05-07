@@ -41,12 +41,8 @@ class ConditionalBranching(QoalaOperation):
 
         # We create the basic blocks for this conditional branching
         current_function = QoalaProgram.current_function()
-        self._branch_true = QoalaBlock(
-            current_function.get_new_block_id(), self, current_function
-        )
-        self._branch_false = QoalaBlock(
-            current_function.get_new_block_id(), self, current_function
-        )
+        self._branch_true = QoalaBlock(self, current_function)
+        self._branch_false = QoalaBlock(self, current_function)
         # At the nesting level of the conditional branch, we only expect having
         # "variable declarations", either numeric or quantum.
         # Set the current block in a "locked mode", so no new expressions can be
