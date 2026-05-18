@@ -4,8 +4,6 @@ Every method documented here is defined on the `Qubit` base class and inherited 
 
 Source: `euqalyptus/types/quantum/qubit.py`.
 
-![Qubit lifecycle](../assets/figures/qubit-lifecycle.svg)
-
 ## Single-qubit Pauli and Clifford gates
 
 | Method | HIR op | Notes |

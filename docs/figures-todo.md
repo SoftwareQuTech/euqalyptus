@@ -1,33 +1,26 @@
 # Figures to (re)draw
 
-Every entry below corresponds to an SVG stub under `docs/assets/figures/`. Each stub contains the figure title and a short description of the intended content; replace it one-for-one with your final asset (same filename, same path).
+After triage, the docs site needs **three** figures — all of them can be exported directly from the accompanying paper's LaTeX source rather than redrawn from scratch. Drop the exported PDF/SVG into `docs/assets/figures/` under the filename listed below; the markdown references already point at those paths.
 
 ## `pipeline-overview.svg`
 
 - **Referenced from:** `docs/index.md`, `docs/overview.md`.
-- **Intended content:** Same end-to-end pipeline as the equivalent figure on the qoala-mlir docs site, but with the *euqalyptus frontend* span highlighted (user Python → AST → MLIR Python bindings → emitted Qoala HIR). The qoala-mlir part (HIR → MIR → LIR → .iqoala) is shown collapsed/dimmed.
+- **Source:** Export from the paper's `fig:qoala-compiler-architecture` (the big TikZ overview in `compiler-paper/03-architecture/architecture.tex`). The same artifact is reused on the qoala-mlir docs site; the "euqalyptus span" highlight that the docs version once described is a CSS/visual emphasis concern rather than a separate diagram.
 
 ## `frontend-internals.svg`
 
 - **Referenced from:** `docs/overview.md`, `docs/architecture/python-to-hir.md`.
-- **Intended content:** Three-stage diagram, left to right: (1) user Python with `@QoalaProgram` and SDK calls; (2) pseudo-AST recording inside `QoalaModule` (showing `DeclaredRemote`, `QoalaEprs`, `MeasureOp`, `SendIntOp`, etc.); (3) MLIR emission via `qnet.dialects.qnet` and `qnet.ir.{Module,Context,InsertionPoint}`. Annotate arrows with the relevant method (`compile()`, `generate_qoala_hir()`).
-
-## `program-models.svg`
-
-- **Referenced from:** `docs/sdk/programs.md`.
-- **Intended content:** Side-by-side comparison of the two ways to declare a program: decorator (`@QoalaProgram` on a free function) vs. inheritance (`class X(QoalaProgramBase)` with a `main` method). Both arrows converge into the same `QoalaModule`. Note the `__new__` quirk in the inheritance branch (instances are `QoalaProgram`, not `QoalaProgramBase`).
-
-## `qubit-lifecycle.svg`
-
-- **Referenced from:** `docs/sdk/qubit-ops.md`.
-- **Intended content:** Lifecycle of a `LocalQubit` as a left-to-right state machine: allocate → apply gates → optional two-qubit interaction → measure → optional free. Each step labeled with its emitted HIR op. Highlight the linearity arrow: after `measure`, the qubit value is consumed and any further use becomes a verifier error in `qnet-check-linear`.
+- **Source:** Export from the paper's `fig:frontend` (the Python-interpreter → AST → HIR translation TikZ in `compiler-paper/03-architecture/architecture.tex`). The figure already shows the three stages the docs describe.
 
 ## `entanglement-flow.svg`
 
 - **Referenced from:** `docs/sdk/remotes.md`, `docs/examples/teleportation/index.md`.
-- **Intended content:** Two-node diagram (Alice on the left, Bob on the right), each running its own Qoala program. An "EPR pair" arrow connects the two `Entangle` calls; a "classical channel" arrow carries `send_int`/`recv_int` traffic. The teleportation example specifically shows two correction bits flowing from Alice to Bob over the classical channel.
+- **Source:** Export from the paper's `fig:intro` (the two-node EPR + classical-channel diagram in `compiler-paper/00-introduction/introduction.tex`). The teleportation correction-bit annotation referenced by the docs is a minor overlay on top of the same figure.
 
-## `compile-options.svg`
+## Figures intentionally dropped
 
-- **Referenced from:** `docs/sdk/compile.md`.
-- **Intended content:** Decision tree showing how the two boolean compile options change the emitted artifact: `compile_lazy` (stop after pseudo-AST vs. continue to MLIR emission), `singular_comm_ops` (single-value comm ops vs. tensor-typed multi-value comm ops, the latter unfolded at MIR level by `unfold-comm-ops`). Small inset code blocks show the resulting HIR shape in each combination.
+The following stubs were removed because the prose + code blocks on each page already carry the meaning; reintroduce them only if a future doc revision explicitly needs the visual:
+
+- `program-models.svg` — `sdk/programs.md` already shows both the decorator and class-based code blocks side-by-side and includes a "When to use which" table.
+- `qubit-lifecycle.svg` — `sdk/qubit-ops.md` describes the allocate-gate-measure lifecycle and the linearity property in prose.
+- `compile-options.svg` — `sdk/compile.md` documents `compile_lazy` and `singular_comm_ops` with prose plus code examples for each.

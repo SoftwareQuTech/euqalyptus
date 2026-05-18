@@ -2,8 +2,6 @@
 
 A Qoala program is a Python callable annotated such that `euqalyptus` can intercept its body and emit Qoala HIR. There are two equivalent ways to declare one.
 
-![Program models](../assets/figures/program-models.svg)
-
 ## `@QoalaProgram` — the decorator
 
 ```python

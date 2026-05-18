@@ -17,8 +17,6 @@ def compile(
 
 `*args` and `**kwargs` are forwarded to the entry function. The return is `(return_value, QoalaModule)`.
 
-![Compilation options](../assets/figures/compile-options.svg)
-
 ## Options
 
 ### `compile_lazy: bool = False`
