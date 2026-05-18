@@ -79,3 +79,7 @@ with open("program.hir.mlir", "w") as f:
 ```
 
 …then feed the file to `qoala-opt`. See [Continuing the pipeline](../continuing-pipeline.md).
+
+## API reference
+
+The full signature, options, and behaviour of `compile()` are documented on the `QoalaProgram` class in the [Programs reference](programs.md#api-reference); the relevant entry is `QoalaProgram.compile`.

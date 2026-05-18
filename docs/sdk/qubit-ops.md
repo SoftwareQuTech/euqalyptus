@@ -91,3 +91,26 @@ In SDK terms, the rules of thumb:
 
 - After `q.measure()`, do not call any further methods on `q`.
 - For operations that take a target (`q.cnot(target)`), the recorded op produces fresh qubit values for both — your `q` and `target` Python references are kept synced internally, so you don't have to re-bind them.
+
+## API reference
+
+The qubit-operation methods are defined on the abstract `Qubit` base class; every concrete qubit type ([LocalQubit](types-quantum.md#api-reference), [EntangledQubit](types-quantum.md#api-reference), [ScopedQubit](types-quantum.md#api-reference)) inherits them.
+
+::: euqalyptus.types.quantum.qubit.Qubit
+    options:
+      members:
+        - measure
+        - X
+        - Y
+        - Z
+        - H
+        - S
+        - T
+        - K
+        - rot_X
+        - rot_Y
+        - rot_Z
+        - cnot
+        - cphase
+        - cz
+        - free

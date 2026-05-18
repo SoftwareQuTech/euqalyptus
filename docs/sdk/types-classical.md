@@ -91,3 +91,38 @@ is_one = m == 1          # recorded equality op, not a Python bool
 ```
 
 This is how the branching operators end up with rich predicate expressions even though the user wrote them as ordinary Python.
+
+## API reference
+
+### Integers
+
+::: euqalyptus.types.classical.integer
+    options:
+      members:
+        - Int32
+        - Int
+        - UInt32
+        - Bit
+
+### Booleans
+
+::: euqalyptus.types.classical.booleans
+    options:
+      members:
+        - Bool
+
+### Floats
+
+::: euqalyptus.types.classical.floats
+    options:
+      members:
+        - Float
+        - Double
+
+### Arrays
+
+::: euqalyptus.types.classical.arrays
+    options:
+      members:
+        - IntArray
+        - FloatArray

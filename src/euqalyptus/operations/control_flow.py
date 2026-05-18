@@ -5,15 +5,35 @@ from euqalyptus.ast.operations.control_flow import ReturnResultsOp
 
 
 class ReturnResults:
-    """
-    User-facing SDK helper to emit qnet.return (0..N operands).
+    """Record a ``qnet.return`` op that terminates the current function.
 
-    Usage:
-        ReturnResults()                    # qnet.return
-        ReturnResults(x)                   # qnet.return %x
-        ReturnResults(x, y, z)             # qnet.return %x, %y, %z
+    Use ``return_results(...)`` (the lowercase alias) inside a
+    ``@QoalaProgram`` body to return classical values — typically
+    measurement outcomes — from the program. If the function body
+    finishes without an explicit ``return_results(...)`` call, the SDK
+    inserts an empty ``qnet.return`` automatically; you only need to
+    call this explicitly when you want to return one or more values or
+    to terminate early.
 
-    Alias provided at bottom: return_results = ReturnResults
+    Examples:
+        ``ReturnResults()`` → records ``qnet.return``.
+
+        ``ReturnResults(x)`` → records ``qnet.return %x``.
+
+        ``ReturnResults(x, y, z)`` → records ``qnet.return %x, %y, %z``.
+
+        ``ReturnResults([x, y, z])`` → same as the variadic form;
+        ``list`` / ``tuple`` operands are flattened.
+
+    Args:
+        *args: Zero or more values to return. Each value must be a
+            :class:`QoalaExpression` (the recorded form of an SDK
+            value), a Python ``int`` or ``float`` literal (auto-
+            promoted), or a ``list``/``tuple`` of the same — those are
+            flattened in place.
+
+    Returns:
+        A :class:`ReturnResultsOp` AST node representing the return.
     """
 
     def __new__(cls, *args: QoalaExpression | int | float | list | tuple):
@@ -31,3 +51,4 @@ class ReturnResults:
 
 
 return_results = ReturnResults
+"""Lowercase alias of :class:`ReturnResults`. Records ``qnet.return``."""

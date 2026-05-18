@@ -63,3 +63,13 @@ In the emitted HIR, every qubit-typed value is `!qnet.qubit`. The mapping:
 | `Entangle("Bob", n=3)` | three `qnet.eprs` ops sharing the same remote |
 
 After [the HIR→MIR lowering in qoala-mlir](<QOALA_MLIR_DOCS_URL>/passes/hir-to-mir/), each `!qnet.qubit` value is rewritten to an `i32` qubit pointer. From the user's perspective, that's invisible.
+
+## API reference
+
+::: euqalyptus.types.quantum.qubit
+    options:
+      members:
+        - LocalQubit
+        - EntangledQubit
+        - Entangle
+        - ScopedQubit

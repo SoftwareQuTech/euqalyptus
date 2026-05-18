@@ -79,3 +79,21 @@ This is why operations in qoala programs look like ordinary Python: the SDK is u
 ## After compilation
 
 The `QoalaModule` returned from `.compile()` exposes the textual HIR via `module.asm` (the canonical input to `qoala-opt`) and the generic-form variant via `module.generic_asm`. The full list of recorded functions is reachable through `module.functions`, the remote declarations encountered during compilation through `module.remotes`, and the function currently being built (useful for introspection mid-compile, less so afterward) through `module.current_function`. For details on `compile()`'s arguments and what the module exposes, see [Compilation](compile.md).
+
+## API reference
+
+::: euqalyptus.QoalaProgram
+    options:
+      members:
+        - compile
+        - compile_lazy_flag
+        - compile_singular_comm_ops
+        - module
+        - current_function
+        - get_declared_remote
+        - add_declared_remote
+
+::: euqalyptus.QoalaProgramBase
+    options:
+      members:
+        - main

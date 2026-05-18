@@ -15,7 +15,7 @@ The two programs live in `qoala-compiler/examples/teleportation/`, and the docum
 | `examples/teleportation/alice.py` | Sender. Holds the qubit to teleport, performs the Bell-state measurement, sends the correction bits. |
 | `examples/teleportation/bob.py` | Receiver. Receives the corrections, applies them conditionally, measures the recovered qubit. |
 
-The [Sender](sender.md) walkthrough is the fully documented version of `alice.py`. The [Receiver](receiver.md) walkthrough is currently a stub — see the page for context.
+The [Sender](sender.md) walkthrough is the fully documented version of `alice.py`. The [Receiver](receiver.md) walkthrough is the fully documented version of `bob.py`, and it doubles as the worked example for the SDK's branching machinery (`if_cond`, `ScopedQubit`, and the `with t: / with f:` arms).
 
 ## Why two programs?
 

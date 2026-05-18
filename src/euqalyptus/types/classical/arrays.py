@@ -27,29 +27,32 @@ class _Array(Generic[_Qoala_Base_Type, _Native_Base_Type]):
             raise InvalidArrayArgumentError(array_type.__name__, base_type.__name__)
 
     def store(self, new_element: _Qoala_Base_Type | _Native_Base_Type) -> None:
-        """
-        Appends the given element to the array.
+        """Append an element to the array.
 
-        Parameters
-        ----------
-        new_element: _Qoala_Base_Type | _Native_Base_Type
-            the new element to append. Can either be a python type or a qoala type,
-            but it must be consistent with the array you are trying to append to (i.e.
-            it is not possible to append a float or QoalaFloat to an IntArray)
-
-        Returns
-        -------
-        None
+        Args:
+            new_element: The new element to append. Either a Python
+                native value (``int`` / ``float``) or a Qoala-typed
+                value (``Int``, ``Float``, …); the element type must
+                match the array's element type. Appending a float (or
+                ``QoalaFloat``) to an ``IntArray`` raises an error.
         """
         # Nothing to do here
         pass
 
     def __getitem__(self, item) -> _Qoala_Base_Type:  # type: ignore[empty-body]
-        """
-        "Brackets" operator for the qoala arrays. This method allows using qoala arrays
-        using the indexing operator int the same way as an ordinary python array:
-        array = IntArray(10, 20, 30)
-        value = array[1] ## This access is allowed by this method
+        """Index into the array.
+
+        Enables ordinary Python indexing syntax on a Qoala array. For
+        example, ``array[1]`` on an ``IntArray(10, 20, 30)`` records
+        an access at index ``1``.
+
+        Args:
+            item: The index, either a Python ``int`` literal or a
+                Qoala integer-typed value recorded earlier.
+
+        Returns:
+            A value of the array's element type, carrying the recorded
+            indexed access.
         """
         pass
 
@@ -58,10 +61,27 @@ class _Array(Generic[_Qoala_Base_Type, _Native_Base_Type]):
 
 
 class IntArray(_Array[Int, int]):
-    """
-    An immutable array of 32 bits-wide integers. By immutable, it means that the size
-    of the array *cannot* be changed, and the values stored in the array cannot be
-    changed either
+    """An immutable fixed-length array of 32-bit signed integers.
+
+    The array is *immutable* in two senses: its length is fixed at
+    construction time, and the values it stores cannot be reassigned
+    in place. Use :meth:`_Array.store` to append (which extends the
+    array) and ``array[i]`` to read.
+
+    Args:
+        *elements: The initial elements of the array. Each element must
+            be either a Python ``int`` literal or a Qoala
+            integer-typed value (``Int``, ``Int32``, …). Mixing
+            element types — for instance passing a ``float`` — raises
+            :class:`InvalidArrayArgumentError`.
+        base: An optional existing :class:`QoalaArray` to shallow-copy
+            from. When provided in addition to positional elements,
+            the resulting array contains the values of ``base``
+            followed by the new ``elements``.
+
+    Raises:
+        InvalidArrayArgumentError: If any element is not consistent
+            with the integer base type.
     """
 
     def __new__(cls, *elements, **kwargs):
@@ -80,28 +100,31 @@ class IntArray(_Array[Int, int]):
     def __init__(
         self, *elements: Int | Int32 | int, base: QoalaArray[Int, int] | None = None
     ):
-        """
-        Creates a new IntArray instance with the given elements
-
-        Parameters
-        ----------
-        elements:
-            the elements to put in the array. The creation of the array will perform a
-            type check to avoid inserting invalid values in the array (e.g. a float)
-        base : QoalaArray
-            an optional base array to create *a shallow copy* from. If this parameter
-            is given in addition to any elements, the resulting array will contain
-            *first* the same values of the base array, and then all the new elements given.
-        """
         # Nothing to do here
         pass
 
 
 class FloatArray(_Array[Float, float]):
-    """
-    An immutable array of 32 bits-wide single precision floating point values. By immutable,
-    it means that the size of the array *cannot* be changed, and the values stored in the
-    array cannot be changed either
+    """An immutable fixed-length array of 32-bit floating-point values.
+
+    Like :class:`IntArray`, but with single-precision floating-point
+    elements. Length is fixed at construction time and values cannot
+    be reassigned in place; use :meth:`_Array.store` to append and
+    ``array[i]`` to read.
+
+    Args:
+        *elements: The initial elements of the array. Each element must
+            be either a Python ``float`` literal or a Qoala
+            floating-point–typed value (``Float``, ``Double``).
+            Passing an ``int`` raises :class:`InvalidArrayArgumentError`.
+        base: An optional existing :class:`QoalaArray` to shallow-copy
+            from. When provided in addition to positional elements,
+            the resulting array contains the values of ``base``
+            followed by the new ``elements``.
+
+    Raises:
+        InvalidArrayArgumentError: If any element is not consistent
+            with the floating-point base type.
     """
 
     def __new__(cls, *elements, **kwargs):
@@ -122,18 +145,5 @@ class FloatArray(_Array[Float, float]):
         *elements: Float | Double | float,
         base: QoalaArray[Float, float] | None = None,
     ):
-        """
-        Creates a new FloatArray instance with the given elements
-
-        Parameters
-        ----------
-        elements:
-            the elements to put in the array. The creation of the array will perform a
-            type check to avoid inserting invalid values in the array (e.g. a int)
-        base : QoalaArray
-            an optional base array to create *a shallow copy* from. If this parameter
-            is given in addition to any elements, the resulting array will contain
-            *first* the same values of the base array, and then all the new elements given.
-        """
         # Nothing to do here
         pass

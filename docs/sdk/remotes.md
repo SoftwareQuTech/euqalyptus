@@ -60,3 +60,7 @@ Every send/recv/eprs op references the symbol via a `FlatSymbolRefAttr` named `r
 
 - A given remote name may not be redeclared with a different `DeclaredRemote` within the same program — the SDK enforces this in `QoalaProgram.add_declared_remote`.
 - The SDK does not check that the name corresponds to an actually reachable peer in the runtime; that's the runtime's job. From euqalyptus's perspective, the name is just a symbol.
+
+## API reference
+
+::: euqalyptus.operations.Remote

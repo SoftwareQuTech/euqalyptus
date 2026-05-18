@@ -28,20 +28,28 @@ class CompilationContext:
 
 
 class QoalaProgram:
-    """
-    Function decorator used to mark methods as qoala programs.
-    It provides the `compile` method which prepares all the
-    operations in the decorated function to be transformed to ASM.
-    In general, the usage workflow would be like:
-    ```
-    @QoalaProgram
-    def my_function():
-        q = LocalQubit()
-        q.measure()
+    """Decorator that turns a Python function into a Qoala program.
 
-    my_function.compile()
-    print(my_function.asm)
-    ```
+    Applying ``@QoalaProgram`` to a function marks it as a Qoala
+    program. The decorator wraps the function in an object that
+    exposes a :meth:`compile` method; calling ``compile()`` runs the
+    decorated function under the SDK's recording mode and produces a
+    :class:`QoalaModule` containing Qoala HIR.
+
+    Example:
+        ```python
+        @QoalaProgram
+        def my_function():
+            q = LocalQubit()
+            q.measure()
+
+        _, module = my_function.compile()
+        print(module.asm)
+        ```
+
+    Calling the decorated object is equivalent to calling
+    ``.compile()`` on it; ``my_function()`` and ``my_function.compile()``
+    both return the same ``(return_value, QoalaModule)`` tuple.
     """
 
     _instance: Self
@@ -58,12 +66,42 @@ class QoalaProgram:
 
     @classmethod
     def compile_lazy_flag(cls, new_flag_value: Optional[bool] = None) -> bool:
+        """Get or set the class-level ``compile_lazy`` toggle.
+
+        When set, subsequent calls to :meth:`compile` skip the
+        MLIR-emission stage by default and build only the internal
+        pseudo-AST. Useful in tests and repeated-compilation harnesses.
+
+        Args:
+            new_flag_value: When not ``None``, sets the toggle to this
+                value. When ``None`` (the default), only reads the
+                current value.
+
+        Returns:
+            The current value of the toggle (after the optional set).
+        """
         if new_flag_value is not None:
             cls._compilation_context.options.lazy_compilation = new_flag_value
         return cls._compilation_context.options.lazy_compilation
 
     @classmethod
     def compile_singular_comm_ops(cls, new_flag_value: Optional[bool] = None) -> bool:
+        """Get or set the class-level ``singular_comm_ops`` toggle.
+
+        When set, subsequent calls to :meth:`compile` emit the scalar
+        HIR ops (``qnet.send_int``, ``qnet.send_float``) for
+        single-value classical sends instead of their tensor-form
+        counterparts. The flag does not affect receives — see
+        :meth:`compile` for the full discussion.
+
+        Args:
+            new_flag_value: When not ``None``, sets the toggle to this
+                value. When ``None`` (the default), only reads the
+                current value.
+
+        Returns:
+            The current value of the toggle (after the optional set).
+        """
         if new_flag_value is not None:
             cls._compilation_context.options.use_singular_classical_comm_ops = (
                 new_flag_value
@@ -72,6 +110,17 @@ class QoalaProgram:
 
     @property
     def module(self) -> QoalaModule:
+        """The compiled :class:`QoalaModule`.
+
+        Returns:
+            The module produced by the most recent successful call to
+            :meth:`compile`.
+
+        Raises:
+            NotYetCompiledError: If :meth:`compile` has not yet been
+                called (or has not returned successfully) on this
+                program.
+        """
         if not self._is_compiled:
             raise NotYetCompiledError(
                 "The program has not been compiled yet. Did you invoke 'compile()' on it?"
@@ -81,6 +130,17 @@ class QoalaProgram:
 
     @classmethod
     def current_function(cls) -> QoalaFunction:
+        """Return the :class:`QoalaFunction` currently being built.
+
+        Used by the SDK constructors to find the function they should
+        record into; rarely useful in user code.
+
+        Returns:
+            The active program's current function.
+
+        Raises:
+            RuntimeError: If no program is currently being compiled.
+        """
         if hasattr(cls, "_instance"):
             return cls._instance._module.current_function  # type: ignore[no-any-return]
         # This should never happen
@@ -88,6 +148,16 @@ class QoalaProgram:
 
     @classmethod
     def get_declared_remote(cls, remote_name: str) -> Any:
+        """Look up a previously declared remote by name.
+
+        Args:
+            remote_name: The symbolic name of the remote peer.
+
+        Returns:
+            The :class:`DeclaredRemote` object for ``remote_name`` if
+            one was declared in the current compilation, otherwise
+            ``None``.
+        """
         if remote_name in QoalaProgram._declared_remotes:
             return QoalaProgram._declared_remotes[remote_name]
         else:
@@ -95,6 +165,21 @@ class QoalaProgram:
 
     @classmethod
     def add_declared_remote(cls, remote_name: str, remote: Any) -> None:
+        """Register a remote-peer declaration in the current compilation.
+
+        Used internally by :class:`~euqalyptus.operations.Remote` to
+        record a new alias; user code should call ``Remote("Name")``
+        instead.
+
+        Args:
+            remote_name: The symbolic name of the remote.
+            remote: The :class:`DeclaredRemote` AST node to associate
+                with ``remote_name``.
+
+        Raises:
+            RuntimeError: If a remote with the same name has already
+                been declared in this compilation.
+        """
         if remote_name in QoalaProgram._declared_remotes:
             raise RuntimeError(
                 f"A remote with name '{remote_name}' was already declared"
@@ -103,6 +188,13 @@ class QoalaProgram:
             QoalaProgram._declared_remotes[remote_name] = remote
 
     def __call__(self, *args: Any, **kwargs: Any) -> Tuple[int, QoalaModule]:
+        """Invoke :meth:`compile` directly on the decorated program.
+
+        Calling the decorated object is equivalent to calling
+        ``.compile()`` on it, forwarding all positional and keyword
+        arguments to the entry function. Returns the same
+        ``(return_value, QoalaModule)`` tuple.
+        """
         return self.compile(*args, **kwargs)
 
     def compile(
@@ -113,23 +205,45 @@ class QoalaProgram:
         singular_comm_ops: bool = False,
         **kwargs: Any,
     ) -> Tuple[int, QoalaModule]:
-        """
-        Compiles the decorated program, generating a ``QoalaModule`` object containing the HIR representation
-        of the program.
-        The returned ``QoalaModule`` object can be printed (using python's ``print`` function) to object a
-        text-based representation of the HIR that can be fed into the ``qoala-opt`` tool for further optimization
-        and compilation.
-        Note: Using the ``singular_comm_ops`` option generates send/recv_int_float operations that handle 1
-        value at a time. This has the implication of generating *no tensor values*. This heavily simplifies
-        the optimization process, avoiding lowering tensors/vectors to other types.
-        Arguments:
-            compile_lazy (bool): Whether to compile the program without generating HIR.
-                Useful for testing the internal structure of the compilation (pseudo-AST).
-            singular_comm_ops (bool): Whether to generate singular versions of the classical
-                communication.
+        """Compile the decorated program into a Qoala HIR module.
+
+        ``compile()`` runs the decorated function under the SDK's
+        recording mode, so every SDK call inside the function body is
+        intercepted and recorded as an AST node rather than performing
+        its nominal action. Once the function returns, the recorded
+        AST is walked and emitted as MLIR via the ``qnet`` Python
+        bindings, yielding a :class:`QoalaModule` whose ``.asm``
+        property is the textual HIR consumable by ``qoala-opt``.
+
+        ``compile()`` acquires a process-wide lock and uses class-level
+        state on :class:`QoalaProgram` to track the program currently
+        being compiled, so two programs cannot be compiled
+        concurrently from the same process — calls serialize.
+
+        Args:
+            *args: Positional arguments forwarded to the entry
+                function.
+            compile_lazy: When ``True``, only the internal pseudo-AST
+                is built; MLIR emission is skipped. Useful in tests
+                that want to assert structural properties without
+                paying the cost of emission. Defaults to ``False``.
+            singular_comm_ops: When ``True``, classical sends that
+                carry a single value are emitted as the scalar HIR
+                ops (``qnet.send_int``, ``qnet.send_float``) instead
+                of the default tensor-form variants
+                (``qnet.send_ints``, ``qnet.send_floats``). This
+                avoids generating tensor values in HIR and simplifies
+                the downstream pipeline. The flag does not affect
+                receives: ``recv_int`` and ``recv_float`` are
+                first-class scalar SDK calls and always emit scalar
+                HIR. Defaults to ``False``.
+            **kwargs: Keyword arguments forwarded to the entry
+                function.
+
         Returns:
-            A tuple containing an integer (the compilation result) and the compiled module
-            (a ``QoalaModule`` object)
+            A tuple ``(return_value, module)`` where ``return_value``
+            is whatever the entry function returned (often ``None``)
+            and ``module`` is the compiled :class:`QoalaModule`.
         """
 
         # TODO - Implement (if needed) more functionality than just invoking the function
@@ -170,22 +284,30 @@ class QoalaProgram:
 
 
 class QoalaProgramBase(QoalaProgram, ABC):
-    """
-    Base class for Qoala programs. Any quantum internet program must
-    be defined in a class that uses `QoalaProgram` as the base class.
-    Programs that extend this class must implement the `main` method,
-    which acts as the entry point of the program.
-    WARNING: Due to how the constructor works, instances of subclasses
-    of this class are instances of 'QoalaProgram' rather than
-    'QoalaProgramBase', i.e.:
-    ```
-    class QProg(QoalaProgram):
-        def main():
-           #some code
-    obj = QProg()
-    assert not isinstance(obj, QoalaProgramBase)
-    assert isinstance(obj, QoalaProgram)
-    ```
+    """Class-based alternative to the ``@QoalaProgram`` decorator.
+
+    Subclass ``QoalaProgramBase`` and implement the abstract
+    :meth:`main` method to define a Qoala program. Instantiating the
+    subclass and calling ``.compile()`` runs ``main`` under the SDK's
+    recording mode, just like the decorator form.
+
+    Example:
+        ```python
+        class MyProgram(QoalaProgramBase):
+            def main(self):
+                q = LocalQubit()
+                q.measure()
+
+        program = MyProgram()
+        _, module = program.compile()
+        ```
+
+    Warning:
+        Due to the way ``__new__`` is wired, an instance of a subclass
+        of ``QoalaProgramBase`` is not an instance of
+        ``QoalaProgramBase`` — it is an instance of
+        :class:`QoalaProgram`. Do not rely on
+        ``isinstance(obj, QoalaProgramBase)``.
     """
 
     @staticmethod
@@ -221,25 +343,24 @@ class QoalaProgramBase(QoalaProgram, ABC):
 
     @abstractmethod
     def main(self, *args: Any, **kwargs: Any) -> Any:
-        """
-        Entry point function for a quantum internet program.
-        This function must use the quantum and classical primitives
-        available in the `qoala` packages and its subpackages.
+        """Entry point of a class-based Qoala program.
 
+        Subclasses must implement this method. Inside its body you can
+        use any quantum or classical primitive from the
+        ``euqalyptus`` package — types, qubit operations, communication,
+        and control-flow constructs — just as you would inside a
+        ``@QoalaProgram`` decorated function.
 
-        Parameters
-        ----------
-        args : List[Any]
-            A list of objects used as the arguments of the function.
+        Args:
+            *args: Positional arguments forwarded by
+                :meth:`QoalaProgram.compile`.
+            **kwargs: Keyword arguments forwarded by
+                :meth:`QoalaProgram.compile`.
 
-        kwargs : Dict[Any, Any]
-            A dictionary containing the keyworded arguments for the function.
-
-        Returns
-        -------
-        int :
-            An integer value, meaningful for the qoala runtime platform.
-            Please check the documentation of the qoala platform to match
-            the expected return value of a quantum internet program.
-
+        Returns:
+            Whatever value the program wants to return to the caller
+            (typically classical measurement outcomes or ``None``).
+            The returned value becomes the first element of the
+            ``(return_value, QoalaModule)`` tuple from
+            :meth:`compile`.
         """

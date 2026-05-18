@@ -95,3 +95,23 @@ module {
   %ack = qnet.recv_int { remote = @Alice } : i32
 }
 ```
+
+## API reference
+
+::: euqalyptus.operations.communication
+    options:
+      members:
+        - RecvInt
+        - RecvInts
+        - RecvFloat
+        - RecvFloats
+        - SendInts
+        - SendFloats
+        - recv_int
+        - recv_ints
+        - recv_float
+        - recv_floats
+        - send_int
+        - send_ints
+        - send_float
+        - send_floats
