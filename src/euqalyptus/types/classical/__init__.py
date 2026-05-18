@@ -133,3 +133,4 @@ class ScopedVar(NumericOperandsOverload, BitwiseOperandsOverload):
 from .integer import Int, Int32, UInt32, Bit
 from .floats import Float, Double
 from .arrays import IntArray, FloatArray
+from .booleans import Bool

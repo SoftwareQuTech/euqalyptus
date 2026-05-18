@@ -1,6 +1,6 @@
 # Teleportation — sender
 
-This is the program that runs on the node holding the qubit to be teleported (here called **Alice**). It is taken verbatim from `qoala-compiler/teleportation/alice.py`.
+This is the program that runs on the node holding the qubit to be teleported — here called **Alice**. It is taken verbatim from `qoala-compiler/examples/teleportation/alice.py`.
 
 ## The program
 
@@ -42,52 +42,15 @@ if __name__ == "__main__":
 
 ## Walkthrough
 
-### Declare the remote
+The first call records the remote: `bob = Remote("Bob")` registers a `qnet.remote @Bob` symbol at module scope. Without this declaration, the `Entangle("Bob")` call below would raise `UnknownRemoteError`. See [Remotes](../../sdk/remotes.md) for the full surface.
 
-```python
-bob = Remote("Bob")
-```
+The program then allocates the two qubits it needs. `LocalQubit()` records `qnet.new_qubit` and yields a fresh `!qnet.qubit` SSA value, while `Entangle("Bob")` records `qnet.eprs { remote = @Bob }` and yields the local half of a Bell pair shared with Bob. After these two calls, the function body has two qubit values to operate on.
 
-Records a `qnet.remote @Bob` symbol at module scope. Without this, the `Entangle("Bob")` call below would raise `UnknownRemoteError`. See [Remotes](../../sdk/remotes.md).
+The body of the program is the standard Bell-state measurement: `CNOT(q_local, q_ent)` then `H(q_local)`, followed by a measurement on each qubit. Both measurements emit `qnet.measure` and return `Bit`-typed AST nodes (here named `m_local` and `m_ent`). Each `measure()` call *consumes* the corresponding qubit value — calling another method on `q_local` or `q_ent` after the measurement would be rejected by the linearity verifier (`qnet-check-linear`).
 
-### Allocate a local qubit and entangle with Bob
+The two correction bits are then shipped to Bob via `send_int(bob, m_local)` and `send_int(bob, m_ent)`, each of which records a scalar `qnet.send_int` op with the corresponding bit as data and `@Bob` as remote. The scalar form is what gets emitted because the program is compiled with `singular_comm_ops=True`; with the default (`False`), the SDK would instead pack each bit into a one-element tensor and emit `qnet.send_ints` (the tensor form), which would then be unfolded back into single-value ops at MIR level by `unfold-comm-ops`. See [Communication](../../sdk/communication.md) for that asymmetry.
 
-```python
-q_local = LocalQubit()
-q_ent   = Entangle("Bob")
-```
-
-`LocalQubit()` records `qnet.new_qubit`, producing a fresh `!qnet.qubit` SSA value. `Entangle("Bob")` records `qnet.eprs { remote = @Bob }`. After these two calls, the function body has two qubit values to operate on.
-
-### Bell-state measurement
-
-```python
-q_local.cnot(q_ent)
-q_local.H()
-m_local = q_local.measure()
-m_ent   = q_ent.measure()
-```
-
-The standard Bell-state measurement: `CNOT(q_local, q_ent)`, `H(q_local)`, then measure both. Both measurements emit `qnet.measure` and return `Bit`-typed AST nodes (`m_local` and `m_ent`).
-
-Each `measure()` call **consumes** the corresponding qubit value. After this, you must not call any more methods on `q_local` or `q_ent` — the linearity verifier (`qnet-check-linear`) would reject it.
-
-### Send correction bits
-
-```python
-send_int(bob, m_local)
-send_int(bob, m_ent)
-```
-
-Each `send_int` records a `qnet.send_int` op with `m_local` (resp. `m_ent`) as its data and `@Bob` as its remote. Because we compile with `singular_comm_ops=True`, the SDK emits single-value `qnet.send_int` directly (rather than packing both into a tensor and sending with `qnet.send_ints`). See [Communication](../../sdk/communication.md).
-
-### Wait for an ack
-
-```python
-result = recv_int(bob)
-```
-
-Records a `qnet.recv_int` op that blocks until Bob sends back a single classical value. In this example, the value isn't actually used — it just keeps Alice alive long enough for Bob to finish before her process exits.
+The program closes with `result = recv_int(bob)`, which records a `qnet.recv_int` op that will block at runtime until Bob sends back a single classical value. In this example the value is not actually used — it just keeps Alice alive long enough for Bob to finish before her process exits.
 
 ## Compile
 
@@ -96,13 +59,11 @@ _, hir = teleport.compile(singular_comm_ops=True)
 print(str(hir))
 ```
 
-`compile()` returns `(return_value, QoalaModule)`. The decorated function returns `None`, so the first element is `None`. The second is the compiled module — `str(...)` over it gives the textual HIR.
-
-`singular_comm_ops=True` forces single-value classical ops in HIR. With the default (`False`), the same program would emit `qnet.send_ints` / `qnet.recv_ints` on tensor-typed values, which would then be unfolded at MIR level by `unfold-comm-ops`.
+`compile()` returns `(return_value, QoalaModule)`. The decorated function returns `None`, so the first element is `None`; the second is the compiled module, and `str(...)` over it gives the textual HIR. The `singular_comm_ops=True` flag forces single-value classical ops in HIR — useful when you want the emitted HIR to map straight onto the downstream pipeline without the unfolding step.
 
 ## What HIR looks like
 
-The emitted HIR (abbreviated, pretty-printed) looks roughly like:
+The emitted HIR (abbreviated and pretty-printed) looks roughly like:
 
 ```mlir
 module {
@@ -128,11 +89,11 @@ module {
 }
 ```
 
-(SSA names will differ — that's just the shape.)
+(The actual SSA names will differ — that's just the shape.)
 
 ## Take it through the rest of the pipeline
 
-See [Continuing the pipeline](../../continuing-pipeline.md). For this program, the recommended invocation is:
+See [Continuing the pipeline](../../continuing-pipeline.md). For this program the recommended invocation is:
 
 ```sh
 qoala-opt alice.hir.mlir \

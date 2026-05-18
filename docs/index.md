@@ -24,11 +24,7 @@ if __name__ == "__main__":
 
 ## Where to start
 
-- New here? Read the [Overview](overview.md) and follow [Getting started](getting-started.md).
-- Want a runnable example? See [Examples / Teleportation](examples/teleportation/index.md).
-- Looking up a type, qubit method, or operation? Jump to the [SDK reference](sdk/index.md).
-- Curious about the path from Python to MLIR? See [Architecture / From Python to Qoala HIR](architecture/python-to-hir.md).
-- After compilation, your HIR is fed to [qoala-mlir](<QOALA_MLIR_DOCS_URL>) — see [Continuing the pipeline](continuing-pipeline.md).
+If this is your first encounter with `euqalyptus`, read the [Overview](overview.md) for a sketch of the pipeline and follow [Getting started](getting-started.md) to set up your environment. The [Examples / Teleportation](examples/teleportation/index.md) tutorial walks through a runnable end-to-end program. When you start writing your own programs, the [SDK reference](sdk/index.md) is the place to look up types, qubit methods, and operations. The [Architecture / From Python to Qoala HIR](architecture/python-to-hir.md) page explains, in detail, what happens between your Python source and the emitted MLIR module — that is what every SDK call ultimately boils down to. Once you have a compiled HIR module in hand, [Continuing the pipeline](continuing-pipeline.md) hands you off to the [qoala-mlir](<QOALA_MLIR_DOCS_URL>) toolchain that takes it the rest of the way.
 
 ## What lives where
 

@@ -1,23 +1,18 @@
 # From Python to Qoala HIR
 
-What `program.compile()` does, in three stages.
+When you call `program.compile()`, the SDK turns your Python function into a QoalaHIR module in four conceptually distinct stages, all carried out inside the body of `compile()` defined in `euqalyptus/__init__.py`.
 
 ![Frontend internals](../assets/figures/frontend-internals.svg)
 
-## Stage 1: Setup
+## Stage 1: setup
 
-`QoalaProgram.compile(...)` (in `euqalyptus/__init__.py`):
+`compile()` first acquires the global `_compiler_lock`. The recording protocol used in the next stage relies on a class-level slot, `QoalaProgram._instance`, that points to whatever program is currently being compiled, and that slot is what lets user-facing constructors like `Remote("Alice")` know which program to declare a remote on. The global lock keeps that single-instance invariant safe; the trade-off is that two `QoalaProgram` instances cannot be compiled concurrently from the same process — calls serialize. For a typical CI loop this is invisible; only a tool that wants parallel compilation would need to refactor that state.
 
-1. Acquires the global `_compiler_lock`. Only one program can be compiling at a time.
-2. Sets `QoalaProgram._instance = self` so the user-facing constructors can find the active program.
-3. Resets `QoalaProgram._declared_remotes` and creates a fresh `CompilationContext` (which captures the `compile_lazy` and `singular_comm_ops` flags).
-4. Clears the program's `QoalaModule` and adds a single function (named after the entry function — typically `my_program` or `main`).
+Once the lock is held, `compile()` sets `QoalaProgram._instance` to `self`, resets the class-level `_declared_remotes` cache, and constructs a fresh `CompilationContext` that captures the values of `compile_lazy` and `singular_comm_ops`. It also clears the program's `QoalaModule` and adds a single function to it, named after the entry function — typically `my_program` for the decorator form or `main` for the class-based form. By the time stage 1 ends, the SDK is in *recording mode*.
 
-After this, the SDK is in *recording mode*.
+## Stage 2: recording
 
-## Stage 2: Recording
-
-Now your Python function runs:
+Now your Python function runs. From Python's perspective nothing unusual happens — the interpreter walks the body once, executes each line, and returns whatever the function returned. But every SDK call along the way is intercepted by a constructor or context manager that records an AST node into the active function body instead of performing its nominal action immediately.
 
 ```python
 @QoalaProgram
@@ -28,71 +23,39 @@ def example():
     send_int("Alice", m)
 ```
 
-But every SDK call is *intercepted*:
+When this body runs, `Remote("Alice")` reaches `euqalyptus.operations.Remote.__new__`, which either returns the existing `DeclaredRemote` for `"Alice"` or constructs a new one — so calling `Remote("Alice")` twice yields the same object. `Entangle("Alice")` is a thin factory function (defined in `euqalyptus/types/quantum/qubit.py`) that checks the remote is declared and produces an `EntangledQubit`, itself a `QoalaEprs` AST node. The subsequent `q.measure()` reaches `Qubit.measure`, which in turn calls `QoalaEprs.measure`, records a `qnet.measure`-shaped AST node into the function body, and returns a `QoalaInteger` AST. Finally, `send_int("Alice", m)` flows through the `SendInts` factory in `euqalyptus/operations/communication.py` (recall that `send_int` is an alias of the variadic `SendInts` — single-value scalar HIR sends are emitted only under `compile(singular_comm_ops=True)`), which wraps the AST node `m` and the remote name into a send op and pushes it into the current function body.
 
-- `Remote("Alice")` ends up in `euqalyptus.operations.Remote.__new__`, which either returns the existing `DeclaredRemote` for that name or constructs a new one.
-- `Entangle("Alice")` is a function (not a class) defined in `euqalyptus/types/quantum/qubit.py`. It checks that the remote was declared and produces an `EntangledQubit`, which is itself a `QoalaEprs` AST node.
-- `q.measure()` — `Qubit.measure` calls `QoalaEprs.measure`, which records a `qnet.measure`-shaped AST node into the active function's body and returns a `QoalaInteger` AST.
-- `send_int("Alice", m)` — the `SendInt` factory in `euqalyptus/operations/communication.py` wraps the AST node `m` plus the remote name into a `SendIntOp` AST node, again pushed into the current function body.
+The pseudo-AST built up this way is structured exactly like the HIR will be: a `QoalaModule` contains `QoalaFunction`s; each `QoalaFunction` has a body that is an ordered list of `QoalaOperation`s; and each `QoalaOperation` references `QoalaExpression` operands and produces `QoalaRuntimeValue`s. You can inspect this state directly by passing `compile_lazy=True` to `compile()` — the AST is built but stage 3 is skipped, so what you get back is the recorded structure without any MLIR emission.
 
-The function then returns. Its return value (often `None`) is captured.
+## Stage 3: emission
 
-The pseudo-AST built up during recording is structured the same way the HIR will be:
-
-- `QoalaModule` contains `QoalaFunction`s.
-- Each `QoalaFunction` has a body that is a list of `QoalaOperation`s.
-- `QoalaOperation`s reference `QoalaExpression` operands and produce `QoalaRuntimeValue`s.
-
-You can see this state by passing `compile_lazy=True` to `compile()`: the AST is built, but Stage 3 is skipped.
-
-## Stage 3: Emission
-
-If `compile_lazy=False` (the default), `compile()` calls `module.generate_qoala_hir()`. That walks the AST and, for each operation, calls into the `qnet.dialects.qnet` Python builders shipped by [qoala-mlir](<QOALA_MLIR_DOCS_URL>/bindings/) to emit the corresponding MLIR op.
-
-The relevant imports inside `module.py`:
+If `compile_lazy=False` (the default), `compile()` calls `module.generate_qoala_hir()`. That walks the AST and emits the corresponding MLIR ops using the `qnet` Python builders shipped by [qoala-mlir](<QOALA_MLIR_DOCS_URL>/bindings/), so each AST node maps to a builder call in the `qnet` dialect:
 
 ```python
 from qnet.dialects import qnet
 from qnet.ir import Module, Context, Location, InsertionPoint
 ```
 
-The emission does roughly:
+Concretely, `generate_qoala_hir()` creates an MLIR `Module` inside a fresh `Context`, then emits a `qnet.remote` declaration for each previously recorded remote and a `qnet.func` wrapping each recorded function:
 
 ```python
 with Context() as ctx, Location.unknown():
     self._qir_module = Module.create()
     with InsertionPoint(self._qir_module.body):
-        # Emit qnet.remote ops for each declared remote.
         for r in self._remotes:
             qnet.remote(name=r.name)
-        # Emit a qnet.func wrapping each function.
         for fn in self._functions:
             self._emit_function(fn)
 ```
 
-After `generate_qoala_hir()` returns, the `_qir_module` is populated and `module.asm` returns its pretty-printed form via `_qir_module.operation.get_asm()`.
+After this returns, the module's `asm` property pretty-prints the MLIR via `_qir_module.operation.get_asm()`.
 
-## Stage 4: Teardown
+## Stage 4: teardown
 
-Back in `compile()`:
+The final stage of `compile()` is bookkeeping. The remotes accumulated in `_declared_remotes` are copied onto `module.remotes`, the program's `_is_compiled` flag is flipped to `True`, the class-level `QoalaProgram._instance` is cleared, and the global lock is released. The call returns `(return_value_from_user_function, the_module)`.
 
-5. The remotes accumulated in `_declared_remotes` are stored on `module.remotes`.
-6. `_is_compiled` is flipped to `True`.
-7. `QoalaProgram._instance` is deleted.
-8. The lock is released.
+## What branching interception looks like in practice
 
-The returned tuple is `(return_value_from_user_function, the_module)`.
+A `with if_cond(m == 1) as (t, f):` block in user code does not run real Python control flow over a quantum-network value. What it actually does is record a `ConditionalBranching` AST node and enter context-manager state that swaps the "current function body" pointer to a sub-list. Anything recorded inside the `with` body lands in that sub-list; exiting the context manager pops back to the parent body. The user-visible Python control flow is therefore a recording protocol — the actual branch lives in the recorded AST and shows up downstream as an `scf.if` in HIR.
 
-## What "branching is intercepted" means in practice
-
-A `with if_cond(m == 1) as (t, f):` block in user code creates a `ConditionalBranching` AST node, then enters context-manager state that swaps the "current function body" to a sub-list. Anything you do inside the `with` body gets recorded into that sub-list. Exiting the context manager pops back to the parent body.
-
-This is why the SDK *can* support runtime-conditional control flow with what looks like ordinary Python `with` blocks: the whole thing is a recording protocol, not real control flow.
-
-This page does not document the branching ops in detail; see the source under `euqalyptus/operations/branching.py` and the tests under `tests/bindings/test_branching.py` if you need them now.
-
-## Why a global lock?
-
-The recording protocol relies on a class-level slot (`QoalaProgram._instance`) that points to "the program currently being compiled." That slot is what lets `Remote("Alice")` know which program to declare the remote on. A global lock around `compile()` makes that single-instance invariant safe to assume during recording.
-
-The implication is that **you cannot compile two `QoalaProgram`s concurrently** — calls serialize. For a CI/test loop this is rarely an issue; for a user-facing tool that needs parallelism, you'd have to refactor the recording state.
+This page does not document the branching ops in detail; for that, see the source under `euqalyptus/operations/branching.py` and the tests under `tests/bindings/test_branching.py`.

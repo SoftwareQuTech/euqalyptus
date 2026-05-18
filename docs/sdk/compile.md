@@ -15,7 +15,7 @@ def compile(
     ...
 ```
 
-`*args` and `**kwargs` are forwarded to the entry function. Returns `(return_value, QoalaModule)`.
+`*args` and `**kwargs` are forwarded to the entry function. The return is `(return_value, QoalaModule)`.
 
 ![Compilation options](../assets/figures/compile-options.svg)
 
@@ -23,12 +23,7 @@ def compile(
 
 ### `compile_lazy: bool = False`
 
-When `True`, only build the internal pseudo-AST during `compile()`. The MLIR module is not generated until you explicitly call `.generate_qoala_hir()` on the returned module.
-
-Useful when:
-
-- You want to assert structural properties about the AST in tests without paying the cost of MLIR emission.
-- You're debugging the SDK itself.
+When `True`, `compile()` only builds the internal pseudo-AST; the MLIR module is not generated until you explicitly call `.generate_qoala_hir()` on the returned module. This is useful when you want to assert structural properties about the AST in tests without paying the cost of MLIR emission, or when you are debugging the SDK itself.
 
 ```python
 ret, module = my_program.compile(compile_lazy=True)
@@ -37,12 +32,7 @@ ret, module = my_program.compile(compile_lazy=True)
 
 ### `singular_comm_ops: bool = False`
 
-When `True`, classical communication operations emit their **single-value** counterparts in HIR (`qnet.send_int`, `qnet.recv_int`, `qnet.send_float`, `qnet.recv_float`) instead of the tensor-typed multi-value versions (`qnet.send_ints`, `qnet.recv_ints`, …).
-
-Picking this avoids generating tensor values entirely in HIR, which:
-
-- simplifies later passes (no tensor lowering needed),
-- matches the standard `unfold-comm-ops` behavior at MIR level (so you'd be doing the work earlier).
+When `True`, classical sends that carry a single value emit their **single-value** counterparts in HIR (`qnet.send_int`, `qnet.send_float`) instead of the tensor-typed multi-value versions (`qnet.send_ints`, `qnet.send_floats`). Picking this avoids generating tensor values entirely in HIR, which simplifies later passes (no tensor lowering needed) and matches the standard `unfold-comm-ops` behavior at MIR level — you are effectively doing that work earlier. The flag does not affect the receive side: `recv_int` / `recv_float` are first-class scalar SDK calls and always emit `qnet.recv_int` / `qnet.recv_float`, regardless of the flag.
 
 ```python
 _, module = my_program.compile(singular_comm_ops=True)
@@ -52,14 +42,7 @@ The teleportation example uses this option.
 
 ## Class-level toggles
 
-The same flags can be inspected/set on the class for the duration of a session. These methods exist on `QoalaProgram`:
-
-```python
-QoalaProgram.compile_lazy_flag(True)
-QoalaProgram.compile_singular_comm_ops(True)
-```
-
-Call without arguments to read the current value. They are typically only useful in tests or in repeated-compilation harnesses.
+The same flags can be inspected or set on the class for the duration of a session. The methods `QoalaProgram.compile_lazy_flag(True)` and `QoalaProgram.compile_singular_comm_ops(True)` set the corresponding toggle; calling them without arguments reads the current value. These class-level toggles are typically only useful in tests or in repeated-compilation harnesses.
 
 ## Concurrency
 

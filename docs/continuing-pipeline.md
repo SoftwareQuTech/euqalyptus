@@ -1,12 +1,10 @@
 # Continuing the pipeline
 
-Once `module.asm` is populated, you've handed off the program to the [qoala-mlir](<QOALA_MLIR_DOCS_URL>) toolchain. This page is a thin pointer guide — for the authoritative description of `qoala-opt`, every pass and flag, see the [qoala-mlir docs](<QOALA_MLIR_DOCS_URL>).
+Once `module.asm` is populated, you have handed off the program to the [qoala-mlir](<QOALA_MLIR_DOCS_URL>) toolchain. This page is a thin pointer guide — for the authoritative description of `qoala-opt`, every pass, and every flag, see the [qoala-mlir docs](<QOALA_MLIR_DOCS_URL>).
 
 ## The handoff
 
-Two equally common patterns:
-
-**Write to disk:**
+Two patterns are equally common. The first writes the module to disk and then drives the toolchain externally:
 
 ```python
 _, module = my_program.compile()
@@ -25,7 +23,7 @@ qoala-opt program.hir.mlir \
 qoala-translate --mlir-to-iqoala program.lir.mlir > program.iqoala
 ```
 
-**Pipe directly:**
+The second pipes the textual HIR directly into `qoala-opt`'s stdin from Python:
 
 ```python
 import subprocess
@@ -44,13 +42,11 @@ subprocess.run(
 
 ## A note on `singular_comm_ops`
 
-If your program uses send/recv and you don't pass `singular_comm_ops=True`, the emitted HIR contains tensor-typed multi-value comm ops (`qnet.send_ints`, `qnet.recv_ints`). At MIR level, `unfold-comm-ops` rewrites them to single-value form. You don't need to do anything extra unless you're trying to keep the tensor form for some reason — in which case use `--lower-qoala-mir-to-lir=disable-unfold-comm-ops=true`.
-
-If you do pass `singular_comm_ops=True`, the HIR is already in single-value form and the unfold pass is a no-op for those ops.
+If your program uses send/recv and you do not pass `singular_comm_ops=True` to `compile()`, the emitted HIR contains tensor-typed multi-value comm ops (`qnet.send_ints`, and the receive variants emitted by their tensor-form callers). At MIR level, `unfold-comm-ops` rewrites them to single-value form, so you do not need to do anything extra unless you are trying to keep the tensor form for some reason — in which case use `--lower-qoala-mir-to-lir=disable-unfold-comm-ops=true`. If you do pass `singular_comm_ops=True`, the HIR is already in single-value form on the send side and the unfold pass is effectively a no-op for those ops.
 
 ## Cost-model knobs and analyses
 
-Some passes (analysis-print passes; the MILP block reorderer) consume cost-model parameters via top-level flags on `qoala-opt`:
+Some passes — the analysis-print passes and the MILP block reorderer — consume cost-model parameters via top-level flags on `qoala-opt`:
 
 ```sh
 qoala-opt program.hir.mlir \
@@ -64,17 +60,11 @@ qoala-opt program.hir.mlir \
   --qoala-opt-program-horizon=10000
 ```
 
-The full table is in [qoala-mlir / Tools / qoala-opt](<QOALA_MLIR_DOCS_URL>/tools/qoala-opt/). They affect the analyses' numbers and the MILP objective; they do not affect lowering correctness.
+The full table is in [qoala-mlir / Tools / qoala-opt](<QOALA_MLIR_DOCS_URL>/tools/qoala-opt/). These flags affect the analyses' numbers and the MILP objective; they do not affect lowering correctness.
 
 ## Inspecting intermediate IRs
 
-Useful flags from upstream `mlir-opt` (also accepted by `qoala-opt`):
-
-- `--print-ir-after=lower-qoala-hir-to-mir` — dump MIR right after the HIR→MIR conversion.
-- `--print-ir-after-all` — dump after every pass.
-- `--mlir-print-op-generic` — print in generic form (handy when debugging custom verifiers).
-
-See [qoala-mlir / Tools / qoala-opt / Standard MLIR knobs](<QOALA_MLIR_DOCS_URL>/tools/qoala-opt/#standard-mlir-knobs).
+Several upstream `mlir-opt` flags are also accepted by `qoala-opt` and are useful when you want to see what each pass produced. `--print-ir-after=lower-qoala-hir-to-mir` dumps the MIR right after the HIR-to-MIR conversion; `--print-ir-after-all` dumps after every pass; and `--mlir-print-op-generic` prints in generic form, which is handy when debugging custom verifiers. See [qoala-mlir / Tools / qoala-opt / Standard MLIR knobs](<QOALA_MLIR_DOCS_URL>/tools/qoala-opt/#standard-mlir-knobs).
 
 ## Going further
 

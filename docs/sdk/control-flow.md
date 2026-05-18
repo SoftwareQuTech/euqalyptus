@@ -4,7 +4,7 @@ Source: `euqalyptus/operations/control_flow.py`.
 
 ## `return_results(...)` / `ReturnResults`
 
-Records a `qnet.return` op that terminates the current function. Use it to return classical values (typically measurement outcomes) from a Qoala program.
+`return_results` (and the alias `ReturnResults`, which is the same callable) records a `qnet.return` op that terminates the current function. Use it to return classical values — typically measurement outcomes — from a Qoala program.
 
 ```python
 from euqalyptus.operations.control_flow import return_results, ReturnResults
@@ -17,8 +17,6 @@ def measure_and_return():
     return_results(m)
 ```
 
-Both `return_results` and the alias `ReturnResults` exist; they're the same callable.
-
 ### Signatures
 
 ```python
@@ -28,14 +26,11 @@ ReturnResults(x, y, z)         # qnet.return %x, %y, %z
 ReturnResults([x, y, z])       # same — lists/tuples are flattened
 ```
 
-The variadic form accepts any number of `QoalaExpression`s, plus Python `int` / `float` literals (auto-promoted) and lists/tuples of the same.
+The variadic form accepts any number of `QoalaExpression`s, plus Python `int` / `float` literals (auto-promoted), and lists or tuples of the same.
 
 ### Implicit terminator
 
-If you don't call `return_results(...)` at the end of your program, the SDK infers an empty return when emitting HIR. You only need to call it explicitly when:
-
-- you want to return one or more values, or
-- you need to terminate early (less common in HIR, since branching is handled separately).
+If you don't call `return_results(...)` at the end of your program, the SDK infers an empty return when emitting HIR. You only need to call it explicitly when you want to return one or more values, or when you need to terminate early (the latter is less common in HIR, since branching is handled separately).
 
 ## Branching
 

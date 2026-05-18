@@ -15,10 +15,7 @@ pip install -e .[dev]
 
 The `[dev]` extra brings in `pytest`, `build`, `twine`, `pylint`, `mypy`, and `black`.
 
-You also need a working [qoala-mlir](<QOALA_MLIR_DOCS_URL>) install — the SDK imports `qnet.dialects.qnet` and `qnet.ir` from it, and the bindings tests assert against the textual HIR it emits. Either:
-
-- Install the `qoala-mlir` wheel from its [GitHub releases page](<QOALA_MLIR_RELEASES_URL>) into the same venv (`pip install https://.../qoala_mlir-<version>-...whl`), or
-- Point `PYTHONPATH` at a local qoala-mlir build tree (see [qoala-mlir / Developer's guide / Building from source](<QOALA_MLIR_DOCS_URL>/developer-guide/build-from-source/)).
+You also need a working [qoala-mlir](<QOALA_MLIR_DOCS_URL>) install — the SDK imports `qnet.dialects.qnet` and `qnet.ir` from it, and the bindings tests assert against the textual HIR it emits. The simplest way is to install the `qoala-mlir` wheel from its [GitHub releases page](<QOALA_MLIR_RELEASES_URL>) into the same venv (`pip install https://.../qoala_mlir-<version>-...whl`). Alternatively, if you have a local qoala-mlir build tree, you can point `PYTHONPATH` at it — see [qoala-mlir / Developer's guide / Building from source](<QOALA_MLIR_DOCS_URL>/developer-guide/build-from-source/).
 
 ## Running the tests
 
@@ -37,7 +34,7 @@ tests/
 └── helpers_tests.py
 ```
 
-Per the project conventions, prefer **lifting examples from the test suite or the `examples/` directory** when writing user-facing material — those programs are known to compile and emit valid HIR.
+Per the project conventions, prefer lifting examples from the test suite or the `examples/` directory when writing user-facing material — those programs are known to compile and emit valid HIR.
 
 ## Where to put new code
 
@@ -52,7 +49,7 @@ Per the project conventions, prefer **lifting examples from the test suite or th
 
 ## Code style
 
-The project uses `black` for formatting, `pylint` for linting, and `mypy` for type-checking. The `pyproject.toml` configures all three.
+The project uses `black` for formatting, `pylint` for linting, and `mypy` for type-checking; the `pyproject.toml` configures all three:
 
 ```sh
 black src tests
@@ -64,25 +61,10 @@ mypy src
 
 ## How euqalyptus relates to qoala-mlir
 
-[qoala-mlir](<QOALA_MLIR_DOCS_URL>) provides the `qnet` Python bindings package that euqalyptus imports for HIR emission, plus the `qoala-opt` and `qoala-translate` binaries that consume the emitted HIR.
+[qoala-mlir](<QOALA_MLIR_DOCS_URL>) provides the `qnet` Python bindings package that euqalyptus imports for HIR emission, plus the `qoala-opt` and `qoala-translate` binaries that consume the emitted HIR. The contract between the two repos is narrow: euqalyptus only depends on the `qnet.dialects.qnet` and `qnet.ir` Python modules, so if those import paths change, the relevant call sites in `src/euqalyptus/module.py` (and a few AST emitters) need updates. The set of HIR ops euqalyptus emits is determined by `Dialect/QNet/QNetOps.td` in qoala-mlir; if a new op is added there, the corresponding AST emitter in `src/euqalyptus/ast/operations/` may need to be added or updated.
 
-The contract:
-
-- euqalyptus only depends on the `qnet.dialects.qnet` and `qnet.ir` Python modules. If those import paths change, the relevant call sites in `src/euqalyptus/module.py` (and a few AST emitters) need updates.
-- The set of HIR ops euqalyptus emits is determined by `Dialect/QNet/QNetOps.td` in qoala-mlir. If a new op is added there, the corresponding AST emitter in `src/euqalyptus/ast/operations/` may need to be added or updated.
-- New SDK constructs (e.g., a new qubit method) typically require:
-  1. A method on `Qubit` in `src/euqalyptus/types/quantum/qubit.py`.
-  2. A corresponding AST node in `src/euqalyptus/ast/operations/quantum.py`.
-  3. The matching `qnet.<op>` builder call in the AST node's emit path.
-
-When adding an op that doesn't exist in qoala-mlir yet, land the qoala-mlir change first (so the `qnet` Python builder exists), rebuild the bindings, then update euqalyptus to use it.
+New SDK constructs typically require three pieces of code in a fixed order: a method on `Qubit` in `src/euqalyptus/types/quantum/qubit.py`, a corresponding AST node in `src/euqalyptus/ast/operations/quantum.py`, and the matching `qnet.<op>` builder call in the AST node's emit path. When adding an op that does not yet exist in qoala-mlir, land the qoala-mlir change first (so the `qnet` Python builder exists), rebuild the bindings, then update euqalyptus to use it.
 
 ## Reporting issues / proposing changes
 
-Open an issue with:
-
-- A minimal `@QoalaProgram` snippet that reproduces the issue.
-- The textual HIR you expect vs. what the SDK actually emits (`print(str(module))`).
-- The version (or commit hash) of both euqalyptus and qoala-mlir you're running.
-
-For new SDK features, a short note describing the user-facing surface (new types, new operations, expected HIR shape) helps reviewers a lot.
+Open an issue. The most useful issues include a minimal `@QoalaProgram` snippet that reproduces the problem, the textual HIR you expect versus what the SDK actually emits (`print(str(module))`), and the version (or commit hash) of both euqalyptus and qoala-mlir you are running. For new SDK features, a short note describing the user-facing surface — new types, new operations, expected HIR shape — helps reviewers a lot.

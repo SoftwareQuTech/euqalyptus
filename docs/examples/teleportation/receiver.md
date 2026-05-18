@@ -1,9 +1,9 @@
 # Teleportation — receiver
 
 !!! info "TODO"
-    The receiver side of teleportation requires applying corrections that depend on the **runtime values** of two classical bits received from the sender. In the current SDK, that needs the branching operators (`with if_cond(z_corr == 1) as (t, f): ...`), and **branching is intentionally not yet documented**.
+    The receiver side of teleportation requires applying corrections that depend on the **runtime values** of two classical bits received from the sender. In the current SDK, that needs the branching operators (`with if_cond(z_corr == 1) as (t, f): ...`); the branching mechanism is now documented end-to-end in the accompanying paper, but the dedicated walkthrough page that mirrors the [Sender](sender.md) one is still to be written.
 
-    The runnable receiver program lives in [`qoala-compiler/teleportation/bob.py`](https://gitlab.tudelft.nl/qoala/qoala-compiler/-/blob/master/teleportation/bob.py) (resolve to your local checkout). Its current text is:
+    The runnable receiver program lives in [`qoala-compiler/examples/teleportation/bob.py`](https://gitlab.tudelft.nl/qoala/qoala-compiler/-/blob/master/examples/teleportation/bob.py). Its current text is:
 
     ```python
     from euqalyptus import QoalaProgram
@@ -28,13 +28,10 @@
         return_results(meas)
     ```
 
-    A future revision of this documentation will cover branching (`if_cond`, `if_eq`, `if_lt`, …) and walk through this program in the same depth as the [Sender](sender.md) page.
-
-    For the [Sender](sender.md), the doc is complete.
+    A future revision of this page will cover the SDK-level branching API (`if_cond`, `if_eq`, `if_lt`, …) and walk through this program in the same depth as the [Sender](sender.md) page. The [Sender](sender.md) page is complete in the meantime.
 
 ## Where to read more in the meantime
 
-- The branching test fixtures: `tests/bindings/test_branching.py`, `tests/syntax/test_branching_syntax.py`, `tests/semantics/test_branching.py`.
-- The deterministic teleportation variant in the repo (which avoids branching by always applying both corrections): under `qoala-compiler/bqc-with-teleport-deterministic/`.
+The cheapest way to see the branching mechanism in action is the test suite: `tests/bindings/test_branching.py` exercises the full Python-to-HIR path, while `tests/syntax/test_branching_syntax.py` and `tests/semantics/test_branching.py` cover the static checks.
 
-When branching is documented, this page will be replaced with a full walkthrough.
+When branching is documented here, this page will be replaced with a full walkthrough.

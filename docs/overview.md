@@ -6,7 +6,7 @@
 
 ## Two ways to write a program
 
-Either decorate a function:
+You can author a program in two equivalent shapes. The decorator form turns an ordinary function into a `QoalaProgram`:
 
 ```python
 from euqalyptus import QoalaProgram
@@ -16,7 +16,7 @@ def my_program():
     ...
 ```
 
-…or subclass `QoalaProgramBase` and implement `main()`:
+The class-based form subclasses `QoalaProgramBase` and implements `main()`:
 
 ```python
 from euqalyptus import QoalaProgramBase
@@ -26,34 +26,19 @@ class MyProgram(QoalaProgramBase):
         ...
 ```
 
-Both end up as the same kind of object internally. Calling `.compile()` on either yields a `(return_value, QoalaModule)` tuple. `QoalaModule.asm` is the textual Qoala HIR that you'd pipe into [qoala-mlir](<QOALA_MLIR_DOCS_URL>).
-
-See [SDK reference / Programs](sdk/programs.md) for the difference between the two patterns and when to pick which.
+Both end up as the same kind of object internally; calling `.compile()` on either yields a `(return_value, QoalaModule)` tuple, where `QoalaModule.asm` is the textual Qoala HIR that you would pipe into [qoala-mlir](<QOALA_MLIR_DOCS_URL>). See [SDK reference / Programs](sdk/programs.md) for the difference between the two patterns and when to pick which.
 
 ## What you can express
 
-The SDK exposes:
+The SDK exposes a small surface that maps directly onto the operations supported by the QNet dialect of Qoala HIR. On the classical side there are the basic numeric types — `Int`, `Int32`, `UInt32`, `Bit`, `Float`, `Double` — together with the array variants `IntArray` and `FloatArray`. These behave like normal Python values inside a `@QoalaProgram` body but actually emit HIR ops behind the scenes. On the quantum side, `LocalQubit` constructs a locally initialized qubit, `EntangledQubit` (or the `Entangle()` factory) represents the local half of an EPR pair shared with a remote node, and `ScopedQubit` is a recording-time proxy used when a qubit must survive a conditional branching region.
 
-- **Classical types** — `Int`, `Int32`, `UInt32`, `Bit`, `Float`, `Double`, `IntArray`, `FloatArray`. These behave like normal Python values inside a `@QoalaProgram` body but actually emit HIR ops behind the scenes.
-- **Quantum types** — `LocalQubit`, `EntangledQubit`, `ScopedQubit`, plus the `Entangle()` factory.
-- **Qubit operations** — single-qubit gates (`X`, `Y`, `Z`, `T`, `H`, `K`, `S`, `rot_X/Y/Z`), two-qubit gates (`cnot`, `cz`, `cphase`), measurement and free.
-- **Remotes** — `Remote("Alice")` declares a remote node by name; subsequent classical and entanglement ops reference it.
-- **Communication** — `send_int`, `recv_int`, `send_float`, `recv_float`, plus their array (`send_ints`, `recv_ints`, …) variants.
-- **Control flow** — `return_results(...)` to terminate the program.
-
-The full reference is in [SDK reference](sdk/index.md).
+Qubits support the usual single-qubit gates (`X`, `Y`, `Z`, `T`, `H`, `S`, the `rot_X/Y/Z` parameterized rotations), the two-qubit gates (`cnot`, `cz`, `cphase`), and measurement. The `Remote("Alice")` constructor declares a remote node by name, after which classical and entanglement operations targeting that node refer to it by that alias. Classical communication is available as `send_int`, `recv_int`, `send_float`, `recv_float`, plus their array (`send_ints`, `recv_ints`, …) variants. Control flow is shaped by `return_results(...)` to terminate the program, and by the `if_cond` family of context managers for runtime-conditional branching. The full reference is in [SDK reference](sdk/index.md).
 
 ## How the frontend produces HIR
 
-When you call `.compile()`, three things happen, all in `euqalyptus/__init__.py`:
+When you call `.compile()`, the SDK turns your Python function into a QoalaHIR module in three logical steps, all carried out inside `euqalyptus/__init__.py`. First, a global `_compiler_lock` is acquired and a fresh `QoalaModule` is created — this gives the SDK a single piece of state to record into while it processes your function. Second, your decorated Python function is *executed*: SDK constructors such as `Int(10)`, `Entangle("Alice")`, and `q.measure()` do not perform the operation in the moment, but record AST nodes (`QoalaExpression`, `QoalaOperation`, …) into the module's current function body. Third, once the function returns, `QoalaModule.generate_qoala_hir()` walks the recorded AST and emits MLIR operations using the `qnet` Python bindings shipped by [qoala-mlir](<QOALA_MLIR_DOCS_URL>).
 
-1. A global `_compiler_lock` is acquired and a fresh `QoalaModule` is created.
-2. Your decorated Python function is **executed**. The SDK constructors (`Int(10)`, `Entangle("Alice")`, `q.measure()`, …) don't perform the operation — they record AST nodes (`QoalaExpression`, `QoalaOperation`, …) into the module's current function body.
-3. After the function returns, `QoalaModule.generate_qoala_hir()` walks the AST and emits MLIR operations using the `qnet` Python bindings shipped by [qoala-mlir](<QOALA_MLIR_DOCS_URL>).
-
-The resulting module is reachable as `module.asm` (pretty-printed) or `module.generic_asm` (generic-form MLIR).
-
-For more, see [Architecture / From Python to Qoala HIR](architecture/python-to-hir.md).
+The resulting module is reachable as `module.asm` (pretty-printed) or `module.generic_asm` (generic-form MLIR). For the deeper version of this story, see [Architecture / From Python to Qoala HIR](architecture/python-to-hir.md).
 
 ![Frontend internals](assets/figures/frontend-internals.svg)
 
