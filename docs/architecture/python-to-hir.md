@@ -58,4 +58,4 @@ The final stage of `compile()` is bookkeeping. The remotes accumulated in `_decl
 
 A `with if_cond(m == 1) as (t, f):` block in user code does not run real Python control flow over a quantum-network value. What it actually does is record a `ConditionalBranching` AST node and enter context-manager state that swaps the "current function body" pointer to a sub-list. Anything recorded inside the `with` body lands in that sub-list; exiting the context manager pops back to the parent body. The user-visible Python control flow is therefore a recording protocol — the actual branch lives in the recorded AST and shows up downstream as an `scf.if` in HIR.
 
-This page does not document the branching ops in detail; for that, see the source under `euqalyptus/operations/branching.py` and the tests under `tests/bindings/test_branching.py`.
+This page does not document the branching ops in detail; for that, see the [Branching](../sdk/branching.md) reference (and, for a worked example, the [Teleportation receiver](../examples/teleportation/receiver.md)).

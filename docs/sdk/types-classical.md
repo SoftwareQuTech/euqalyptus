@@ -71,7 +71,7 @@ buf = IntArray(length=10)
 
 ## `ScopedVar`
 
-`euqalyptus.types.classical.ScopedVar` is the type used by branching constructs that need to "yield" a value out of a conditional block. It's primarily used together with the (currently-undocumented) branching operators. Outside of branching, you won't reach for it directly.
+`euqalyptus.types.classical.ScopedVar` is the type used by branching constructs that need to "yield" a value out of a conditional block. It's primarily used together with the [branching](branching.md) operators. Outside of branching, you won't reach for it directly.
 
 ## Constants and immediates
 

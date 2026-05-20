@@ -50,6 +50,7 @@ nav:
       - Remotes: sdk/remotes.md
       - Communication: sdk/communication.md
       - Control flow: sdk/control-flow.md
+      - Branching: sdk/branching.md
   - Architecture:
       - architecture/index.md
       - From Python to Qoala HIR: architecture/python-to-hir.md
