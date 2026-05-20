@@ -6,6 +6,9 @@ Source: `euqalyptus/operations/__init__.py`.
 
 ![Entanglement flow](../assets/figures/entanglement-flow.svg)
 
+!!! note "Simulating the online part"
+    The "online" portion of the flow shown above — the actual execution of the compiled `.iqoala` programs against a Qoala runtime, including entanglement generation and inter-node messaging — can be simulated end-to-end with [`qoala-sim`](https://github.com/QuTech-Delft/qoala-sim).
+
 ## `Remote("Name")`
 
 ```python
