@@ -11,7 +11,7 @@ If you need to modify the SDK itself, see [Contributing](contributing.md) for th
 
 ## Install
 
-`euqalyptus` depends on the `qoala-mlir` Python wheel for the `qnet` bindings and the `qoala-opt` / `qoala-translate` binaries. Both are published on the [qoala-mlir GitHub releases page](<QOALA_MLIR_RELEASES_URL>) — you install the qoala-mlir wheel from there first, then `euqalyptus` on top:
+`euqalyptus` depends on the `qoala-mlir` Python wheel for the `qnet` bindings and the `qoala-opt` / `qoala-translate` binaries. Both are published on the [qoala-mlir GitHub releases page](https://github.com/SoftwareQuTech/qoala-mlir/releases) — you install the qoala-mlir wheel from there first, then `euqalyptus` on top:
 
 ```sh
 python3.11 -m venv .venv
@@ -24,7 +24,7 @@ pip install https://github.com/<org>/qoala-mlir/releases/download/<version>/qoal
 pip install euqalyptus
 ```
 
-The exact qoala-mlir wheel filename depends on the Python version and platform; pick the one that matches your interpreter from the release page. See [the qoala-mlir Getting started](<QOALA_MLIR_DOCS_URL>/getting-started/) for the full list of supported platforms and the from-source path if no wheel is available.
+The exact qoala-mlir wheel filename depends on the Python version and platform; pick the one that matches your interpreter from the release page. See [the qoala-mlir Getting started](https://softwarequtech.github.io/qoala-mlir/getting-started/) for the full list of supported platforms and the from-source path if no wheel is available.
 
 ## Your first program
 

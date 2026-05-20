@@ -26,7 +26,7 @@ class MyProgram(QoalaProgramBase):
         ...
 ```
 
-Both end up as the same kind of object internally; calling `.compile()` on either yields a `(return_value, QoalaModule)` tuple, where `QoalaModule.asm` is the textual Qoala HIR that you would pipe into [qoala-mlir](<QOALA_MLIR_DOCS_URL>). See [SDK reference / Programs](sdk/programs.md) for the difference between the two patterns and when to pick which.
+Both end up as the same kind of object internally; calling `.compile()` on either yields a `(return_value, QoalaModule)` tuple, where `QoalaModule.asm` is the textual Qoala HIR that you would pipe into [qoala-mlir](https://softwarequtech.github.io/qoala-mlir). See [SDK reference / Programs](sdk/programs.md) for the difference between the two patterns and when to pick which.
 
 ## What you can express
 
@@ -36,7 +36,7 @@ Qubits support the usual single-qubit gates (`X`, `Y`, `Z`, `T`, `H`, `S`, the `
 
 ## How the frontend produces HIR
 
-When you call `.compile()`, the SDK turns your Python function into a QoalaHIR module in three logical steps, all carried out inside `euqalyptus/__init__.py`. First, a global `_compiler_lock` is acquired and a fresh `QoalaModule` is created — this gives the SDK a single piece of state to record into while it processes your function. Second, your decorated Python function is *executed*: SDK constructors such as `Int(10)`, `Entangle("Alice")`, and `q.measure()` do not perform the operation in the moment, but record AST nodes (`QoalaExpression`, `QoalaOperation`, …) into the module's current function body. Third, once the function returns, `QoalaModule.generate_qoala_hir()` walks the recorded AST and emits MLIR operations using the `qnet` Python bindings shipped by [qoala-mlir](<QOALA_MLIR_DOCS_URL>).
+When you call `.compile()`, the SDK turns your Python function into a QoalaHIR module in three logical steps, all carried out inside `euqalyptus/__init__.py`. First, a global `_compiler_lock` is acquired and a fresh `QoalaModule` is created — this gives the SDK a single piece of state to record into while it processes your function. Second, your decorated Python function is *executed*: SDK constructors such as `Int(10)`, `Entangle("Alice")`, and `q.measure()` do not perform the operation in the moment, but record AST nodes (`QoalaExpression`, `QoalaOperation`, …) into the module's current function body. Third, once the function returns, `QoalaModule.generate_qoala_hir()` walks the recorded AST and emits MLIR operations using the `qnet` Python bindings shipped by [qoala-mlir](https://softwarequtech.github.io/qoala-mlir).
 
 The resulting module is reachable as `module.asm` (pretty-printed) or `module.generic_asm` (generic-form MLIR). For the deeper version of this story, see [Architecture / From Python to Qoala HIR](architecture/python-to-hir.md).
 
@@ -44,7 +44,7 @@ The resulting module is reachable as `module.asm` (pretty-printed) or `module.ge
 
 ## What happens after HIR
 
-Once you have textual HIR, the rest of the pipeline lives in [qoala-mlir](<QOALA_MLIR_DOCS_URL>):
+Once you have textual HIR, the rest of the pipeline lives in [qoala-mlir](https://softwarequtech.github.io/qoala-mlir):
 
 ```sh
 qoala-opt program.hir.mlir \

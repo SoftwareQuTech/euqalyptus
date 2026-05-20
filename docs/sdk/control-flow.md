@@ -34,7 +34,7 @@ If you don't call `return_results(...)` at the end of your program, the SDK infe
 
 ## Branching
 
-Branching constructs (`if_cond`, `if_eq`, `if_lt`, …) live in `euqalyptus.operations.branching`. They exist and are exercised in the test suite (`tests/bindings/test_branching.py`, `tests/syntax/test_branching_syntax.py`, `tests/semantics/test_branching.py`), but are intentionally **not documented here yet**. Refer to those tests if you need to use branching today; the documented surface here will be expanded in a future revision.
+Branching constructs (`if_cond`, `if_eq`, `if_lt`, …) live in `euqalyptus.operations.branching`. They exist and are exercised in the test suite (`tests/bindings/test_branching.py`, `tests/syntax/test_branching_syntax.py`, `tests/semantics/test_branching.py`). Please refer to [branching](branching.md) documentation for more information about those statements.
 
 ## API reference
 

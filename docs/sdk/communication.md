@@ -58,7 +58,7 @@ The single-value forms (`send_int`, `recv_int`, …) and the array forms (`send_
 1. **Convenience.** Most user programs send/receive a small fixed number of classical values; single-value ops match that shape exactly.
 2. **Tensor avoidance.** The multi-value ops use `tensor<?xi32>` and `tensor<?xf32>` types in HIR. Tensors are heavier to lower than `i32`/`f32` SSA values. If you `compile(singular_comm_ops=True)`, the SDK emits only single-value ops, sidestepping tensor lowering altogether.
 
-If you compile with `singular_comm_ops=False` (the default), the array ops emit `qnet.send_ints` / `qnet.recv_ints` (etc.) in HIR. They are then **unfolded** into single-value ops at MIR level by [`unfold-comm-ops`](<QOALA_MLIR_DOCS_URL>/passes/mir/) — unless you disable that pass via `--lower-qoala-mir-to-lir=disable-unfold-comm-ops=true`.
+If you compile with `singular_comm_ops=False` (the default), the array ops emit `qnet.send_ints` / `qnet.recv_ints` (etc.) in HIR. They are then **unfolded** into single-value ops at MIR level by [`unfold-comm-ops`](https://softwarequtech.github.io/qoala-mlir/passes/mir/) — unless you disable that pass via `--lower-qoala-mir-to-lir=disable-unfold-comm-ops=true`.
 
 ## Errors
 

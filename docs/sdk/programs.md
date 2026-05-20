@@ -39,7 +39,7 @@ ret_val, module = program.compile()
 ```
 
 !!! warning "Quirky `__new__`"
-    `QoalaProgramBase.__new__` does some `partial(...)` magic to wire `cls.main` as the entry function. As a result, an instance of a subclass of `QoalaProgramBase` is **not** an instance of `QoalaProgramBase` — it is an instance of `QoalaProgram`. Don't rely on `isinstance(obj, QoalaProgramBase)`.
+    `QoalaProgramBase.__new__` uses some hacks to wire `cls.main` as the entry function. As a result, an instance of a subclass of `QoalaProgramBase` is **not** an instance of `QoalaProgramBase` — it is an instance of `QoalaProgram`. Don't rely on `isinstance(obj, QoalaProgramBase)`.
 
 If `main` is missing or remains `@abstractmethod`, instantiation raises `QuantumProgramNotImplementedError`.
 
@@ -72,7 +72,7 @@ def example():
     m = q.measure()
 ```
 
-This is why operations in qoala programs look like ordinary Python: the SDK is using constructors and methods to build the IR. You can mix in regular Python control structures (loops over compile-time values, helper functions, …) freely — anything that is evaluated before or after the SDK calls is just regular Python. What you cannot do is treat the runtime SDK values (such as `m` above) as plain Python values: comparing `m == 0` returns a *recorded comparison expression*, not a boolean. For control flow that depends on runtime values, see the (currently undocumented) branching operators in `euqalyptus.operations.branching`.
+This is why operations in qoala programs look like ordinary Python: the SDK is using constructors and methods to build the IR. You can mix in regular Python control structures (loops over compile-time values, helper functions, …) freely — anything that is evaluated before or after the SDK calls is just regular Python. What you cannot do is treat the runtime SDK values (such as `m` above) as plain Python values: comparing `m == 0` returns a *recorded comparison expression*, not a boolean. For control flow that depends on runtime values, see [Branching](branching.md).
 
 ## After compilation
 

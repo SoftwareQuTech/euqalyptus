@@ -25,7 +25,7 @@ When `True`, `compile()` only builds the internal pseudo-AST; the MLIR module is
 
 ```python
 ret, module = my_program.compile(compile_lazy=True)
-# module.asm here would force generation; module is otherwise un-emitted.
+# module.asm here would force generation; Qoala HIR of the module is otherwise un-emitted.
 ```
 
 ### `singular_comm_ops: bool = False`

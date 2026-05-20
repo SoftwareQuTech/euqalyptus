@@ -48,7 +48,7 @@ For each unique name passed to `Remote(...)` during a single `compile()`, the re
 qnet.remote @Bob
 ```
 
-at module scope. After [the MIR→LIR lowering in qoala-mlir](<QOALA_MLIR_DOCS_URL>/passes/mir-to-lir/), this becomes:
+at module scope. After [the MIR→LIR lowering in qoala-mlir](https://softwarequtech.github.io/qoala-mlir/passes/mir-to-lir/), this becomes:
 
 ```mlir
 qremote.remote @Bob

@@ -1,10 +1,10 @@
 # euqalyptus
 
-`euqalyptus` is the Python frontend of the Qoala compiler stack. You write a quantum-network program as a regular Python function or class, call `compile()`, and out comes a Qoala HIR module — the highest-level intermediate representation of the stack, which is then consumed by the [qoala-mlir](<QOALA_MLIR_DOCS_URL>) toolchain for lowering, optimization, and translation to the executable `.iqoala` format.
+`euqalyptus` is the Python frontend of the Qoala compiler stack. You write a quantum-network program as a regular Python function or class, call `compile()`, and out comes a Qoala HIR module — the highest-level intermediate representation of the stack, which is then consumed by the [qoala-mlir](https://softwarequtech.github.io/qoala-mlir) toolchain for lowering, optimization, and translation to the executable `.iqoala` format.
 
 ## Documentation
 
-The full documentation is published at [`<EUQALYPTUS_DOCS_URL>`](<EUQALYPTUS_DOCS_URL>). It covers installation, the SDK reference (programs, compilation, classical and quantum types, qubit operations, remotes, communication, control flow), the worked teleportation example, the frontend's internal architecture, and contributor-facing material.
+The full documentation is published at [`https://softwarequtech.github.io/euqalyptus`](https://softwarequtech.github.io/euqalyptus). It covers installation, the SDK reference (programs, compilation, classical and quantum types, qubit operations, remotes, communication, control flow), the worked teleportation example, the frontend's internal architecture, and contributor-facing material.
 
 ## Design and paper
 

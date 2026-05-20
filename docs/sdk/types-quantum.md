@@ -50,7 +50,7 @@ from euqalyptus.types.quantum import ScopedQubit
 cond_q = ScopedQubit(qubit)
 ```
 
-You typically reach for `ScopedQubit` only inside branching blocks. Branching is currently out of scope for this documentation; see `tests/bindings/test_branching.py` for examples.
+You typically reach for `ScopedQubit` only inside branching blocks. You can check [branching](branching.md) for more information about these statements.
 
 ## Where `qnet.qubit` comes from
 
@@ -62,7 +62,7 @@ In the emitted HIR, every qubit-typed value is `!qnet.qubit`. The mapping:
 | `Entangle("Bob")` | `%q = qnet.eprs { remote = @Bob } : !qnet.qubit` |
 | `Entangle("Bob", n=3)` | three `qnet.eprs` ops sharing the same remote |
 
-After [the HIR→MIR lowering in qoala-mlir](<QOALA_MLIR_DOCS_URL>/passes/hir-to-mir/), each `!qnet.qubit` value is rewritten to an `i32` qubit pointer. From the user's perspective, that's invisible.
+After [the HIR→MIR lowering in qoala-mlir](https://softwarequtech.github.io/qoala-mlir/passes/hir-to-mir/), each `!qnet.qubit` value is rewritten to an `i32` qubit pointer. From the user's perspective, that's invisible.
 
 ## API reference
 

@@ -1,6 +1,6 @@
 # Continuing the pipeline
 
-Once `module.asm` is populated, you have handed off the program to the [qoala-mlir](<QOALA_MLIR_DOCS_URL>) toolchain. This page is a thin pointer guide — for the authoritative description of `qoala-opt`, every pass, and every flag, see the [qoala-mlir docs](<QOALA_MLIR_DOCS_URL>).
+Once `module.asm` is populated, you have handed off the program to the [qoala-mlir](https://softwarequtech.github.io/qoala-mlir) toolchain. This page is a thin pointer guide — for the authoritative description of `qoala-opt`, every pass, and every flag, see the [qoala-mlir docs](https://softwarequtech.github.io/qoala-mlir).
 
 ## The handoff
 
@@ -60,12 +60,12 @@ qoala-opt program.hir.mlir \
   --qoala-opt-program-horizon=10000
 ```
 
-The full table is in [qoala-mlir / Tools / qoala-opt](<QOALA_MLIR_DOCS_URL>/tools/qoala-opt/). These flags affect the analyses' numbers and the MILP objective; they do not affect lowering correctness.
+The full table is in [qoala-mlir / Tools / qoala-opt](https://softwarequtech.github.io/qoala-mlir/tools/qoala-opt/). These flags affect the analyses' numbers and the MILP objective; they do not affect lowering correctness.
 
 ## Inspecting intermediate IRs
 
-Several upstream `mlir-opt` flags are also accepted by `qoala-opt` and are useful when you want to see what each pass produced. `--print-ir-after=lower-qoala-hir-to-mir` dumps the MIR right after the HIR-to-MIR conversion; `--print-ir-after-all` dumps after every pass; and `--mlir-print-op-generic` prints in generic form, which is handy when debugging custom verifiers. See [qoala-mlir / Tools / qoala-opt / Standard MLIR knobs](<QOALA_MLIR_DOCS_URL>/tools/qoala-opt/#standard-mlir-knobs).
+Several upstream `mlir-opt` flags are also accepted by `qoala-opt` and are useful when you want to see what each pass produced. `--print-ir-after=lower-qoala-hir-to-mir` dumps the MIR right after the HIR-to-MIR conversion; `--print-ir-after-all` dumps after every pass; and `--mlir-print-op-generic` prints in generic form, which is handy when debugging custom verifiers. See [qoala-mlir / Tools / qoala-opt / Standard MLIR knobs](https://softwarequtech.github.io/qoala-mlir/tools/qoala-opt/#standard-mlir-knobs).
 
 ## Going further
 
-For a deep dive into what each pass does, see [qoala-mlir / Passes reference](<QOALA_MLIR_DOCS_URL>/passes/). For the architecture of the pipeline, see [qoala-mlir / Architecture / The three IRs](<QOALA_MLIR_DOCS_URL>/architecture/irs/).
+For a deep dive into what each pass does, see [qoala-mlir / Passes reference](https://softwarequtech.github.io/qoala-mlir/passes/). For the architecture of the pipeline, see [qoala-mlir / Architecture / The three IRs](https://softwarequtech.github.io/qoala-mlir/architecture/irs/).

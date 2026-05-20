@@ -43,7 +43,7 @@ def rot_X(
     ...
 ```
 
-If `angle` is provided, `n` and `d` are ignored and the SDK records a `qnet.rot_*` (float-angle) op. The angle is later discretized — at MIR level, `lower-float-rotations` rewrites it to `qmem.rot_*_int` form using the runtime helper if needed. See [qoala-mlir / Passes / MIR helpers](<QOALA_MLIR_DOCS_URL>/passes/mir/).
+If `angle` is provided, `n` and `d` are ignored and the SDK records a `qnet.rot_*` (float-angle) op. The angle is later discretized — at MIR level, `lower-float-rotations` rewrites it to `qmem.rot_*_int` form using the runtime helper if needed. See [qoala-mlir / Passes / MIR helpers](https://softwarequtech.github.io/qoala-mlir/passes/mir/).
 
 If `angle` is `None`, the SDK records `qnet.rot_*_int` directly with `n` and `d`.
 
@@ -83,7 +83,7 @@ Marks the qubit as released so its physical slot can be reused. There is no corr
 
 ## Linearity invariant
 
-Each qubit value should be consumed at most once. The SDK doesn't enforce this at the Python level (a method call doesn't visibly "consume" `self`), but [qoala-mlir's `qnet-check-linear`](<QOALA_MLIR_DOCS_URL>/passes/hir/) does. If you observe a `Use of qubit after consumed` error from `qoala-opt`, it usually means the program reused a qubit value after `measure()` or after a gate operation that, in HIR, returns a *new* qubit value.
+Each qubit value should be consumed at most once. The SDK doesn't enforce this at the Python level (a method call doesn't visibly "consume" `self`), but [qoala-mlir's `qnet-check-linear`](https://softwarequtech.github.io/qoala-mlir/passes/hir/) does. If you observe a `Use of qubit after consumed` error from `qoala-opt`, it usually means the program reused a qubit value after `measure()` or after a gate operation that, in HIR, returns a *new* qubit value.
 
 In SDK terms, the rules of thumb:
 
