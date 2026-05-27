@@ -4,6 +4,12 @@ on:
     types: [ opened, synchronize, reopened ]
     branches:
       - "main"
+  workflow_dispatch:
+    inputs:
+      version_override:
+        description: "Version override"
+        required: true
+        type: string
 
 jobs:
   build-and-test:
@@ -33,6 +39,11 @@ jobs:
         shell: bash
         run: |
           python -m pytest
+
+      - name: Local version override
+        if: github.event_name == 'workflow_dispatch'
+        run: |
+          echo "SETUPTOOLS_SCM_PRETEND_VERSION=v${{ inputs.version_override }}" >> $GITHUB_ENV
 
       - name: Build wheel
         shell: bash
