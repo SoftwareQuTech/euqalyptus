@@ -44,6 +44,12 @@ jobs:
         if: github.event_name == 'workflow_dispatch'
         run: |
           echo "SETUPTOOLS_SCM_PRETEND_VERSION=v${{ inputs.version_override }}" >> $GITHUB_ENV
+          echo "QOALA_MLIR_VERSION=v${{ inputs.version_override }}" >> $GITHUB_ENV
+
+      - name: Set version
+        if: github.ref_type == 'tag' && startsWith(github.ref, 'refs/tags/v')
+        run: |
+          echo "QOALA_MLIR_VERSION=${{ github.ref_name }}" >> $GITHUB_ENV
 
       - name: Build wheel
         shell: bash
@@ -54,6 +60,6 @@ jobs:
         uses: actions/upload-artifact@v7.0.1
         with:
           path: dist/*.whl
-          name: euqalyptus-artifacts-python${{ matrix.python-version }}.whl
+          name: euqalyptus-${{ env.QOALA_MLIR_VERSION }}-artifacts-python${{ matrix.python-version }}.whl
           retention-days: 7
           if-no-files-found: error
