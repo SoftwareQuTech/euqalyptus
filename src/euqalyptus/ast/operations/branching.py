@@ -1,7 +1,6 @@
 from dataclasses import dataclass
-from typing import Optional, List, Any, Type
+from typing import Optional, List, Any, Iterable
 
-from mypy.stubgen import Iterable
 from qnet.dialects import scf, qnet
 from qnet.dialects._ods_common import get_op_result_or_op_results
 from qnet.extras.types import i32, f32, bool as mlir_bool
@@ -11,8 +10,7 @@ from euqalyptus.ast import QoalaExpression
 from euqalyptus.ast.model import (
     QoalaBlock,
     QoalaRuntimeQubit,
-    QoalaRuntimeValue,
-    QoalaScopedVal,
+    QoalaRuntimeValue
 )
 from euqalyptus.ast.operations import QoalaOperation
 from euqalyptus.ast.value import QoalaInteger, QoalaFloat, QoalaBool
