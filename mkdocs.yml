@@ -1,0 +1,58 @@
+site_name: euqalyptus
+repo_url: https://github.com/SoftwareQuTech/euqalyptus
+theme:
+  name: material
+  features:
+    - navigation.indexes
+extra:
+  version:
+    provider: mike
+markdown_extensions:
+  - codehilite
+  - admonition
+  - pymdownx.superfences
+  - toc:
+      permalink: true
+plugins:
+  - search
+  - mkdocstrings:
+      default_handler: python
+      handlers:
+        python:
+          paths: [src]
+          options:
+            docstring_style: google
+            show_source: false
+            show_root_heading: true
+            show_root_full_path: false
+            members_order: source
+            separate_signature: true
+            show_signature_annotations: true
+            merge_init_into_class: true
+            heading_level: 3
+nav:
+  - Home: index.md
+  - Overview: overview.md
+  - Getting started: getting-started.md
+  - Examples:
+      - examples/index.md
+      - Teleportation:
+          - examples/teleportation/index.md
+          - Sender: examples/teleportation/sender.md
+          - Receiver: examples/teleportation/receiver.md
+  - SDK reference:
+      - sdk/index.md
+      - Programs: sdk/programs.md
+      - Compilation: sdk/compile.md
+      - Classical types: sdk/types-classical.md
+      - Quantum types: sdk/types-quantum.md
+      - Qubit operations: sdk/qubit-ops.md
+      - Remotes: sdk/remotes.md
+      - Communication: sdk/communication.md
+      - Control flow: sdk/control-flow.md
+      - Branching: sdk/branching.md
+  - Architecture:
+      - architecture/index.md
+      - From Python to Qoala HIR: architecture/python-to-hir.md
+  - Continuing the pipeline: continuing-pipeline.md
+  - Contributing: contributing.md

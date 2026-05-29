@@ -12,6 +12,26 @@ class QoalaBooleanType(QoalaClassicalType[bool], BitwiseOperandsOverload):
 
 
 class Bool(QoalaBooleanType):
+    """A classical boolean value.
+
+    Constructing a ``Bool`` inside a ``@QoalaProgram`` body records a
+    new classical boolean SSA value. Booleans are typically used as
+    branching predicates (the condition of an ``if_cond(...)`` block)
+    and support the bitwise operators inherited from
+    :class:`BitwiseOperandsOverload`.
+
+    Args:
+        immediate: A Python ``bool`` (or ``int``) literal that becomes
+            the immediate value of the new boolean. Defaults to
+            ``False``.
+        other: If provided, the new boolean is initialized as a copy
+            of ``other``.
+
+    Raises:
+        NotBooleanArgumentError: If the positional ``immediate``
+            argument is not coercible to a boolean.
+    """
+
     def __new__(cls, *args, **kwargs):
         if "immediate" in kwargs:
             kwargs["value"] = kwargs["immediate"]
@@ -31,19 +51,5 @@ class Bool(QoalaBooleanType):
         return QoalaBool(**kwargs)
 
     def __init__(self, immediate: bool = False, other: Optional[Self] = None):
-        """
-        Creates a new instance of a 32 bits-wide *signed* integer.
-
-        Parameters
-        ----------
-        immediate: bool
-            the immediate value (as a python bool) for the new qoala boolean. If not given
-            this value defaults to 'false'
-        other: Bool
-            if given, the newly created boolean will contain a copy of the value passed here.
-            Using this argument has the effect to create *a totally new boolean instance*, but
-            containing the same value as the given argument. Use this method to create "deep
-            copies" of a boolean.
-        """
         # Nothing to do here
         pass

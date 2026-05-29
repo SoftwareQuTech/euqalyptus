@@ -26,8 +26,23 @@ class _UnsignedIntegerType(QoalaIntegerType[_Internal_Value_Type]):
 
 
 class Int32(_SignedIntegerType[int]):
-    """
-    Represents a `signed integer` of 32 bits
+    """A 32-bit signed integer.
+
+    Constructing an ``Int32`` inside a ``@QoalaProgram`` body records a
+    new classical integer value of width 32 and signed signedness. The
+    returned object supports the standard numeric and bitwise operators
+    inherited from :class:`NumericOperandsOverload`.
+
+    Args:
+        immediate: A Python ``int`` literal that becomes the immediate
+            value of the new integer. Defaults to ``0``.
+        other: If provided, the new integer is initialized as a copy of
+            ``other``'s value. Use this to deep-copy an existing
+            integer into a fresh SSA value.
+
+    Raises:
+        NotIntegerArgumentError: If the positional ``immediate``
+            argument is not a Python ``int``.
     """
 
     def __new__(cls, *args, **kwargs):
@@ -57,30 +72,33 @@ class Int32(_SignedIntegerType[int]):
         other: Optional[Self] = None,
         # TODO - The next arguments are used when creating an Int32 from other types
     ):
-        """
-        Creates a new instance of a 32 bits-wide *signed* integer.
-
-        Parameters
-        ----------
-        immediate: int
-            the immediate value (as a python integer) for the new qoala integer. If not given
-            this value defaults to '0'
-        other: Int32
-            if given, the newly created integer will contain a copy of the value passed here.
-            Using this argument has the effect to create *a totally new integer instance*, but
-            containing the same value as the given argument. Use this method to create "deep
-            copies" of an integer.
-        """
         # Nothing to do here
         pass
 
 
 Int = Int32
+"""Alias of :class:`Int32`. The recommended name for a 32-bit signed integer."""
 
 
 class UInt32(_UnsignedIntegerType[int]):
-    """
-    Represents an `unsigned integer` of 32 bits
+    """A 32-bit unsigned integer.
+
+    Constructing a ``UInt32`` inside a ``@QoalaProgram`` body records a
+    new classical integer value of width 32 and unsigned signedness.
+    The returned object supports the standard numeric and bitwise
+    operators inherited from :class:`NumericOperandsOverload`.
+
+    Args:
+        immediate: A non-negative Python ``int`` literal that becomes
+            the immediate value of the new integer. Defaults to ``0``.
+        other: If provided, the new integer is initialized as a copy of
+            ``other``'s value.
+
+    Raises:
+        NotIntegerArgumentError: If the positional ``immediate``
+            argument is not a Python ``int``.
+        NotUnsignedIntegerArgumentError: If the positional ``immediate``
+            argument is negative.
     """
 
     def __new__(cls, *args, **kwargs):
@@ -113,34 +131,24 @@ class UInt32(_UnsignedIntegerType[int]):
         other: Optional[Self] = None,
         # TODO - The next arguments are used when creating an UInt32 from other types
     ):
-        """
-        Creates a new instance of a 32 bits-wide *unsigned* integer.
-
-        Parameters
-        ----------
-        immediate: int
-            the immediate value (as a python integer) for the new qoala integer. If not given
-            this value defaults to '0'
-        other: UInt32
-            if given, the newly created integer will contain a copy of the value passed here.
-            Using this argument has the effect to create *a totally new integer instance*, but
-            containing the same value as the given argument. Use this method to create "deep
-            copies" of an integer.
-        """
         # Nothing to do here
         pass
 
 
 class Bit(QoalaClassicalType[int]):
-    """
-    Integer value that represents the returned value form measuring a qubit.
-    This integer can `only` have the value `0` or `1`, which is the potential
-    returned values from measuring a qubit.
-    This class does not support operations like "add", since it is not how
-    these operations are defined for the result of a measurement.
-    IMPORTANT: Despite a programmer could use the 'Bit' type of the
-    qoala.types.classical.integer package to declare and create a value of this
-    type, this is a use case that it is *not* encouraged.
+    """A single classical bit (the outcome of a qubit measurement).
+
+    A ``Bit`` value can only take the values ``0`` or ``1`` — the
+    possible outcomes of measuring a qubit. The class deliberately
+    does *not* support arithmetic operations (such as ``+``): those
+    are not meaningful semantics for a measurement result.
+
+    Note:
+        Although the class is exposed in
+        ``euqalyptus.types.classical.integer``, you should rarely
+        construct a ``Bit`` yourself. The canonical way to obtain one
+        is to call ``q.measure()`` on a qubit, which returns a ``Bit``
+        carrying the measurement outcome.
     """
 
     pass

@@ -15,8 +15,18 @@ class QoalaFloatingPointType(
 
 
 class Float(QoalaFloatingPointType[float]):
-    """
-    Represents a floating point value.
+    """A 32-bit floating-point value.
+
+    Constructing a ``Float`` inside a ``@QoalaProgram`` body records a
+    new classical floating-point SSA value. The returned object
+    supports the standard numeric operators inherited from
+    :class:`NumericOperandsOverload`.
+
+    Args:
+        immediate: A Python ``float`` (or ``int``) literal that becomes
+            the immediate value of the new float. Defaults to ``0.0``.
+        other: If provided, the new value is initialized as a copy of
+            ``other``.
     """
 
     def __new__(cls, *args, **kwargs):
@@ -48,5 +58,6 @@ class Float(QoalaFloatingPointType[float]):
         pass
 
 
-# the "Double" type is just a synonym of the "Float"
 Double = Float
+"""Alias of :class:`Float`. Provided for consistency with code that distinguishes
+``float`` and ``double`` width; both point at the same 32-bit floating-point type."""
