@@ -56,3 +56,4 @@ nav:
       - From Python to Qoala HIR: architecture/python-to-hir.md
   - Continuing the pipeline: continuing-pipeline.md
   - Contributing: contributing.md
+  - Paper and citation: citation.md

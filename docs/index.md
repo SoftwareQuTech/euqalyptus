@@ -35,3 +35,4 @@ If this is your first encounter with `euqalyptus`, read the [Overview](overview.
 | Understand how `compile()` works | [SDK reference / Compilation](sdk/compile.md), [Architecture](architecture/python-to-hir.md) |
 | Move from HIR to a runnable `.iqoala` | [Continuing the pipeline](continuing-pipeline.md), [qoala-mlir docs](https://softwarequtech.github.io/qoala-mlir) |
 | Contribute / set up locally | [Contributing](contributing.md) |
+| Cite the project, or read the paper | [Paper and citation](citation.md) |
